@@ -2006,7 +2006,7 @@
     <div class="chat-shell">
       <aside class="chat-sidebar"><div class="p-5 border-b border-black/6 bg-white sticky top-0 z-10"><div class="section-label mb-2">Mensajes</div><h3 class="text-2xl font-black leading-none">Chats activos</h3><p class="text-xs text-zinc-700 mt-2">Conversaciones directas con propietarios.</p></div><div id="chat-thread-list"></div></aside>
       <main class="chat-main">
-        <div class="chat-topbar px-6 py-4 flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><div class="w-11 h-11 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-black border border-[var(--accent)]/20" id="seller-avatar"></div><div class="min-w-0"><div class="font-bold truncate" id="seller-name"></div><div class="text-xs text-zinc-700 flex items-center gap-2"><span class="online-dot"></span><span id="seller-status">En línea · propietario/a verificado/a</span></div></div></div><div class="flex items-center gap-2"><button onclick="showScheduleVisit()" class="hidden md:inline-flex px-4 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">Agendar visita</button><button onclick="closeChat()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div></div>
+        <div class="chat-topbar px-6 py-4 flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><div class="w-11 h-11 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-black border border-[var(--accent)]/20" id="seller-avatar"></div><div class="min-w-0"><div class="font-bold truncate" id="seller-name"></div><div class="text-xs text-zinc-700 flex items-center gap-2"><span class="online-dot"></span><span id="seller-status">En línea · propietario/a verificado/a</span></div></div></div><div class="flex items-center gap-2 flex-wrap justify-end"><div class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-zinc-600"><span>Yo escribo:</span><select id="chat-my-lang" onchange="onChatLangChange()" class="text-[11px] font-bold border border-black/10 px-2 py-2 bg-white"><option value="Español">🇪🇸 Español</option><option value="Alemán">🇩🇪 Alemán</option><option value="Inglés">🇬🇧 Inglés</option><option value="Francés">🇫🇷 Francés</option><option value="Sueco">🇸🇪 Sueco</option><option value="Italiano">🇮🇹 Italiano</option><option value="Árabe">🇦🇪 Árabe</option></select></div><div class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-zinc-600"><span>Él recibe:</span><select id="chat-their-lang" onchange="onChatLangChange()" class="text-[11px] font-bold border border-black/10 px-2 py-2 bg-white"><option value="">🌐 Sin traducir</option><option value="Alemán">🇩🇪 Alemán</option><option value="Inglés">🇬🇧 Inglés</option><option value="Francés">🇫🇷 Francés</option><option value="Sueco">🇸🇪 Sueco</option><option value="Italiano">🇮🇹 Italiano</option><option value="Árabe">🇦🇪 Árabe</option><option value="Español">🇪🇸 Español</option></select></div><button onclick="showScheduleVisit()" class="hidden md:inline-flex px-4 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">Agendar visita</button><button onclick="closeChat()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div></div>
         <div class="chat-property-preview"><img id="chat-property-img" src="" class="w-full h-20 object-cover"><div class="min-w-0"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="font-black text-lg truncate" id="chat-property-title"></div><div class="text-sm text-zinc-700 truncate" id="chat-property-price"></div></div><span class="saving-pill shrink-0" id="chat-saving-pill">P2P</span></div><div class="grid grid-cols-3 gap-2 mt-3 text-[10px] font-black uppercase tracking-[0.12em] text-zinc-700"><span class="bg-white border border-black/8 px-3 py-2" id="chat-property-m2">m²</span><span class="bg-white border border-black/8 px-3 py-2" id="chat-property-rooms">Hab.</span><span class="bg-white border border-black/8 px-3 py-2" id="chat-property-baths">Baños</span></div></div></div>
         <div id="chat-messages" class="flex-1 p-6 overflow-y-auto bg-zinc-50 space-y-6"></div>
         <div class="px-6 py-4 bg-white border-t border-black/6 flex gap-2 overflow-x-auto thin-scroll"><button onclick="quickReply('¿Sigue disponible?')" class="chat-action-btn">¿Sigue disponible?</button><button onclick="quickReply('Quiero visitarlo')" class="chat-action-btn">Quiero visitarlo</button><button onclick="quickReply('¿Es negociable?')" class="chat-action-btn">¿Es negociable?</button><button onclick="quickReply('¿Tiene nota simple?')" class="chat-action-btn">Pedir nota simple</button><button onclick="showScheduleVisit()" class="chat-action-btn">Agendar visita</button><button onclick="showOfferBox()" class="chat-action-btn">Hacer oferta</button><button onclick="showHelpMenu()" class="chat-action-btn">Necesito ayuda</button></div>
@@ -2857,15 +2857,78 @@ function openChatFromProperty(){if(!currentProperty)return;closePropertyModal();
 
 /* CHAT */
 function renderChatThreads(activeId){const list=document.getElementById('chat-thread-list');if(!list)return;const featured=properties.filter(p=>p.featured).slice(0,7);list.innerHTML='';featured.forEach(prop=>{const item=document.createElement('div');item.className=`chat-thread-item ${prop.id===activeId?'active':''}`;item.onclick=()=>openChat(prop.id);item.innerHTML=`<img src="${prop.img}" class="chat-thread-img" ${imgAttrs}><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><div class="font-bold text-sm truncate">${prop.sellerName}</div><div class="text-[10px] text-zinc-600">${prop.type}</div></div><div class="text-xs text-zinc-700 truncate mt-1">${prop.title}</div><div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">${formatPrice(prop)}</div></div>`;list.appendChild(item);});}
+let chatMyLang = 'Español';
+let chatTheirLang = '';
+function onChatLangChange(){
+  chatMyLang = document.getElementById('chat-my-lang').value;
+  chatTheirLang = document.getElementById('chat-their-lang').value;
+}
+async function translateText(text, targetLang){
+  try{
+    const resp = await fetch(SINKOMI_AI_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: `Eres un traductor. Traduce el mensaje del usuario al idioma "${targetLang}". Responde ÚNICAMENTE con la traducción, sin comillas, sin explicaciones, sin texto adicional.`,
+        messages: [{ role:'user', content: text }]
+      })
+    });
+    const data = await resp.json();
+    const out = data.content && data.content[0] ? data.content[0].text : null;
+    return out ? out.trim() : null;
+  } catch(e){
+    console.warn('Traducción falló:', e);
+    return null;
+  }
+}
 function openChat(id){
   if(!SinKomiAuth.isLoggedIn()){
     openLoginModal();
     return;
   }currentProperty=findProperty(id);if(!currentProperty)return;document.getElementById('chat-modal').classList.remove('hidden');renderChatThreads(id);document.getElementById('chat-property-img').src=currentProperty.img;document.getElementById('chat-property-title').textContent=currentProperty.title;document.getElementById('chat-property-price').textContent=`${formatPrice(currentProperty)} • ${currentProperty.location} • ${currentProperty.category}`;document.getElementById('chat-saving-pill').textContent=currentProperty.type==='Venta'?'Ahorro P2P':'Chat directo';document.getElementById('chat-property-m2').textContent=currentProperty.surface||'m²';document.getElementById('chat-property-rooms').textContent=currentProperty.bedrooms||'Hab.';document.getElementById('chat-property-baths').textContent=currentProperty.bathrooms||'Baños';document.getElementById('seller-name').textContent=currentProperty.sellerName;document.getElementById('seller-avatar').textContent=currentProperty.initials;document.getElementById('seller-status').textContent=currentProperty.verified?'Propietario verificado':'Propietario particular';document.getElementById('chat-messages').innerHTML=`<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Hola 👋 soy ${currentProperty.sellerName}.</p><p class="mt-2">Estás preguntando por <span class="font-medium">${currentProperty.title}</span>.</p><p class="mt-3 text-sm text-zinc-700 leading-relaxed">${currentProperty.description}</p><div class="mt-4 grid grid-cols-2 gap-2 text-xs"><div class="bg-zinc-50 border border-black/5 p-3"><span class="font-bold">Tipo:</span> ${currentProperty.category}</div><div class="bg-zinc-50 border border-black/5 p-3"><span class="font-bold">Zona:</span> ${currentProperty.location}</div></div></div></div>`;document.getElementById('chat-input').value='';}
 function closeChat(){document.getElementById('chat-modal').classList.add('hidden');}
-function appendUserMessage(text){const m=document.getElementById('chat-messages');const el=document.createElement('div');el.className='flex justify-end message-enter';el.innerHTML=`<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm"><div>${escapeHtml(text)}</div><div class="message-status">✓ Enviado</div></div>`;m.appendChild(el);m.scrollTop=m.scrollHeight;/* DEMO ONLY: eliminar el setTimeout de "✓✓ Leído" en producción — reemplazar con evento real de Supabase Realtime */}
+async function appendUserMessage(text){
+  const m=document.getElementById('chat-messages');
+  const el=document.createElement('div');
+  el.className='flex justify-end message-enter';
+  const translId = 'transl-'+Date.now();
+  el.innerHTML=`<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm"><div>${escapeHtml(text)}</div>${chatTheirLang?`<div id="${translId}" class="mt-2 pt-2 border-t border-white/25 text-xs italic flex items-center gap-1.5 opacity-90"><i class="fa-solid fa-globe"></i> <span>Traduciendo a ${chatTheirLang}…</span></div>`:''}<div class="message-status">✓ Enviado</div></div>`;
+  m.appendChild(el);
+  m.scrollTop=m.scrollHeight;
+  if(chatTheirLang){
+    const translated = await translateText(text, chatTheirLang);
+    const box = document.getElementById(translId);
+    if(box){
+      box.innerHTML = translated
+        ? `<i class="fa-solid fa-globe"></i> <span>Recibido en ${chatTheirLang}: "${escapeHtml(translated)}"</span>`
+        : `<i class="fa-solid fa-triangle-exclamation"></i> <span>No se pudo traducir</span>`;
+    }
+  }
+  /* DEMO ONLY: eliminar el setTimeout de "✓✓ Leído" en producción — reemplazar con evento real de Supabase Realtime */
+}
 function appendTypingThenReply(html){const m=document.getElementById('chat-messages');const typing=document.createElement('div');typing.className='flex items-start gap-3 message-enter';typing.innerHTML=`<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><span class="typing-dots"><span></span><span></span><span></span></span></div>`;m.appendChild(typing);m.scrollTop=m.scrollHeight;setTimeout(()=>{typing.remove();appendSellerMessage(html);},700);}
-function appendSellerMessage(html){const m=document.getElementById('chat-messages');const el=document.createElement('div');el.className='flex items-start gap-3 message-enter';el.innerHTML=`<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5">${html}<div class="text-[10px] text-zinc-600 mt-2">Ahora</div></div>`;m.appendChild(el);m.scrollTop=m.scrollHeight;}
+async function appendSellerMessage(html){
+  const m=document.getElementById('chat-messages');
+  const el=document.createElement('div');
+  el.className='flex items-start gap-3 message-enter';
+  const translId = 'transl-in-'+Date.now();
+  const needsTranslation = chatMyLang && chatMyLang !== 'Español';
+  el.innerHTML=`<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5">${html}${needsTranslation?`<div id="${translId}" class="mt-2 pt-2 border-t border-black/5 text-xs italic flex items-center gap-1.5 text-zinc-600"><i class="fa-solid fa-globe"></i> <span>Traduciendo a ${chatMyLang}…</span></div>`:''}<div class="text-[10px] text-zinc-600 mt-2">Ahora</div></div>`;
+  m.appendChild(el);
+  m.scrollTop=m.scrollHeight;
+  if(needsTranslation){
+    const plainText = html.replace(/<[^>]*>/g,'');
+    const translated = await translateText(plainText, chatMyLang);
+    const box = document.getElementById(translId);
+    if(box){
+      box.innerHTML = translated
+        ? `<i class="fa-solid fa-globe"></i> <span>${escapeHtml(translated)}</span>`
+        : `<i class="fa-solid fa-triangle-exclamation"></i> <span>No se pudo traducir</span>`;
+    }
+  }
+}
 function getSmartReply(text){const lower=text.toLowerCase();if(lower.includes('visit'))return `Claro. Te propongo <span class="font-medium">jueves 17:30</span> o <span class="font-medium">sábado 11:00</span>.`;if(lower.includes('negociable')||lower.includes('precio'))return `El precio es algo negociable si la operación avanza de forma seria.`;if(lower.includes('disponible'))return `Sí, ahora mismo sigue disponible. Hay varias personas interesadas pero sin reserva.`;if(lower.includes('nota')||lower.includes('document'))return `Puedo aportar documentación básica para revisión.`;if(lower.includes('oferta'))return `Puedes enviarme una oferta razonada. Si es seria, la valoramos.`;return `Gracias por tu mensaje. Te respondo por aquí para que quede todo claro dentro de SINKOMI.`;}
 function sendMessage(){const input=document.getElementById('chat-input');const text=input.value.trim();if(!text&&!window.chatAttachedFile)return;if(window.chatAttachedFile){sendChatFile(window.chatAttachedFile);}if(text){appendUserMessage(text);appendTypingThenReply(getSmartReply(text));}input.value='';}
 
