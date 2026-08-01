@@ -2437,7 +2437,8 @@ const chatLangData={
   fr:{flag:'🇫🇷',label:'Francés',msg:"Oui, l'appartement est disponible. Quand souhaitez-vous le visiter? 🏠",buyerName:'Pierre · Acheteur 🇫🇷',buyerMsg:'Parfait! Samedi à 11h? 👍'},
   sv:{flag:'🇸🇪',label:'Sueco',msg:'Ja, lägenheten är fortfarande tillgänglig. När vill du besöka? 🏠',buyerName:'Erik · Köpare 🇸🇪',buyerMsg:'Perfekt! Lördag kl 11? 👍'},
   it:{flag:'🇮🇹',label:'Italiano',msg:"Sì, l'appartamento è ancora disponibile. Quando vuole visitarlo? 🏠",buyerName:'Marco · Acquirente 🇮🇹',buyerMsg:'Perfetto! Sabato alle 11? 👍'},
-  ar:{flag:'🇦🇪',label:'Árabe',msg:'نعم، الشقة لا تزال متاحة. متى تريد زيارتها؟ 🏠',buyerName:'محمد · مشترٍ 🇦🇪',buyerMsg:'ممتاز! السبت الساعة 11؟ 👍'}
+  ar:{flag:'🇦🇪',label:'Árabe',msg:'نعم، الشقة لا تزال متاحة. متى تريد زيارتها؟ 🏠',buyerName:'محمد · مشترٍ 🇦🇪',buyerMsg:'ممتاز! السبت الساعة 11؟ 👍'},
+  ru:{flag:'🇷🇺',label:'Ruso',msg:'Да, квартира ещё доступна. Когда вы хотите её посмотреть? 🏠',buyerName:'Иван · Покупатель 🇷🇺',buyerMsg:'Отлично! Суббота в 11:00? 👍'}
 };
 function switchChatLang(lang){
   const d=chatLangData[lang]; if(!d) return;
@@ -2454,7 +2455,7 @@ function switchChatLang(lang){
     else{el.style.border='1px solid rgba(255,255,255,0.1)';el.style.background='transparent';el.style.color='rgba(255,255,255,0.45)';}
   });
 }
-const _langCycle=['de','en','fr','sv','it','ar']; let _langIdx=0;
+const _langCycle=['de','en','fr','sv','it','ar','ru']; let _langIdx=0;
 let _langTimer = null;
 
 function startLangCycle(){
