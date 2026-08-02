@@ -12,8 +12,8 @@
   <link rel="canonical" href="https://sinkomi.es" />
   <meta name="robots" content="index, follow" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" />
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <!-- SUPABASE SDK -->
@@ -62,8 +62,8 @@
   </script>
   <style>
     #sinkomi-map-hero { position: relative; z-index: 0; }
-    .leaflet-popup-content-wrapper { border-radius: 0 !important; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
-    .leaflet-popup-content { margin: 0 !important; padding: 0 !important; }
+    .maplibregl-popup-content { border-radius: 0 !important; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 12px 32px rgba(0,0,0,0.12); margin: 0 !important; padding: 0 !important; }
+    .maplibregl-popup-tip { display: none; }
     #map-draw-btn{position:absolute;top:12px;right:12px;z-index:500;background:white;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.5rem .9rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;}
     #map-draw-btn:hover{background:var(--accent);color:white;}
     #map-draw-btn.active{background:var(--accent);color:white;}
@@ -3047,87 +3047,112 @@ const municipalityCoords = {
 var sinkomMapHero = null;
 var mapMarkersHero = {};
 
-function createMarkerIcon(count, isSelected){
+function createMarkerEl(count, isSelected){
   const color = isSelected ? '#e8a020' : '#00a878';
   const size  = count > 10 ? 38 : count > 5 ? 34 : 30;
-  return L.divIcon({
-    className: '',
-    html: `<div style="
-      width:${size}px;height:${size}px;background:${color};
-      border-radius:999px;display:flex;align-items:center;justify-content:center;
-      color:white;font-weight:900;font-size:${count>9?10:12}px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.22);
-      border:2.5px solid white;
-      transition:all .2s ease;
-    ">${count}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size/2, size/2],
-  });
+  const el = document.createElement('div');
+  el.style.cssText = `width:${size}px;height:${size}px;background:${color};border-radius:999px;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:${count>9?10:12}px;box-shadow:0 4px 14px rgba(0,0,0,0.22);border:2.5px solid white;cursor:pointer;`;
+  el.textContent = count;
+  return el;
 }
+
+maptilersdk.config.apiKey = 'qKDaFUqzya8NMOsfuDK0';
 
 function initMapHero(){
   if(sinkomMapHero) return;
-  if(typeof L === 'undefined') return;
+  if(typeof maptilersdk === 'undefined') return;
   try {
-    sinkomMapHero = L.map('sinkomi-map-hero', {
-      center: [39.6953, 3.0176],
+    sinkomMapHero = new maptilersdk.Map({
+      container: 'sinkomi-map-hero',
+      style: maptilersdk.MapStyle.STREETS,
+      center: [3.0176, 39.6953], // MapTiler usa [longitud, latitud], al revés que antes
       zoom: 9,
-      zoomControl: true,
-      scrollWheelZoom: false,
+      language: maptilersdk.Language.SPANISH,
+      navigationControl: 'top-left',
+      geolocateControl: 'top-left',
       attributionControl: false
     });
-    applyMapTouchGesture(sinkomMapHero, 'sinkomi-map-hero');
-    L.tileLayer('https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=qKDaFUqzya8NMOsfuDK0&language=es', {
-      maxZoom: 20,
-      tileSize: 512,
-      zoomOffset: -1,
-      attribution: '© MapTiler © OpenStreetMap contributors'
-    }).addTo(sinkomMapHero);
-    municipalityList.forEach(name => {
-      const coords = municipalityCoords[name];
-      if(!coords) return;
-      const count = properties.filter(p=>p.municipality===name).length;
-      if(count === 0) return;
-      const marker = L.marker(coords, { icon: createMarkerIcon(count, false) }).addTo(sinkomMapHero);
-      marker.bindPopup(`
-        <div class="map-popup">
-          <div class="map-popup-title">${name}</div>
-          <div class="map-popup-count">${count} inmueble${count!==1?'s':''}</div>
-          <button class="map-popup-btn" onclick="openMunicipiosTab();selectMunicipality('${name}')">Ver inmuebles →</button>
-        </div>
-      `, { closeButton: false, maxWidth: 200 });
-      mapMarkersHero[name] = marker;
+    sinkomMapHero.on('load', function(){
+      sinkomMapHero.scrollZoom.disable();
+      applyMapTouchGesture(sinkomMapHero, 'sinkomi-map-hero');
+      // ── Fronteras oficiales de los 67 municipios (Govern de les Illes Balears / IDEIB) ──
+      try {
+        fetch('https://ideib.caib.es/geoserveis/rest/services/public/GOIB_Adreces_IB/MapServer/3/query?where=1%3D1&outFields=NOM&outSR=4326&f=geojson&maxAllowableOffset=0.0005')
+          .then(r => r.ok ? r.json() : null)
+          .then(geojson => {
+            if(!geojson || !geojson.features || !geojson.features.length) return;
+            if(sinkomMapHero.getSource('municipios-limites')) return;
+            sinkomMapHero.addSource('municipios-limites', { type:'geojson', data: geojson });
+            sinkomMapHero.addLayer({
+              id:'municipios-limites-line', type:'line', source:'municipios-limites',
+              paint:{ 'line-color':'#0d1a14', 'line-width':1.6, 'line-opacity':0.55 }
+            });
+          })
+          .catch(e => console.warn('Límites municipales no disponibles:', e));
+      } catch(e){ console.warn('Límites municipales no disponibles:', e); }
+      municipalityList.forEach(name => {
+        const coords = municipalityCoords[name];
+        if(!coords) return;
+        const count = properties.filter(p=>p.municipality===name).length;
+        if(count === 0) return;
+        const el = createMarkerEl(count, false);
+        const popup = new maptilersdk.Popup({ closeButton: false, maxWidth: '200px', offset: 20 }).setHTML(`
+          <div class="map-popup">
+            <div class="map-popup-title">${name}</div>
+            <div class="map-popup-count">${count} inmueble${count!==1?'s':''}</div>
+            <button class="map-popup-btn" onclick="openMunicipiosTab();selectMunicipality('${name}')">Ver inmuebles →</button>
+          </div>
+        `);
+        const marker = new maptilersdk.Marker({ element: el })
+          .setLngLat([coords[1], coords[0]])
+          .setPopup(popup)
+          .addTo(sinkomMapHero);
+        mapMarkersHero[name] = marker;
+      });
     });
   } catch(e){ console.error('Error mapa hero:', e); }
 }
 
 // ── DRAW AREA FILTER ─────────────────────────────────────────────────────────
-var drawLayer = null;
-var drawnPolygon = null;
-var drawControl = null;
+var drawSourceAdded = false;
+var drawnLatLngs = null; // array de {lat,lng} de la zona ya dibujada
 var areaFilteredProps = [];
+
+function ensureDrawSources(){
+  if(drawSourceAdded || !sinkomMapHero) return;
+  sinkomMapHero.addSource('draw-area', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+  sinkomMapHero.addLayer({ id:'draw-area-fill', type:'fill', source:'draw-area', paint:{ 'fill-color':'#00a878', 'fill-opacity':0.15 } });
+  sinkomMapHero.addLayer({ id:'draw-area-line', type:'line', source:'draw-area', paint:{ 'line-color':'#00a878', 'line-width':2.5, 'line-dasharray':[2,1.5] } });
+  drawSourceAdded = true;
+}
+
+function setDrawGeoJSON(latlngs, closed){
+  if(!drawSourceAdded) return;
+  const coords = latlngs.map(p => [p.lng, p.lat]);
+  if(closed && coords.length) coords.push(coords[0]);
+  const geometry = closed
+    ? { type:'Polygon', coordinates:[coords] }
+    : { type:'LineString', coordinates:coords };
+  sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features:[{ type:'Feature', geometry, properties:{} }] });
+}
 
 function startDrawArea(){
   if(!sinkomMapHero) return;
+  ensureDrawSources();
   const btn = document.getElementById('map-draw-btn');
   btn.classList.add('active');
   btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mantén pulsado y dibuja';
 
-  if(!drawLayer){ drawLayer = new L.FeatureGroup().addTo(sinkomMapHero); }
-
-  // Deshabilita drag del mapa mientras dibuja
-  sinkomMapHero.dragging.disable();
+  sinkomMapHero.dragPan.disable();
 
   const mapEl = document.getElementById('sinkomi-map-hero');
   let drawing = false;
   let latlngs = [];
-  let polyline = null;
 
   function onMouseDown(e){
     if(e.button !== 0 && e.type !== 'touchstart') return;
     drawing = true;
     latlngs = [];
-    if(polyline){ drawLayer.removeLayer(polyline); polyline=null; }
     e.preventDefault();
   }
 
@@ -3138,24 +3163,15 @@ function startDrawArea(){
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
     if(clientX===undefined) return;
-    const point = sinkomMapHero.containerPointToLatLng(
-      L.point(clientX - rect.left, clientY - rect.top)
-    );
-    latlngs.push(point);
-    if(latlngs.length > 1){
-      if(polyline) drawLayer.removeLayer(polyline);
-      polyline = L.polygon(latlngs, {
-        color:'#00a878', weight:2.5,
-        fillColor:'#00a878', fillOpacity:0.15,
-        dashArray:'5,4'
-      }).addTo(drawLayer);
-    }
+    const ll = sinkomMapHero.unproject([clientX - rect.left, clientY - rect.top]);
+    latlngs.push({ lat: ll.lat, lng: ll.lng });
+    if(latlngs.length > 1) setDrawGeoJSON(latlngs, false);
   }
 
   function onMouseUp(){
     if(!drawing) return;
     drawing = false;
-    sinkomMapHero.dragging.enable();
+    sinkomMapHero.dragPan.enable();
     mapEl.removeEventListener('mousedown', onMouseDown);
     mapEl.removeEventListener('mousemove', onMouseMove);
     mapEl.removeEventListener('mouseup', onMouseUp);
@@ -3166,17 +3182,14 @@ function startDrawArea(){
     if(latlngs.length < 3){
       btn.classList.remove('active');
       btn.innerHTML='<i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona';
-      sinkomMapHero.dragging.enable();
+      sinkomMapHero.dragPan.enable();
       return;
     }
 
-    if(drawnPolygon) drawLayer.removeLayer(drawnPolygon);
-    if(polyline) drawLayer.removeLayer(polyline);
-    drawnPolygon = L.polygon(latlngs, {
-      color:'#00a878', weight:2, fillColor:'#00a878', fillOpacity:0.12
-    }).addTo(drawLayer);
+    drawnLatLngs = latlngs;
+    setDrawGeoJSON(latlngs, true);
 
-    filterPropertiesByArea(drawnPolygon);
+    filterPropertiesByArea(drawnLatLngs);
     document.getElementById('map-draw-btn').style.display='none';
     document.getElementById('map-clear-btn').style.display='flex';
   }
@@ -3189,17 +3202,18 @@ function startDrawArea(){
   mapEl.addEventListener('touchend', onMouseUp);
 }
 
-function filterPropertiesByArea(polygon){
-  const bounds = polygon.getBounds();
-  const latlngs = polygon.getLatLngs()[0];
+function filterPropertiesByArea(latlngs){
+  const lats = latlngs.map(p=>p.lat), lngs = latlngs.map(p=>p.lng);
+  const bounds = { minLat:Math.min(...lats), maxLat:Math.max(...lats), minLng:Math.min(...lngs), maxLng:Math.max(...lngs) };
 
   // Filtra municipios cuyos marcadores están dentro del polígono
   const municipiosEnArea = [];
   Object.keys(municipalityCoords).forEach(name => {
     const coords = municipalityCoords[name];
     if(!coords) return;
-    const point = L.latLng(coords[0], coords[1]);
-    if(bounds.contains(point) && pointInPolygon(point, latlngs)){
+    const point = { lat: coords[0], lng: coords[1] };
+    const inBounds = point.lat>=bounds.minLat && point.lat<=bounds.maxLat && point.lng>=bounds.minLng && point.lng<=bounds.maxLng;
+    if(inBounds && pointInPolygon(point, latlngs)){
       municipiosEnArea.push(name);
     }
   });
@@ -3231,8 +3245,8 @@ function pointInPolygon(point, vs){
 }
 
 function clearDrawArea(){
-  if(drawLayer) drawLayer.clearLayers();
-  drawnPolygon = null;
+  if(drawSourceAdded) sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features:[] });
+  drawnLatLngs = null;
   areaFilteredProps = [];
   document.getElementById('map-area-results').style.display='none';
   document.getElementById('map-clear-btn').style.display='none';
@@ -3282,15 +3296,15 @@ function applyMapTouchGesture(map, elId){
     if(!el) return;
     const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if(!isTouch) return;            // escritorio: arrastre normal con ratón
-    map.dragging.disable();         // un dedo => la pagina hace scroll
+    map.dragPan.disable();          // un dedo => la pagina hace scroll
     let hintShown = false;
     const hint = document.createElement('div');
     hint.textContent = '\u270B Usa dos dedos para mover el mapa';
     hint.style.cssText = "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:600;background:rgba(13,26,20,.88);color:#fff;font:700 12px/1.3 'Plus Jakarta Sans',sans-serif;padding:.6rem .95rem;border-radius:999px;pointer-events:none;opacity:0;transition:opacity .25s ease;white-space:nowrap;";
     el.appendChild(hint);
     el.addEventListener('touchstart', function(e){
-      if(e.touches.length >= 2){ map.dragging.enable(); hint.style.opacity='0'; }
-      else { map.dragging.disable(); }
+      if(e.touches.length >= 2){ map.dragPan.enable(); hint.style.opacity='0'; }
+      else { map.dragPan.disable(); }
     }, {passive:true});
     el.addEventListener('touchmove', function(e){
       if(e.touches.length < 2 && !hintShown){
