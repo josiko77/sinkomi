@@ -2250,7 +2250,7 @@
   </div>
 </div>
 
-<button id="floating-chat" onclick="openAIChat()" class="fixed bottom-5 right-5 z-[999] px-5 py-4 accent-btn shadow-2xl font-black uppercase tracking-[0.12em] text-[11px] flex items-center gap-2 pulse-glow float-soft">
+<button id="floating-chat" onclick="openAIChat()" class="fixed bottom-5 right-5 z-[999] px-5 py-4 accent-btn shadow-2xl font-black uppercase tracking-[0.1em] text-[12px] flex items-center gap-2 pulse-glow float-soft" style="font-family:'Special Elite','Courier New',monospace;">
   <i class="fa-solid fa-comments"></i> ¿Te ayudamos?
 </button>
 <script>
@@ -4422,7 +4422,7 @@ async function sendAIMessage(){
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€/mes, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, con devolución proporcional si vendes o alquilas antes de que termine el plazo). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
+        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€/mes, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, con devolución proporcional si vendes o alquilas antes de que termine el plazo). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
         messages: aiHistory
       })
     });
