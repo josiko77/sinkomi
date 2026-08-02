@@ -1758,7 +1758,7 @@
           <span class="text-5xl font-black" style="color:var(--orange);" id="destacado-price">29,99€</span>
           <span class="text-sm mb-1.5 font-semibold" style="color:rgba(255,255,255,0.35);" id="destacado-price-unit">/30 días</span>
         </div>
-        <div class="text-xs uppercase font-black tracking-[0.14em] mb-7" style="color:rgba(255,255,255,0.3);">Pago único · devolución proporcional si vendes/alquilas antes</div>
+        <div class="text-xs uppercase font-black tracking-[0.14em] mb-7" style="color:rgba(255,255,255,0.3);">Pago único · sin renovaciones automáticas</div>
         <div class="space-y-3 text-sm mb-8 flex-1" style="color:rgba(255,255,255,0.7);">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span>Todo lo del plan Verificado</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span>Primera posición garantizada — por encima de todos los demás anuncios</span></div>
@@ -4026,7 +4026,7 @@ function openVerificationModal(plan){
     if(priceLabel) priceLabel.textContent = 'Pago único';
     if(price) price.textContent = p;
     if(priceUnit) priceUnit.textContent = '/'+selectedDestacadoDays+' días';
-    if(priceNote) priceNote.textContent = 'Devolución proporcional si vendes/alquilas antes';
+    if(priceNote) priceNote.textContent = 'Pago único · sin renovaciones automáticas';
     if(cta) cta.textContent = 'Empezar Verificado + Destacado · '+p+'/'+selectedDestacadoDays+' días';
   } else {
     if(title) title.textContent = 'Activar perfil verificado';
@@ -4465,7 +4465,7 @@ async function sendAIMessage(){
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€/mes, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, con devolución proporcional si vendes o alquilas antes de que termine el plazo). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
+        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€/mes, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, sin renovaciones automáticas). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
         messages: aiHistory
       })
     });
