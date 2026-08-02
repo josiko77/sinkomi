@@ -2121,7 +2121,7 @@
     </div>
     <p class="text-[10px] text-zinc-500 mt-3">Tus documentos se usan solo para esta comprobación y no se muestran públicamente en tu anuncio.</p>
   </div>
-  <button id="verification-modal-cta" onclick="activateVerification()" class="w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Empezar verificación · 8,99€/mes</button>
+  <button id="verification-modal-cta" onclick="activateVerification()" class="w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Empezar verificación · 8,99€</button>
 </div></div></div>
 
 <div id="tool-modal" class="hidden fixed inset-0 bg-black/70 z-[114] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-4xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="tool-title" class="text-2xl font-semibold tracking-tight">Herramienta</h3><p id="tool-subtitle" class="text-sm text-zinc-700">Simulación rápida</p></div><button onclick="closeToolModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6"><div id="tool-content" class="grid md:grid-cols-2 gap-4"></div><div class="mt-6"><button onclick="simulateTool()" class="w-full py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Calcular</button></div></div></div></div>
@@ -4031,11 +4031,11 @@ function openVerificationModal(plan){
   } else {
     if(title) title.textContent = 'Activar perfil verificado';
     if(subtitle) subtitle.textContent = 'Verificación de identidad · Más confianza y visibilidad';
-    if(priceLabel) priceLabel.textContent = 'Suscripción mensual';
+    if(priceLabel) priceLabel.textContent = 'Pago único';
     if(price) price.textContent = '8,99 €';
-    if(priceUnit) priceUnit.textContent = '/mes';
-    if(priceNote) priceNote.textContent = 'Cancela cuando quieras';
-    if(cta) cta.textContent = 'Empezar verificación · 8,99€/mes';
+    if(priceUnit) priceUnit.textContent = '';
+    if(priceNote) priceNote.textContent = 'Verificación permanente, sin renovaciones';
+    if(cta) cta.textContent = 'Empezar verificación · 8,99€';
   }
   document.getElementById('verification-modal').classList.remove('hidden');
 }
@@ -4155,14 +4155,43 @@ function submitPublishForm(){
   if(price <= 0){ alert('Por favor, introduce un precio válido para tu inmueble.'); return; }
   const img = publishedPhotos.length > 0 ? publishedPhotos[0] : propertyBlueprints[0].img;
   const images = publishedPhotos.length > 0 ? [...publishedPhotos] : [propertyBlueprints[0].img];const verified=document.getElementById('publish-verified').checked;const description=escapeHtml(document.getElementById('publish-description').value.trim())||'Propiedad publicada recientemente. Contacta con el propietario/a para más detalles.';const declareParticular=document.getElementById('declare-particular').checked;if(!declareParticular){alert('Debes declarar que publicas como particular o autorizado por el propietario.');return;}const builtM2=document.getElementById('publish-built-m2').value||'No especificado';const usefulM2=document.getElementById('publish-useful-m2').value||'';const bedrooms=document.getElementById('publish-bedrooms').value||'No especificado';const bathrooms=document.getElementById('publish-bathrooms').value||'No especificado';const floor=document.getElementById('publish-floor').value||'No especificado';const condition=document.getElementById('publish-condition').value;const energy=document.getElementById('publish-energy').value;const orientation=document.getElementById('publish-orientation').value;const community=document.getElementById('publish-community').value||'No especificado';const ibi=document.getElementById('publish-ibi').value||'No especificado';const negotiable=document.getElementById('publish-negotiable').value;const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):'';const phone=document.getElementById('publish-phone').value.trim();const extras=getCheckedExtras();const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||'Tu perfil';properties.unshift({id:`user-${Date.now()}`,title,location,municipality:_mun,nucleo:_nuc,category,type,price,img,images,sellerName:ownerName,responseTime:'Nuevo',rating:'5,0',reviews:0,initials:ownerName.slice(0,1).toUpperCase()||'T',featured:isPremiumPlan(),verified,description,surface:usefulM2?`${builtM2} m² construidos · ${usefulM2} m² útiles`:`${builtM2} m² construidos`,bedrooms:bedrooms==='No especificado'?bedrooms:`${bedrooms} dormitorios`,bathrooms:bathrooms==='No especificado'?bathrooms:`${bathrooms} baños`,extras:`${extras} · ${floor} · ${condition} · Energía ${energy} · ${orientation} · Comunidad ${community}€/mes · IBI ${ibi}€ · Negociable: ${negotiable}`,daysAgo:0,priceDrop:0,savingPct:0.06,seasonality,phone});publishedPhotos=[];publishedVideo=null;renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');updateMunicipalityLabels();closePublishModal();alert('¡Inmueble publicado correctamente!');}
-function activateVerification(){
-  closeVerificationModal();
-  if(currentVerificationPlan==='destacado'){
-    const priceByDays = { 7:'12,99€', 15:'19,99€', 30:'29,99€' };
-    const p = priceByDays[selectedDestacadoDays] || '29,99€';
-    alert('¡Perfecto! Te hemos enviado un email para subir tu DNI y la Nota Simple del Catastro. En cuanto los recibamos, activamos tu Verificado + Destacado (' + p + '/' + selectedDestacadoDays + ' días) en 24-48h.');
-  } else {
-    alert('¡Perfecto! Te hemos enviado un email para subir tu DNI y la Nota Simple del Catastro. En cuanto los recibamos, activamos tu badge de verificado en 24-48h.');
+async function activateVerification(){
+  // ─────────────────────────────────────────────────────────────────────
+  // Llama a la Edge Function sinkomi-checkout, que crea una sesión de
+  // Stripe Checkout y devuelve la URL de pago. Redirigimos al usuario ahí.
+  // ─────────────────────────────────────────────────────────────────────
+  const SINKOMI_CHECKOUT_ENDPOINT = 'https://utrkwpepgviadaygjfyr.supabase.co/functions/v1/sinkomi-checkout';
+
+  const plan = (currentVerificationPlan === 'destacado')
+    ? 'destacado_' + selectedDestacadoDays
+    : 'verificado';
+
+  const user = SinKomiAuth.getUser();
+  const cta = document.getElementById('verification-modal-cta');
+  const originalCtaText = cta ? cta.textContent : '';
+  if(cta){ cta.disabled = true; cta.textContent = 'Redirigiendo a pago seguro…'; }
+
+  try {
+    const response = await fetch(SINKOMI_CHECKOUT_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        plan,
+        userEmail: (user && user.email) ? user.email : undefined,
+        successUrl: window.location.origin + window.location.pathname + '?pago=exitoso',
+        cancelUrl: window.location.href
+      })
+    });
+    const data = await response.json();
+    if(data && data.url){
+      window.location.href = data.url; // Redirige a Stripe Checkout
+    } else {
+      alert('No se ha podido iniciar el pago. Inténtalo de nuevo o escríbenos a info@sinkomi.es');
+      if(cta){ cta.disabled = false; cta.textContent = originalCtaText; }
+    }
+  } catch(e){
+    alert('Ha ocurrido un error al conectar con el sistema de pago. Inténtalo de nuevo.');
+    if(cta){ cta.disabled = false; cta.textContent = originalCtaText; }
   }
 }
 document.addEventListener('change',e=>{if(e.target.id==='publish-verified')updatePublishTotal();});
@@ -4697,6 +4726,92 @@ function toggleVerifiedQuick(tab, type){
   }
   if(tab==='buy') renderPropertyCards('buy-grid','Venta');
   else renderPropertyCards('rent-grid','Alquiler');
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// PAGO DE CONTRATOS (Alquiler 19,99€ / Arras 49,99€)
+// El PDF se genera en el navegador (jsPDF), pero antes hay que pagar.
+// Guardamos los datos rellenados, redirigimos a Stripe, y al volver
+// los recuperamos para generar el PDF automáticamente.
+// ─────────────────────────────────────────────────────────────────────
+function contractFieldIds(tipo){
+  return tipo === 'alquiler'
+    ? ['alq-vendedor','alq-dni-vendedor','alq-comprador','alq-dni-comprador','alq-direccion','alq-duracion','alq-fecha','alq-precio','alq-fianza','alq-especiales']
+    : ['arr-vendedor','arr-dni-vendedor','arr-comprador','arr-dni-comprador','arr-direccion','arr-catastro','arr-precio','arr-arras','arr-fecha-notario'];
+}
+function collectContractFields(tipo){
+  const data = {};
+  contractFieldIds(tipo).forEach(id=>{ const el=document.getElementById(id); data[id]= el ? el.value : ''; });
+  return data;
+}
+function restoreContractFields(data){
+  Object.keys(data).forEach(id=>{ const el=document.getElementById(id); if(el) el.value = data[id]; });
+}
+async function payAndDownloadContract(tipo){
+  const prefijo   = tipo === 'alquiler' ? 'alq' : 'arr';
+  const comprador = (document.getElementById(prefijo+'-comprador')?.value || '').trim();
+  const vendedor  = (document.getElementById(prefijo+'-vendedor')?.value  || '').trim();
+  if(!comprador || !vendedor){
+    alert('Debes rellenar los nombres de ambas partes firmantes antes de generar el contrato.');
+    return;
+  }
+
+  localStorage.setItem('sinkomi_pending_contract', JSON.stringify({ tipo, fields: collectContractFields(tipo) }));
+
+  const SINKOMI_CHECKOUT_ENDPOINT = 'https://utrkwpepgviadaygjfyr.supabase.co/functions/v1/sinkomi-checkout';
+  const plan = tipo === 'alquiler' ? 'contrato_alquiler' : 'contrato_arras';
+  const user = SinKomiAuth.getUser();
+  const btn = event ? event.target : null;
+  const originalText = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Redirigiendo a pago seguro…'; }
+
+  try {
+    const response = await fetch(SINKOMI_CHECKOUT_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        plan,
+        userEmail: (user && user.email) ? user.email : undefined,
+        successUrl: window.location.origin + window.location.pathname + '?pago=exitoso&contrato=' + tipo,
+        cancelUrl: window.location.href
+      })
+    });
+    const data = await response.json();
+    if(data && data.url){
+      window.location.href = data.url;
+    } else {
+      alert('No se ha podido iniciar el pago. Inténtalo de nuevo o escríbenos a info@sinkomi.es');
+      if(btn){ btn.disabled = false; btn.textContent = originalText; }
+    }
+  } catch(e){
+    alert('Ha ocurrido un error al conectar con el sistema de pago. Inténtalo de nuevo.');
+    if(btn){ btn.disabled = false; btn.textContent = originalText; }
+  }
+}
+function checkPendingContractPayment(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('pago') === 'exitoso' && params.get('contrato')){
+    const tipo = params.get('contrato');
+    const saved = localStorage.getItem('sinkomi_pending_contract');
+    if(saved){
+      try {
+        const parsed = JSON.parse(saved);
+        if(parsed.tipo === tipo){
+          openContratosTab();
+          document.getElementById('modal-contrato-'+tipo).classList.remove('hidden');
+          restoreContractFields(parsed.fields);
+          if(tipo === 'alquiler') generateAlquilerPDF(); else generateArrasPDF();
+        }
+      } catch(e){}
+      localStorage.removeItem('sinkomi_pending_contract');
+    }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', checkPendingContractPayment);
+} else {
+  checkPendingContractPayment();
 }
 
 function generateArrasPDF(){
@@ -5534,7 +5649,7 @@ function closeLegal() {
     </div>
     <div class="p-5 bg-white border-t flex gap-3 justify-center">
       <button onclick="executeContractDelivery('chat','alquiler')" class="px-6 py-3.5 border-2 border-zinc-900 text-zinc-900 font-bold text-xs uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all">💬 Enviar al Chat</button>
-      <button onclick="generateAlquilerPDF()" class="px-6 py-3.5 border-2 font-bold text-xs uppercase tracking-widest transition-all" style="border-color:var(--accent);color:var(--accent);background:transparent;" onmouseover="this.style.background='var(--accent)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">⬇️ Descargar PDF</button>
+      <button onclick="payAndDownloadContract('alquiler')" class="px-6 py-3.5 border-2 font-bold text-xs uppercase tracking-widest transition-all" style="border-color:var(--accent);color:var(--accent);background:transparent;" onmouseover="this.style.background='var(--accent)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">💳 Pagar y Descargar PDF · 19,99€</button>
       <button onclick="executeContractDelivery('signaturit','alquiler')" class="px-8 py-3.5 bg-[#10b981] text-white font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all">🚀 Firmar en Signaturit</button>
     </div>
   </div>
@@ -5577,7 +5692,7 @@ function closeLegal() {
     </div>
     <div class="p-5 bg-white border-t flex gap-3 justify-center">
       <button onclick="executeContractDelivery('chat','arras')" class="px-6 py-3.5 border-2 border-zinc-900 text-zinc-900 font-bold text-xs uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all">💬 Enviar al Chat</button>
-      <button onclick="generateArrasPDF()" class="px-6 py-3.5 border-2 font-bold text-xs uppercase tracking-widest transition-all" style="border-color:var(--orange);color:var(--orange);background:transparent;" onmouseover="this.style.background='var(--orange)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--orange)'">⬇️ Descargar PDF</button>
+      <button onclick="payAndDownloadContract('arras')" class="px-6 py-3.5 border-2 font-bold text-xs uppercase tracking-widest transition-all" style="border-color:var(--orange);color:var(--orange);background:transparent;" onmouseover="this.style.background='var(--orange)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--orange)'">💳 Pagar y Descargar PDF · 49,99€</button>
       <button onclick="executeContractDelivery('signaturit','arras')" class="px-8 py-3.5 bg-[#10b981] text-white font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all">🚀 Firmar en Signaturit</button>
     </div>
   </div>
