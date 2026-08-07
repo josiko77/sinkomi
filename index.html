@@ -3921,10 +3921,26 @@ function openUserPanel(){
   const roleSection = document.getElementById('user-panel-role-section');
   if(!roleSection) { document.getElementById('user-panel-modal').style.display='flex'; return; }
   if(role==='propietario'){
+    const userPlan = user.plan || 'basico';
+    const planBadge = userPlan === 'premium'
+      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-fire"></i> Verificado + Destacado</span>`
+      : userPlan === 'verificado'
+      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-shield-check"></i> Propietario verificado</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.04);color:#aaa;border:1px solid rgba(0,0,0,0.08);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-circle-question"></i> Sin verificar</span>`;
+
+    const verifyBtn = (userPlan === 'basico')
+      ? `<button onclick="closeUserPanel();openPlanSelector();" class="w-full py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em] mt-3"><i class="fa-solid fa-shield-check mr-1"></i> Verificar mi perfil</button>`
+      : ``;
+
     roleSection.innerHTML = `
       <div class="panel p-5">
+        <div class="section-label mb-3" style="color:var(--accent);">Mi plan</div>
+        <div class="mb-3">${planBadge}</div>
+        ${verifyBtn}
+        ${userPlan === 'basico' ? `<p class="text-xs text-zinc-400 mt-2">Verifica tu perfil para que los compradores confíen en ti y aparezcas en el filtro de "Solo verificados".</p>` : ''}
+      </div>
+      <div class="panel p-5 mt-3">
         <div class="section-label mb-3" style="color:var(--accent);">Mis inmuebles publicados</div>
-        <p class="text-sm text-zinc-500 mb-4">Cuando conectemos Supabase verás aquí todos tus anuncios activos y su rendimiento.</p>
         <button onclick="openPublishModal();closeUserPanel();" class="px-5 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">+ Publicar nuevo inmueble</button>
       </div>`;
   } else if(role==='inquilino'){
@@ -4005,6 +4021,94 @@ function openPublishModal(){
   togglePublishSeasonality();
 }
 function closePublishModal(){document.getElementById('publish-modal').classList.add('hidden');}
+function openPlanSelector(){
+  if(!SinKomiAuth.isLoggedIn()){ openRegisterModal('propietario'); return; }
+  // Crear modal selector si no existe
+  let modal = document.getElementById('plan-selector-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'plan-selector-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:white;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="background:#0d1a14;padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:white;">Elige tu plan</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Sin permanencia · Pago único</div>
+          </div>
+          <button onclick="document.getElementById('plan-selector-modal').style.display='none'" style="color:rgba(255,255,255,0.5);font-size:1.4rem;background:none;border:none;cursor:pointer;line-height:1;">×</button>
+        </div>
+        <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;">
+
+          <!-- Verificado -->
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationModal('verificado');"
+            style="border:2px solid #00a878;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
+            onmouseover="this.style.background='rgba(0,168,120,0.04)'" onmouseout="this.style.background='white'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-shield-check" style="color:#00a878;font-size:14px;"></i>
+                <span style="font-weight:900;font-size:13px;">Verificado</span>
+              </div>
+              <span style="font-weight:900;font-size:16px;color:#00a878;">8,99€</span>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:.35rem;">Badge de propietario real · Filtro "Solo verificados" · Pago único permanente</div>
+          </div>
+
+          <!-- Destacado 7 días -->
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=7;openVerificationModal('destacado');"
+            style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
+            onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
+                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
+                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">7 días</span>
+              </div>
+              <span style="font-weight:900;font-size:16px;color:#e8a020;">12,99€</span>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 7 días</div>
+          </div>
+
+          <!-- Destacado 15 días -->
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=15;openVerificationModal('destacado');"
+            style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
+            onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
+                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
+                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">15 días</span>
+              </div>
+              <span style="font-weight:900;font-size:16px;color:#e8a020;">19,99€</span>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 15 días</div>
+          </div>
+
+          <!-- Destacado 30 días -->
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=30;openVerificationModal('destacado');"
+            style="border:2px solid #e8a020;background:rgba(232,160,32,0.03);padding:1rem 1.25rem;cursor:pointer;transition:background .15s;position:relative;"
+            onmouseover="this.style.background='rgba(232,160,32,0.07)'" onmouseout="this.style.background='rgba(232,160,32,0.03)'">
+            <div style="position:absolute;top:-1px;right:-.5rem;background:#e8a020;color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .5rem;">Más popular</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
+                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
+                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">30 días</span>
+              </div>
+              <span style="font-weight:900;font-size:16px;color:#e8a020;">29,99€</span>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 30 días</div>
+          </div>
+
+        </div>
+        <div style="padding:.75rem 1.5rem 1.25rem;text-align:center;font-size:10px;color:#bbb;font-weight:600;">Sin contratos de permanencia · Cancelas el día que cierras la operación</div>
+      </div>`;
+    document.body.appendChild(modal);
+  } else {
+    modal.style.display = 'flex';
+  }
+}
+
 function openVerificationModal(plan){
   if(!SinKomiAuth.isLoggedIn()){
     openRegisterModal('propietario');
