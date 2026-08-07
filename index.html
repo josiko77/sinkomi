@@ -1708,7 +1708,7 @@
         <div class="flex items-end gap-2 mb-1">
           <span class="text-5xl font-black text-zinc-800">0€</span>
         </div>
-        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7">Siempre gratis</div>
+        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7">Gratis · anuncio activo 90 días · renovable gratis</div>
         <div class="space-y-3 text-sm text-zinc-600 mb-8 flex-1">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Ficha completa del inmueble</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Chat directo P2P con interesados</span></div>
@@ -1728,9 +1728,9 @@
         <p class="text-sm text-zinc-500 mb-6 leading-relaxed">Los compradores filtran por propietarios verificados. Ser uno de ellos significa que hablan contigo primero, no con el resto.</p>
         <div class="flex items-end gap-2 mb-1">
           <span class="text-5xl font-black" style="color:var(--accent);">8,99€</span>
-          <span class="text-sm text-zinc-400 mb-1.5 font-semibold">/mes</span>
+          <span class="text-sm text-zinc-400 mb-1.5 font-semibold">por inmueble</span>
         </div>
-        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7">Sin permanencia · cancela cuando quieras</div>
+        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7">Pago único · válido 1 año · renovación a 4,99€</div>
         <div class="space-y-3 text-sm text-zinc-600 mb-8 flex-1">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Todo lo del plan Básico</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Badge Propietario verificado — visible en tu ficha y en resultados</span></div>
@@ -1768,13 +1768,13 @@
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span>Etiqueta de estado activable — "Precio negociable", "Última semana", "Acepta oferta" cuando tú decidas</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span>Marcador destacado en el mapa — visible diferenciado al explorar por zonas</span></div>
         </div>
-        <button onclick="openVerificationModal('destacado')" id="destacado-cta" class="w-full px-5 py-4 font-bold uppercase tracking-[0.12em] text-[11px]" style="background:var(--orange);color:#0d1a14;">Activar Verificado + Destacado · 29,99€/30 días</button>
+        <button onclick="openPlanSelector()" id="destacado-cta" class="w-full px-5 py-4 font-bold uppercase tracking-[0.12em] text-[11px]" style="background:var(--orange);color:#0d1a14;">Activar Verificado + Destacado · desde 12,99€</button>
       </div>
 
     </div>
 
     <!-- Nota final -->
-    <p class="text-center text-xs text-zinc-400 mt-8 font-semibold">Sin contratos de permanencia. Sin letra pequeña. Cancelas el día que cierras la operación. El badge y el destacado se desactivan automáticamente.</p>
+    <p class="text-center text-xs text-zinc-400 mt-8 font-semibold">Básico activo 90 días · renovable gratis. Verificado válido 1 año · renovación a 4,99€. Hasta 5 inmuebles verificados por propietario. Sin contratos de permanencia.</p>
 
   </div>
 </section>
@@ -4569,7 +4569,7 @@ async function sendAIMessage(){
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€ pago único, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, sin renovaciones automáticas). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
+        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, activo 90 días renovable gratis), Verificado (8,99€ pago único por inmueble, válido 1 año, renovación a 4,99€, máximo 5 inmuebles por propietario) y Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, siempre sobre un inmueble verificado). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P con traducción automática en tiempo real. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
         messages: aiHistory
       })
     });
