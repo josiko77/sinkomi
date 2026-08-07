@@ -780,7 +780,7 @@
           <div class="bg-white border border-black/8 p-4"><div class="section-label mb-2">Con agencia</div><div id="calc-with-agency" class="text-xl font-black text-zinc-700">–</div></div>
           <div class="bg-white border border-black/8 p-4"><div class="section-label mb-2">Con Sinkomi</div><div class="text-xl font-black text-[var(--accent)]">Gratis*</div></div>
         </div>
-        <p class="text-[10px] text-zinc-600 font-semibold mb-5">*Publicación básica gratuita. El Verificado es 8,99€/mes.</p>
+        <p class="text-[10px] text-zinc-600 font-semibold mb-5">*Publicación básica gratuita. El Verificado es 8,99€ pago único.</p>
         <button onclick="openPublishModal()" class="publish-gate w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y ahorrar ahora</button>
         <p id="calc-dynamic-text" class="text-center text-sm text-zinc-700 mt-3 leading-relaxed" style="display:none;"></p>
       </div>
@@ -1739,7 +1739,7 @@
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Más contactos y menos ruido — solo gente que ha visto que eres real</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Verificación de identidad realizada una sola vez</span></div>
         </div>
-        <button onclick="openVerificationModal()" class="w-full px-5 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Activar verificación · 8,99€/mes</button>
+        <button onclick="openPlanSelector()" class="w-full px-5 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Activar verificación · desde 8,99€</button>
       </div>
 
       <!-- VERIFICADO + DESTACADO -->
@@ -2086,7 +2086,7 @@
 </div>
 <div class="panel p-5"><div class="section-label mb-3">Contacto del propietario</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">Nombre</label><input id="publish-owner-name" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Nombre"></div><div><label class="text-sm font-medium mb-2 block">Teléfono</label><input id="publish-owner-phone" type="tel" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="600 000 000"></div><div><label class="text-sm font-medium mb-2 block">Email</label><input id="publish-owner-email" type="email" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="email@..."></div><div><label class="text-sm font-medium mb-2 block">Horario contacto</label><input id="publish-contact-hours" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Tardes / mañanas"></div></div></div>
 <div><label class="text-sm font-medium mb-2 block">Descripción</label><textarea id="publish-description" class="w-full border border-black/8 px-4 py-3 min-h-[140px] bg-white" placeholder="Describe tu propiedad con detalle..."></textarea></div>
-<div class="p-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20"><label class="flex items-start gap-3 cursor-pointer"><input id="publish-verified" type="checkbox" class="mt-1"><div><div class="font-medium">Añadir perfil verificado — 8,99 €/mes</div><p class="text-sm text-zinc-600">Identidad comprobada. Aumenta la confianza y la visibilidad.</p></div></label></div>
+<div class="p-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20"><label class="flex items-start gap-3 cursor-pointer"><input id="publish-verified" type="checkbox" class="mt-1"><div><div class="font-medium">Añadir perfil verificado — 8,99 € pago único</div><p class="text-sm text-zinc-600">Identidad comprobada. Aumenta la confianza y la visibilidad.</p></div></label></div>
 <div class="p-5 border border-black/8 bg-white"><label class="flex items-start gap-3 cursor-pointer"><input id="declare-particular" type="checkbox" class="mt-1"><div><div class="font-medium">Declaro que publico como particular o autorizado por el propietario. No soy intermediario.</div><p class="text-sm text-zinc-700">SINKOMI prioriza anuncios directos entre personas.</p></div></label></div>
 <div class="flex items-center justify-between gap-4 flex-wrap"><div><p class="text-sm text-zinc-700">Coste estimado</p><p id="publish-total" class="text-2xl font-semibold">0 €</p></div><button onclick="submitPublishForm()" class="px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y activar</button></div>
 </div></div></div>
@@ -2094,7 +2094,7 @@
 <div id="verification-modal" class="hidden fixed inset-0 bg-black/70 z-[111] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="verification-modal-title" class="text-2xl font-semibold tracking-tight">Activar perfil verificado</h3><p id="verification-modal-subtitle" class="text-sm text-zinc-700">Verificación de identidad · Más confianza y visibilidad</p></div><button onclick="closeVerificationModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6">
   <div class="p-6 mb-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20 text-center">
     <p id="verification-price-label" class="text-sm text-zinc-700 mb-2">Suscripción mensual</p>
-    <p class="text-5xl font-black mb-1"><span id="verification-price">8,99 €</span><span id="verification-price-unit" class="text-xl font-normal text-zinc-600">/mes</span></p>
+    <p class="text-5xl font-black mb-1"><span id="verification-price">8,99 €</span><span id="verification-price-unit" class="text-xl font-normal text-zinc-600"></span></p>
     <p id="verification-price-note" class="text-xs text-zinc-600 mt-2 uppercase tracking-[0.14em] font-bold">Cancela cuando quieras</p>
   </div>
   <div class="space-y-4 mb-6">
@@ -2385,7 +2385,7 @@ function calcSaving(){
   const dynText = document.getElementById('calc-dynamic-text');
   if(dynText){
     dynText.style.display = 'block';
-    dynText.innerHTML = '¿Prefieres pagar <strong style="color:#e84c1e;">' + commission.toLocaleString('es-ES',{maximumFractionDigits:0}) + '€</strong> a un intermediario o mantener el control por solo <strong style="color:var(--accent);">8,99€/mes</strong>?';
+    dynText.innerHTML = '¿Prefieres pagar <strong style="color:#e84c1e;">' + commission.toLocaleString('es-ES',{maximumFractionDigits:0}) + '€</strong> a un intermediario o mantener el control por solo <strong style="color:var(--accent);">8,99€ pago único</strong>?';
   }
 }
 
@@ -4569,7 +4569,7 @@ async function sendAIMessage(){
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€/mes, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, sin renovaciones automáticas). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
+        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, 0€), Verificado (8,99€ pago único, badge de propietario real) y Verificado + Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, sin renovaciones automáticas). Además, los contratos legales se generan en la propia plataforma: contrato de alquiler 19,99€ y contrato de arras 49,99€, en ambos casos pago único por contrato. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
         messages: aiHistory
       })
     });
@@ -4684,7 +4684,7 @@ async function sendAIMessage(){
             <i class="fa-solid fa-shield-check text-[var(--accent)] text-sm"></i>
             <div>
               <div class="text-sm font-black text-[var(--accent)]">¿Quieres activar la verificación? <span class="text-[10px] font-bold text-[var(--accent)]/60">(recomendado)</span></div>
-              <div class="text-[10px] text-zinc-600 font-semibold">Genera más confianza · 8,99€/mes</div>
+              <div class="text-[10px] text-zinc-600 font-semibold">Genera más confianza · desde 8,99€ pago único</div>
             </div>
           </div>
           <i id="accordion-arrow" class="fa-solid fa-chevron-down text-[var(--accent)] text-xs transition-transform"></i>
@@ -4697,7 +4697,7 @@ async function sendAIMessage(){
           </div>
           <label class="flex items-center gap-3 cursor-pointer bg-white border border-[var(--accent)]/20 px-3 py-2.5">
             <input type="checkbox" id="activate-verification-check" onclick="showVerificationNote()">
-            <span class="text-xs font-bold text-zinc-600">Activar verificación al registrarme · 8,99€/mes</span>
+            <span class="text-xs font-bold text-zinc-600">Activar verificación al registrarme · desde 8,99€ pago único</span>
           </label>
           <p id="verification-note" style="display:none;" class="text-xs text-[var(--accent)] font-semibold mt-2 flex items-center gap-1.5">
             <i class="fa-solid fa-circle-info text-xs"></i>La verificación se activará una vez completes tu registro.
