@@ -4804,11 +4804,15 @@ function openContractEditor(type){
 }
 
 function executeContractDelivery(destino, tipoContrato){
-  const prefijo   = tipoContrato === 'alquiler' ? 'alq' : 'arr';
-  const comprador = (document.getElementById(prefijo+'-comprador')?.value || '').trim();
-  const vendedor  = (document.getElementById(prefijo+'-vendedor')?.value  || '').trim();
+  const esAlquiler = tipoContrato === 'alquiler';
+  const prefijo     = esAlquiler ? 'alq' : 'arr';
+  const idParteA    = esAlquiler ? prefijo+'-propietario' : prefijo+'-vendedor';
+  const idParteB    = esAlquiler ? prefijo+'-inquilino'   : prefijo+'-comprador';
 
-  if(!comprador || !vendedor){
+  const parteA = (document.getElementById(idParteA)?.value || '').trim(); // Propietario / Vendedor
+  const parteB = (document.getElementById(idParteB)?.value || '').trim(); // Inquilino / Comprador
+
+  if(!parteA || !parteB){
     alert("Error: Debes rellenar los nombres de ambas partes firmantes en el documento.");
     return;
   }
@@ -4816,9 +4820,9 @@ function executeContractDelivery(destino, tipoContrato){
   document.getElementById('modal-contrato-'+tipoContrato).classList.add('hidden');
 
   if(destino === 'chat'){
-    alert('Borrador enviado al Chat P2P con ' + comprador + ' para su revisión.');
+    alert('Borrador enviado al Chat P2P con ' + parteB + ' para su revisión.');
   } else {
-    alert('🚀 Enlaces de Signaturit enviados a los correos de ' + vendedor + ' y ' + comprador + ' para la firma legal mediante verificación SMS.');
+    alert('🚀 Enlaces de Signaturit enviados a los correos de ' + parteA + ' y ' + parteB + ' para la firma legal mediante verificación SMS.');
   }
 }
 
@@ -4856,7 +4860,7 @@ function toggleVerifiedQuick(tab, type){
 // ─────────────────────────────────────────────────────────────────────
 function contractFieldIds(tipo){
   return tipo === 'alquiler'
-    ? ['alq-vendedor','alq-dni-vendedor','alq-comprador','alq-dni-comprador','alq-direccion','alq-duracion','alq-fecha','alq-precio','alq-fianza','alq-especiales']
+    ? ['alq-propietario','alq-dni-propietario','alq-inquilino','alq-dni-inquilino','alq-direccion','alq-duracion','alq-fecha','alq-precio','alq-fianza','alq-especiales']
     : ['arr-vendedor','arr-dni-vendedor','arr-comprador','arr-dni-comprador','arr-direccion','arr-catastro','arr-precio','arr-arras','arr-fecha-notario'];
 }
 function collectContractFields(tipo){
@@ -5193,10 +5197,10 @@ function generateAlquilerPDF(){
   let y=0;
 
   // Leer campos
-  const v   = document.getElementById('alq-vendedor')?.value    || '___________________________';
-  const dv  = document.getElementById('alq-dni-vendedor')?.value|| '_______________';
-  const c   = document.getElementById('alq-comprador')?.value   || '___________________________';
-  const dc  = document.getElementById('alq-dni-comprador')?.value||'_______________';
+  const propietario    = document.getElementById('alq-propietario')?.value    || '___________________________';
+  const dniPropietario = document.getElementById('alq-dni-propietario')?.value|| '_______________';
+  const inquilino       = document.getElementById('alq-inquilino')?.value      || '___________________________';
+  const dniInquilino    = document.getElementById('alq-dni-inquilino')?.value  || '_______________';
   const dir = document.getElementById('alq-direccion')?.value   || '___________________________';
   const dur = document.getElementById('alq-duracion')?.value    || '_______________';
   const fec = document.getElementById('alq-fecha')?.value       || '_______________';
@@ -5257,7 +5261,7 @@ function generateAlquilerPDF(){
   }
 
   sec('PRIMERO.- REUNIDOS:',
-    `De una parte, como ARRENDADOR: ${v}, con DNI/NIE: ${dv}.\n\nDe otra parte, como ARRENDATARIO: ${c}, con DNI/NIE: ${dc}.\n\nAmbas partes se reconocen mutuamente capacidad legal suficiente para el otorgamiento del presente contrato.`);
+    `De una parte, como ARRENDADOR: ${propietario}, con DNI/NIE: ${dniPropietario}.\n\nDe otra parte, como ARRENDATARIO: ${inquilino}, con DNI/NIE: ${dniInquilino}.\n\nAmbas partes se reconocen mutuamente capacidad legal suficiente para el otorgamiento del presente contrato.`);
 
   sec('SEGUNDO.- OBJETO:',
     `El Arrendador cede en arrendamiento el inmueble destinado exclusivamente a vivienda permanente, sito en la provincia de Baleares, con dirección: ${dir}.`);
@@ -5288,8 +5292,8 @@ function generateAlquilerPDF(){
 
   const bW=(cW-10)/2;
   [
-    {label:'EL ARRENDADOR',dni:dv,x:mg},
-    {label:'EL ARRENDATARIO',dni:dc,x:mg+bW+10}
+    {label:'EL ARRENDADOR',dni:dniPropietario,x:mg},
+    {label:'EL ARRENDATARIO',dni:dniInquilino,x:mg+bW+10}
   ].forEach(p=>{
     doc.setDrawColor(200,200,200);
     doc.setLineWidth(0.3);
@@ -5755,7 +5759,7 @@ function closeLegal() {
             <p class="font-sans text-[9px] mt-3 text-zinc-400 font-bold uppercase tracking-widest text-[#10b981]">REGULADO BAJO LA LEY DE ARRENDAMIENTOS URBANOS (LAU)</p>
           </div>
           <div class="space-y-6 text-[13px] text-justify">
-            <p><strong>PRIMERO.- REUNIDOS:</strong> De una parte como ARRENDADOR, <input type="text" id="alq-vendedor" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-64 outline-none font-sans text-xs focus:border-[#10b981]"> con DNI/NIE <input type="text" id="alq-dni-vendedor" placeholder="DNI Propietario" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-32 outline-none font-sans text-xs focus:border-[#10b981]">. Y de otra parte como ARRENDATARIO, <input type="text" id="alq-comprador" placeholder="Nombre completo Inquilino" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-64 outline-none font-sans text-xs focus:border-[#10b981]"> con DNI/NIE <input type="text" id="alq-dni-comprador" placeholder="DNI Inquilino" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-32 outline-none font-sans text-xs focus:border-[#10b981]"></p>
+            <p><strong>PRIMERO.- REUNIDOS:</strong> De una parte como ARRENDADOR, <input type="text" id="alq-propietario" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-64 outline-none font-sans text-xs focus:border-[#10b981]"> con DNI/NIE <input type="text" id="alq-dni-propietario" placeholder="DNI Propietario" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-32 outline-none font-sans text-xs focus:border-[#10b981]">. Y de otra parte como ARRENDATARIO, <input type="text" id="alq-inquilino" placeholder="Nombre completo Inquilino" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-64 outline-none font-sans text-xs focus:border-[#10b981]"> con DNI/NIE <input type="text" id="alq-dni-inquilino" placeholder="DNI Inquilino" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-32 outline-none font-sans text-xs focus:border-[#10b981]"></p>
             <p><strong>SEGUNDO.- OBJETO:</strong> El Arrendador cede en alquiler el inmueble destinado exclusivamente a vivienda permanente, ubicado en las Islas Baleares, con dirección completa:</p>
             <p><input type="text" id="alq-direccion" placeholder="Dirección completa del inmueble (calle, número, municipio, isla)" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-full outline-none font-sans text-xs focus:border-[#10b981]"></p>
             <p><strong>TERCERO.- DURACIÓN DEL CONTRATO:</strong> Las partes acuerdan fijar un plazo de duración para el arrendamiento de <input type="text" id="alq-duracion" placeholder="Ej: 1 año / 5 años" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-44 outline-none font-sans text-xs focus:border-[#10b981]">, comenzando su vigencia el día fijado para el <input type="text" id="alq-fecha" placeholder="DD/MM/AAAA" class="border-b border-zinc-300 bg-zinc-50/50 px-2 w-32 outline-none font-sans text-xs focus:border-[#10b981]">.</p>
