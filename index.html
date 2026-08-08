@@ -43,10 +43,30 @@
       return data;
     }
 
+    // Helper: crea el perfil si no existe (rescate automático, cubre Google OAuth y cualquier caso donde falte)
+    async function ensureUserProfile(user){
+      const existing = await getUserProfile(user.id);
+      if(existing) return existing;
+
+      const meta = user.user_metadata || {};
+      const nombre = meta.nombre || meta.full_name || meta.name || (user.email ? user.email.split('@')[0] : 'Usuario');
+      const { data, error } = await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        nombre,
+        username: meta.username || null,
+        role: meta.role || 'comprador',
+        plan: 'basico'
+      }).select().single();
+
+      if(error){ console.error('No se pudo crear el perfil automáticamente:', error); return null; }
+      return data;
+    }
+
     // Escuchar cambios de sesión
     supabase.auth.onAuthStateChange(async (event, session) => {
       if(event === 'SIGNED_IN' && session?.user){
-        const profile = await getUserProfile(session.user.id);
+        const profile = await ensureUserProfile(session.user);
         if(profile){
           SinKomiAuth.loginFromSupabase(profile);
           syncUI();
