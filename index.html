@@ -2016,7 +2016,7 @@
 
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
       <button onclick="openPublishModal()" class="publish-gate px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar inmueble gratis</button>
-      <button onclick="openVerificationModal()" class="px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50">Activar verificación</button>
+      <button onclick="openVerificationEntryPoint('verificado')" class="px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50">Activar verificación</button>
       <button onclick="openContratosTab()" class="px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50">Ver contratos</button>
     </div>
   </div>
@@ -2220,7 +2220,7 @@
 </div>
 <div class="panel p-5"><div class="section-label mb-3">Contacto del propietario</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">Nombre</label><input id="publish-owner-name" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Nombre"></div><div><label class="text-sm font-medium mb-2 block">Teléfono</label><input id="publish-owner-phone" type="tel" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="600 000 000"></div><div><label class="text-sm font-medium mb-2 block">Email</label><input id="publish-owner-email" type="email" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="email@..."></div><div><label class="text-sm font-medium mb-2 block">Horario contacto</label><input id="publish-contact-hours" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Tardes / mañanas"></div></div></div>
 <div><label class="text-sm font-medium mb-2 block">Descripción</label><textarea id="publish-description" class="w-full border border-black/8 px-4 py-3 min-h-[140px] bg-white" placeholder="Describe tu propiedad con detalle..."></textarea></div>
-<div class="p-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20"><label class="flex items-start gap-3 cursor-pointer"><input id="publish-verified" type="checkbox" class="mt-1"><div><div class="font-medium">Añadir perfil verificado — 8,99 € pago único</div><p class="text-sm text-zinc-600">Identidad comprobada. Aumenta la confianza y la visibilidad.</p></div></label></div>
+<div class="p-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20"><div class="flex items-start gap-3"><i class="fa-solid fa-shield-check mt-1" style="color:var(--accent);"></i><div><div class="font-medium">¿Quieres el sello "Verificado"?</div><p class="text-sm text-zinc-600">Publica primero. Después, desde "Mis inmuebles publicados" en tu cuenta, podrás verificar este inmueble por 8,99 € subiendo tu DNI, la Nota Simple y una selfie.</p></div></div></div>
 <div class="p-5 border border-black/8 bg-white"><label class="flex items-start gap-3 cursor-pointer"><input id="declare-particular" type="checkbox" class="mt-1"><div><div class="font-medium">Declaro que publico como particular o autorizado por el propietario. No soy intermediario.</div><p class="text-sm text-zinc-700">SINKOMI prioriza anuncios directos entre personas.</p></div></label></div>
 <div class="flex items-center justify-between gap-4 flex-wrap"><div><p class="text-sm text-zinc-700">Coste estimado</p><p id="publish-total" class="text-2xl font-semibold">0 €</p></div><button onclick="submitPublishForm()" class="px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y activar</button></div>
 </div></div></div>
@@ -2257,6 +2257,22 @@
   </div>
   <button id="verification-modal-cta" onclick="activateVerification()" class="w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Empezar verificación · 8,99€</button>
 </div></div></div>
+
+<!-- Subida de documentos, justo después de pagar la verificación de un inmueble -->
+<div id="verification-docs-modal" class="hidden fixed inset-0 bg-black/70 z-[111] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-lg overflow-hidden shadow-2xl">
+    <div class="px-6 py-5 border-b border-black/6 flex items-center justify-between" style="background:#0d1a14;">
+      <div>
+        <h3 class="text-xl font-black text-white tracking-tight">¡Pago recibido! Un último paso</h3>
+        <p class="text-xs text-white/60 mt-1">Sube tus documentos para activar el badge de verificado</p>
+      </div>
+      <button onclick="closeVerificationDocsModal()" class="text-2xl text-white/50 hover:text-white">×</button>
+    </div>
+    <div class="p-6">
+      <div id="verification-docs-panel"><div class="text-xs text-zinc-400">Cargando…</div></div>
+    </div>
+  </div>
+</div>
 
 <div id="tool-modal" class="hidden fixed inset-0 bg-black/70 z-[114] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-4xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="tool-title" class="text-2xl font-semibold tracking-tight">Herramienta</h3><p id="tool-subtitle" class="text-sm text-zinc-700">Simulación rápida</p></div><button onclick="closeToolModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6"><div id="tool-content" class="grid md:grid-cols-2 gap-4"></div><div class="mt-6"><button onclick="simulateTool()" class="w-full py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Calcular</button></div></div></div></div>
 
@@ -2808,7 +2824,7 @@ function buildPropertyCardEl(prop){
           <button onclick="openChat('${prop.id}')" class="prop-card-cta" title="Hablar con el propietario"><i class="fa-solid fa-comment-dots"></i> Hablar con el dueño</button>
           <button onclick="openPropertyModal('${prop.id}')" class="prop-card-see"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;"></i> Ver inmueble</button>
         </div>
-        ${tier===1?`<div style="margin-top:.6rem;padding:.5rem .6rem;background:rgba(0,0,0,0.03);border:1px dashed rgba(0,0,0,0.1);font-size:9.5px;color:#aaa;font-weight:700;text-align:center;">¿Eres el propietario? <button onclick="openVerificationModal()" style="color:var(--accent);font-weight:900;background:none;border:none;cursor:pointer;text-decoration:underline;">Verifica tu inmueble</button></div>`:''}
+        ${tier===1?`<div style="margin-top:.6rem;padding:.5rem .6rem;background:rgba(0,0,0,0.03);border:1px dashed rgba(0,0,0,0.1);font-size:9.5px;color:#aaa;font-weight:700;text-align:center;">¿Eres el propietario? <button onclick="startPropertyVerification('${prop.id}')" style="color:var(--accent);font-weight:900;background:none;border:none;cursor:pointer;text-decoration:underline;">Verifica tu inmueble</button></div>`:''}
       </div>`;
     return card;
 }
@@ -3881,6 +3897,7 @@ function matchesAdvancedFilters(prop, tab){
 var publishedPhotos = [];
 var editingPropertyId = null; // null = publicando nuevo · uuid = editando anuncio existente
 var editingPropertyOriginalImages = []; // imágenes ya guardadas del anuncio que se está editando
+var editingPropertyOriginalVerified = false; // si el anuncio que se edita ya tenía el sello Verificado aprobado
 var publishedVideo  = null;
 var publishedVideoUploading = false;
 
@@ -4200,21 +4217,14 @@ function openUserPanel(){
   if(role==='propietario'){
     const userPlan = user.plan || 'basico';
     const planBadge = userPlan === 'premium'
-      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-fire"></i> Verificado + Destacado</span>`
-      : userPlan === 'verificado'
-      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-shield-check"></i> Propietario verificado</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.04);color:#aaa;border:1px solid rgba(0,0,0,0.08);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-circle-question"></i> Sin verificar</span>`;
-
-    const verifyBtn = (userPlan === 'basico')
-      ? `<button onclick="closeUserPanel();openPlanSelector();" class="w-full py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em] mt-3"><i class="fa-solid fa-shield-check mr-1"></i> Verificar mi perfil</button>`
-      : ``;
+      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-fire"></i> Destacado activo</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.04);color:#aaa;border:1px solid rgba(0,0,0,0.08);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-circle-question"></i> Sin destacar</span>`;
 
     roleSection.innerHTML = `
       <div class="panel p-5">
         <div class="section-label mb-3" style="color:var(--accent);">Mi plan</div>
         <div class="mb-3">${planBadge}</div>
-        ${verifyBtn}
-        ${userPlan === 'basico' ? `<p class="text-xs text-zinc-400 mt-2">Verifica tu perfil para que los compradores confíen en ti y aparezcas en el filtro de "Solo verificados".</p>` : ''}
+        <p class="text-xs text-zinc-400 mt-2">El sello "Verificado" (DNI + Nota Simple) se activa por cada inmueble, desde "Mis inmuebles publicados" aquí abajo.</p>
       </div>
       <div class="panel p-5 mt-3">
         <div class="section-label mb-3" style="color:var(--accent);">Mis inmuebles publicados</div>
@@ -4296,7 +4306,7 @@ function openPublishModal(){
   }
   // Propietario publicando nuevo → modo creación, no edición
   editingPropertyId = null;
-  editingPropertyOriginalImages = [];
+  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false;
   publishedPhotos = [];
   publishedVideo = null;
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
@@ -4309,7 +4319,7 @@ function openPublishModal(){
 function closePublishModal(){
   document.getElementById('publish-modal').classList.add('hidden');
   editingPropertyId = null;
-  editingPropertyOriginalImages = [];
+  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false;
 }
 function openPlanSelector(){
   if(!SinKomiAuth.isLoggedIn()){ openRegisterModal('propietario'); return; }
@@ -4331,7 +4341,7 @@ function openPlanSelector(){
         <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;">
 
           <!-- Verificado -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationModal('verificado');"
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('verificado');"
             style="border:2px solid #00a878;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
             onmouseover="this.style.background='rgba(0,168,120,0.04)'" onmouseout="this.style.background='white'">
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -4345,7 +4355,7 @@ function openPlanSelector(){
           </div>
 
           <!-- Destacado 7 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=7;openVerificationModal('destacado');"
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',7);"
             style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
             onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -4360,7 +4370,7 @@ function openPlanSelector(){
           </div>
 
           <!-- Destacado 15 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=15;openVerificationModal('destacado');"
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',15);"
             style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
             onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -4375,7 +4385,7 @@ function openPlanSelector(){
           </div>
 
           <!-- Destacado 30 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';selectedDestacadoDays=30;openVerificationModal('destacado');"
+          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',30);"
             style="border:2px solid #e8a020;background:rgba(232,160,32,0.03);padding:1rem 1.25rem;cursor:pointer;transition:background .15s;position:relative;"
             onmouseover="this.style.background='rgba(232,160,32,0.07)'" onmouseout="this.style.background='rgba(232,160,32,0.03)'">
             <div style="position:absolute;top:-1px;right:-.5rem;background:#e8a020;color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .5rem;">Más popular</div>
@@ -4397,6 +4407,84 @@ function openPlanSelector(){
   } else {
     modal.style.display = 'flex';
   }
+}
+
+// Arranca la verificación de un inmueble concreto: recuerda cuál es, y abre el pago.
+let verifyingPropertyId = null;
+let pendingVerificationAfterPublish = null; // {plan, days} — se usa si aún no tenía ningún inmueble publicado
+function startPropertyVerification(propertyId, plan, days){
+  verifyingPropertyId = propertyId;
+  localStorage.setItem('sk_verifying_property_id', propertyId);
+  if(plan === 'destacado') selectedDestacadoDays = days || 30;
+  closeUserPanel();
+  closeVerificationPropertyPicker();
+  openVerificationModal(plan || 'verificado');
+}
+
+// Punto de entrada para los botones "Activar verificación" / "Verificado + Destacado"
+// que NO están ligados a ningún inmueble concreto (la sección de precios, por ejemplo).
+// Decide qué hacer según cuántos inmuebles tenga ya publicados esta persona.
+async function openVerificationEntryPoint(plan, days){
+  if(!SinKomiAuth.isLoggedIn()){ openRegisterModal('propietario'); return; }
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+
+  let myProps = [];
+  try{
+    const { data } = await supabase.from('properties').select('id,title,municipality,verified').eq('owner_id', user.supabase_id).order('created_at',{ascending:false});
+    myProps = data || [];
+  }catch(e){ console.error('Error consultando tus inmuebles:', e); }
+
+  const unverified = myProps.filter(p => !p.verified);
+
+  if(!myProps.length){
+    // Todavía no ha publicado nada: primero publica, y en cuanto lo guarde seguimos con el pago automáticamente.
+    pendingVerificationAfterPublish = { plan, days };
+    alert('Primero publica tu inmueble. En cuanto lo guardes, seguimos directos con la verificación.');
+    openPublishModal();
+    return;
+  }
+  if(unverified.length === 1){
+    startPropertyVerification(unverified[0].id, plan, days);
+    return;
+  }
+  if(unverified.length === 0){
+    alert('Todos tus inmuebles ya están verificados o pendientes de revisión.');
+    openUserPanel();
+    return;
+  }
+  openVerificationPropertyPicker(unverified, plan, days);
+}
+
+// Pequeño selector cuando la persona tiene varios inmuebles sin verificar: elige cuál.
+function openVerificationPropertyPicker(props, plan, days){
+  let modal = document.getElementById('verification-picker-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'verification-picker-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:120;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:white;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,0.4);">
+      <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:900;font-size:14px;">¿Qué inmueble quieres verificar?</div>
+        <button onclick="closeVerificationPropertyPicker()" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#999;">×</button>
+      </div>
+      <div style="padding:.75rem;">
+        ${props.map(p => `
+          <button onclick="startPropertyVerification('${p.id}','${plan||'verificado'}',${days||'null'})" style="width:100%;text-align:left;padding:.85rem 1rem;border:1px solid rgba(0,0,0,0.08);background:white;margin-bottom:.5rem;cursor:pointer;">
+            <div style="font-weight:800;font-size:13px;">${escapeHtml(p.title||'Sin título')}</div>
+            <div style="font-size:11px;color:#888;margin-top:.15rem;">${escapeHtml(p.municipality||'')}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+  modal.style.display = 'flex';
+}
+function closeVerificationPropertyPicker(){
+  const modal = document.getElementById('verification-picker-modal');
+  if(modal) modal.style.display = 'none';
 }
 
 function openVerificationModal(plan){
@@ -4538,7 +4626,7 @@ document.addEventListener('input', function(e){
 document.addEventListener('change', function(e){
   if(e.target?.id === 'alert-verified-only') updateAlertSummary();
 });
-function updatePublishTotal(){document.getElementById('publish-total').textContent=document.getElementById('publish-verified')?.checked?'8,99 €':'0 €';}
+function updatePublishTotal(){const el=document.getElementById('publish-total');if(el)el.textContent='0 €';}
 function getCheckedExtras(){const extras=[];[['extra-ascensor','Ascensor'],['extra-terraza','Terraza'],['extra-balcon','Balcón'],['extra-garaje','Garaje'],['extra-trastero','Trastero'],['extra-piscina','Piscina'],['extra-jardin','Jardín'],['extra-aire','Aire acondicionado']].forEach(([id,label])=>{if(document.getElementById(id)?.checked)extras.push(label);});return extras.length?extras.join(' · '):'Consultar';}
 // Formatea en vivo el campo de precio con puntos de miles (estilo español), p.ej. 400.000
 function formatPriceInput(el){
@@ -4586,7 +4674,9 @@ async function submitPublishForm(){
   const validPhotos = publishedPhotos.filter(p => !p.error).map(p => p.url);
   const images = validPhotos.length > 0 ? validPhotos : (editingPropertyOriginalImages.length > 0 ? [...editingPropertyOriginalImages] : [propertyBlueprints[0].img]);
   const img = images[0];
-  const verified=document.getElementById('publish-verified').checked;
+  // El sello "Verificado" ya NO se autodeclara aquí: solo lo activa el admin al aprobar los
+  // documentos (DNI + Nota Simple + selfie). Al editar, se conserva el estado que ya tenía.
+  const verified = editingPropertyId ? !!editingPropertyOriginalVerified : false;
   const description=escapeHtml(document.getElementById('publish-description').value.trim())||'Propiedad publicada recientemente. Contacta con el propietario/a para más detalles.';
   const declareParticular=document.getElementById('declare-particular').checked;
   if(!declareParticular){alert('Debes declarar que publicas como particular o autorizado por el propietario.');return;}
@@ -4624,17 +4714,29 @@ async function submitPublishForm(){
   if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
 
   try{
-    let error;
+    let error, insertedRow;
     if(editingPropertyId){
       ({ error } = await supabase.from('properties').update(payload).eq('id', editingPropertyId).eq('owner_id', user.supabase_id));
     } else {
       payload.active = true;
-      ({ error } = await supabase.from('properties').insert(payload));
+      ({ data: insertedRow, error } = await supabase.from('properties').insert(payload).select('id').single());
     }
     if(error){
       console.error('Error guardando en Supabase:', error);
       alert('No se ha podido guardar el anuncio.\n\nMotivo exacto:\n' + (error.message || 'Sin mensaje') + '\n\nCódigo: ' + (error.code || 'N/D') + '\n\nDetalles: ' + (error.details || 'N/D') + '\n\nPista: ' + (error.hint || 'N/D'));
       if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
+      return;
+    }
+    // Si venían de un botón de "Verificar" sin tener aún ningún inmueble publicado,
+    // seguimos automáticamente con el pago de verificación de éste que acaban de crear.
+    if(!editingPropertyId && insertedRow && pendingVerificationAfterPublish){
+      const pending = pendingVerificationAfterPublish;
+      pendingVerificationAfterPublish = null;
+      publishedPhotos=[];publishedVideo=null;editingPropertyId=null;editingPropertyOriginalImages=[];editingPropertyOriginalVerified=false;
+      closePublishModal();
+      loadMyListings();
+      loadRealProperties();
+      startPropertyVerification(insertedRow.id, pending.plan, pending.days);
       return;
     }
   } catch(e){
@@ -4645,7 +4747,7 @@ async function submitPublishForm(){
   }
 
   // Recargar desde Supabase (fuente única de verdad) para que aparezca en el buscador y el mapa reales.
-  publishedPhotos=[];publishedVideo=null;editingPropertyId=null;editingPropertyOriginalImages=[];
+  publishedPhotos=[];publishedVideo=null;editingPropertyId=null;editingPropertyOriginalImages=[];editingPropertyOriginalVerified=false;
   closePublishModal();
   if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
   loadMyListings();
@@ -4668,6 +4770,9 @@ async function activateVerification(){
   const originalCtaText = cta ? cta.textContent : '';
   if(cta){ cta.disabled = true; cta.textContent = 'Redirigiendo a pago seguro…'; }
 
+  const successUrl = window.location.origin + window.location.pathname + '?pago=exitoso'
+    + (verifyingPropertyId ? '&verificacion_inmueble=1' : '');
+
   try {
     const response = await fetch(SINKOMI_CHECKOUT_ENDPOINT, {
       method: 'POST',
@@ -4675,7 +4780,7 @@ async function activateVerification(){
       body: JSON.stringify({
         plan,
         userEmail: (user && user.email) ? user.email : undefined,
-        successUrl: window.location.origin + window.location.pathname + '?pago=exitoso',
+        successUrl,
         cancelUrl: window.location.href
       })
     });
@@ -4691,7 +4796,158 @@ async function activateVerification(){
     if(cta){ cta.disabled = false; cta.textContent = originalCtaText; }
   }
 }
-document.addEventListener('change',e=>{if(e.target.id==='publish-verified')updatePublishTotal();});
+
+// ═══════════════════════════════════════════════════════════════
+// VERIFICACIÓN DE IDENTIDAD — DNI + Nota Simple + selfie (Supabase Storage privado)
+// Ligada a UN inmueble concreto (verifyingPropertyId), no a la cuenta en general.
+// ═══════════════════════════════════════════════════════════════
+let verificationUpload = { dni_url:null, nota_simple_url:null, selfie_url:null };
+let verificationUploading = { dni:false, nota_simple:false, selfie:false };
+
+function openVerificationDocsModal(propertyId){
+  verifyingPropertyId = propertyId;
+  verificationUpload = { dni_url:null, nota_simple_url:null, selfie_url:null };
+  verificationUploading = { dni:false, nota_simple:false, selfie:false };
+  document.getElementById('verification-docs-modal').classList.remove('hidden');
+  loadVerificationStatus();
+}
+function closeVerificationDocsModal(){
+  document.getElementById('verification-docs-modal').classList.add('hidden');
+}
+
+// Carga el estado actual de verificación de ESTE inmueble y pinta el panel.
+async function loadVerificationStatus(){
+  const container = document.getElementById('verification-docs-panel');
+  if(!container) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id || !verifyingPropertyId) return;
+
+  let existing = null;
+  try{
+    const { data, error } = await supabase.from('verification_documents').select('*').eq('user_id', user.supabase_id).eq('property_id', verifyingPropertyId).order('submitted_at', {ascending:false}).limit(1).maybeSingle();
+    if(!error) existing = data;
+  }catch(e){ console.error('Error cargando verificación:', e); }
+
+  if(existing && existing.status !== 'rechazado'){
+    verificationUpload.dni_url = existing.dni_url;
+    verificationUpload.nota_simple_url = existing.nota_simple_url;
+    verificationUpload.selfie_url = existing.selfie_url;
+  }
+
+  renderVerificationPanel(existing);
+}
+
+function renderVerificationPanel(existing){
+  const container = document.getElementById('verification-docs-panel');
+  if(!container) return;
+
+  const status = existing?.status || null;
+  let statusBanner = '';
+  if(status === 'pendiente'){
+    statusBanner = `<div style="background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.3);color:#b9791a;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:1rem;">⏳ Pendiente de revisión. Te avisaremos en cuanto la comprobemos.</div>`;
+  } else if(status === 'aprobado'){
+    statusBanner = `<div style="background:rgba(0,168,120,0.1);border:1px solid rgba(0,168,120,0.3);color:#00a878;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:1rem;">✓ Este inmueble ya está verificado. ¡Gracias!</div>`;
+  } else if(status === 'rechazado'){
+    statusBanner = `<div style="background:rgba(200,40,40,0.08);border:1px solid rgba(200,40,40,0.3);color:#c0392b;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:1rem;">✕ Rechazado${existing?.admin_note ? ': '+escapeHtml(existing.admin_note) : ''}. Vuelve a subir los documentos correctos.</div>`;
+  }
+
+  container.innerHTML = `
+    ${statusBanner}
+    <p class="text-xs text-zinc-500 mb-3">Sube tu DNI, la Nota Simple de este inmueble y una selfie sujetando tu DNI. Solo tú y el equipo de SINKOMI podéis ver estos documentos.</p>
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      ${verificationSlotHtml('dni', 'DNI', verificationUpload.dni_url)}
+      ${verificationSlotHtml('nota_simple', 'Nota Simple', verificationUpload.nota_simple_url)}
+      ${verificationSlotHtml('selfie', 'Selfie con DNI', verificationUpload.selfie_url)}
+    </div>
+    ${status !== 'aprobado' ? `<button id="verification-submit-btn" onclick="submitVerificationDocuments()" class="w-full py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">Enviar para revisión</button>` : ''}
+  `;
+}
+
+function verificationSlotHtml(key, label, url){
+  const uploading = verificationUploading[key];
+  return `
+    <div style="position:relative;">
+      <label style="display:block;aspect-ratio:1;border:1.5px dashed rgba(0,0,0,0.15);cursor:pointer;overflow:hidden;position:relative;background:${url?'#fff':'#fafafa'};">
+        <input type="file" accept="image/*,.pdf" style="display:none;" onchange="handleVerificationUpload(this,'${key}')">
+        ${url ? `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:20px;">+</div>`}
+        ${uploading ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);"><div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>` : ''}
+        ${url && !uploading ? `<div style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--accent);color:white;border-radius:999px;font-size:9px;display:flex;align-items:center;justify-content:center;">✓</div>` : ''}
+      </label>
+      <div style="font-size:9px;text-align:center;color:#888;font-weight:700;margin-top:.3rem;text-transform:uppercase;letter-spacing:.04em;">${label}</div>
+    </div>`;
+}
+
+async function handleVerificationUpload(input, key){
+  const file = input.files[0];
+  if(!file) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ alert('Debes iniciar sesión.'); return; }
+  verificationUploading[key] = true;
+  renderVerificationPanel(null);
+  try{
+    const ext = (file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const path = `${user.supabase_id}/${verifyingPropertyId}-${key}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('verification-docs').upload(path, file, { cacheControl:'3600', upsert:false });
+    if(uploadError) throw uploadError;
+    const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(path, 60*60*24*365);
+    verificationUpload[key+'_url'] = signed?.signedUrl || null;
+  }catch(e){
+    console.error('Error subiendo documento:', e);
+    alert('No se ha podido subir el documento. Inténtalo de nuevo.');
+  }
+  verificationUploading[key] = false;
+  renderVerificationPanel(null);
+  input.value = '';
+}
+
+async function submitVerificationDocuments(){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id || !verifyingPropertyId){ alert('Debes iniciar sesión.'); return; }
+  if(!(await ensureValidSession(user))) return;
+  if(!verificationUpload.dni_url || !verificationUpload.nota_simple_url || !verificationUpload.selfie_url){
+    alert('Sube los tres documentos (DNI, Nota Simple y selfie) antes de enviarlos.');
+    return;
+  }
+  const btn = document.getElementById('verification-submit-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Enviando…'; }
+  try{
+    const { error } = await supabase.from('verification_documents').insert({
+      user_id: user.supabase_id,
+      property_id: verifyingPropertyId,
+      dni_url: verificationUpload.dni_url,
+      nota_simple_url: verificationUpload.nota_simple_url,
+      selfie_url: verificationUpload.selfie_url,
+      status: 'pendiente'
+    });
+    if(error) throw error;
+    localStorage.removeItem('sk_verifying_property_id');
+    alert('Documentos enviados correctamente. Los revisaremos en 24-48h.');
+    loadVerificationStatus();
+    loadMyListings();
+  }catch(e){
+    console.error('Error enviando documentos de verificación:', e);
+    alert('No se han podido enviar los documentos. Inténtalo de nuevo.');
+    if(btn){ btn.disabled = false; btn.textContent = 'Enviar para revisión'; }
+  }
+}
+
+// Detecta la vuelta desde el pago de Stripe para la verificación de un inmueble concreto,
+// y abre automáticamente el modal de subida de documentos para ese mismo inmueble.
+function checkPendingPropertyVerificationPayment(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('pago') === 'exitoso' && params.get('verificacion_inmueble')){
+    const propertyId = localStorage.getItem('sk_verifying_property_id');
+    if(propertyId){
+      openVerificationDocsModal(propertyId);
+    }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', checkPendingPropertyVerificationPayment);
+} else {
+  checkPendingPropertyVerificationPayment();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // MIS ANUNCIOS — gestión real de las propiedades del usuario en Supabase
@@ -4715,10 +4971,22 @@ async function loadMyListings(){
     container.innerHTML = `<div class="text-xs text-red-600 py-3">No se han podido cargar tus anuncios. Inténtalo de nuevo más tarde.</div>`;
     return;
   }
-  renderMyListingsList(data || []);
+
+  // Comprueba en un solo lote si alguno de estos inmuebles tiene una verificación pendiente o rechazada
+  let pendingVerificationMap = {};
+  const propertyIds = (data||[]).map(p=>p.id);
+  if(propertyIds.length){
+    try{
+      const { data: verifs } = await supabase.from('verification_documents').select('property_id,status,admin_note').in('property_id', propertyIds).order('submitted_at',{ascending:false});
+      (verifs||[]).forEach(v => { if(!pendingVerificationMap[v.property_id]) pendingVerificationMap[v.property_id] = v; });
+    }catch(e){ console.error('Error consultando verificaciones:', e); }
+  }
+
+  renderMyListingsList(data || [], pendingVerificationMap);
 }
 
-function renderMyListingsList(rows){
+function renderMyListingsList(rows, verificationMap){
+  verificationMap = verificationMap || {};
   const container = document.getElementById('my-listings-list');
   if(!container) return;
 
@@ -4741,6 +5009,19 @@ function renderMyListingsList(rows){
         <option value="Reservado" ${currentStatus==='Reservado'?'selected':''}>Reservado</option>
         <option value="Vendido" ${currentStatus==='Vendido'?'selected':''}>${soldLabel}</option>
       </select>`;
+
+    // Estado de verificación de este inmueble en concreto
+    const verif = verificationMap[p.id];
+    let verifBlock;
+    if(p.verified){
+      verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#00a878;font-size:10px;font-weight:800;"><i class="fa-solid fa-shield-check"></i> Verificado</span>`;
+    } else if(verif && verif.status === 'pendiente'){
+      verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#b9791a;font-size:10px;font-weight:800;"><i class="fa-solid fa-hourglass-half"></i> Verificación pendiente de revisión</span>`;
+    } else if(verif && verif.status === 'rechazado'){
+      verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#c0392b;font-size:10px;font-weight:800;" title="${escapeHtml(verif.admin_note||'')}"><i class="fa-solid fa-circle-exclamation"></i> Rechazada</span> <button onclick="startPropertyVerification('${p.id}')" style="font-size:9px;font-weight:800;text-transform:uppercase;color:#00a878;text-decoration:underline;background:none;border:none;cursor:pointer;">Volver a intentar</button>`;
+    } else {
+      verifBlock = `<button onclick="startPropertyVerification('${p.id}')" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#00a878;background:none;border:1px solid rgba(0,168,120,0.35);padding:.25rem .55rem;cursor:pointer;"><i class="fa-solid fa-shield-check"></i> Verificar — 8,99 €</button>`;
+    }
     return `
     <div class="flex items-center gap-3 p-3 border border-black/8 bg-white" style="opacity:${isActive?'1':'.6'};">
       <div class="w-14 h-14 shrink-0 bg-zinc-100 overflow-hidden">${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;">` : ''}</div>
@@ -4748,6 +5029,7 @@ function renderMyListingsList(rows){
         <div class="font-bold text-sm truncate">${escapeHtml(p.title||'Sin título')}</div>
         <div class="text-xs text-zinc-500 flex flex-wrap items-center gap-1 mt-1">${escapeHtml(p.location||p.municipality||'')} · ${Number(p.price||0).toLocaleString('es-ES')} € ${statusPill}</div>
         <div class="mt-2">${statusSelect}</div>
+        <div class="mt-2">${verifBlock}</div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
         <button onclick="editPropertyListing('${p.id}')" title="Editar" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -4843,7 +5125,7 @@ async function editPropertyListing(id){
   if(p.negotiable) document.getElementById('publish-negotiable').value = p.negotiable;
   document.getElementById('publish-phone').value = p.phone || '';
   document.getElementById('publish-description').value = p.description || '';
-  document.getElementById('publish-verified').checked = !!p.verified;
+  editingPropertyOriginalVerified = !!p.verified;
   document.getElementById('declare-particular').checked = true;
   togglePublishSeasonality();
   if(p.seasonality) { const sEl=document.getElementById('publish-seasonality'); if(sEl) sEl.value = p.seasonality; }
