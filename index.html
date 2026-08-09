@@ -4384,13 +4384,13 @@ async function submitPublishForm(){
     }
     if(error){
       console.error('Error guardando en Supabase:', error);
-      alert('No se ha podido guardar el anuncio. Inténtalo de nuevo en unos segundos.');
+      alert('No se ha podido guardar el anuncio.\n\nMotivo exacto:\n' + (error.message || 'Sin mensaje') + '\n\nCódigo: ' + (error.code || 'N/D') + '\n\nDetalles: ' + (error.details || 'N/D') + '\n\nPista: ' + (error.hint || 'N/D'));
       if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
       return;
     }
   } catch(e){
     console.error('Error de red guardando el anuncio:', e);
-    alert('Ha ocurrido un error de conexión. Comprueba tu internet e inténtalo de nuevo.');
+    alert('Ha ocurrido un error inesperado.\n\nMotivo exacto:\n' + (e.message || String(e)));
     if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
     return;
   }
