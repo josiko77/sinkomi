@@ -268,12 +268,16 @@
     <div class="login-eyebrow">Acceso restringido</div>
     <h1>Panel de administración</h1>
     <div class="login-field">
+      <span class="field-icon">✉</span>
+      <input type="email" id="admin-email" placeholder="Email de administrador" autocomplete="off" style="padding-right:1rem;">
+    </div>
+    <div class="login-field">
       <span class="field-icon">🔒</span>
       <input type="password" id="admin-pass" placeholder="Contraseña de acceso" autocomplete="off">
       <button type="button" class="field-toggle" onclick="toggleAdminPassVisibility()" id="admin-pass-toggle">Ver</button>
     </div>
     <button class="login-submit" onclick="checkLogin()">Entrar</button>
-    <div id="login-error">Contraseña incorrecta</div>
+    <div id="login-error">Credenciales incorrectas o sin permiso de administrador</div>
     <div class="login-footer">SINKOMI · Mallorca · Menorca · Eivissa · Formentera</div>
   </div>
 </div>
@@ -307,6 +311,7 @@
       <button class="tab active" onclick="switchTab('pagos')">Pagos</button>
       <button class="tab" onclick="switchTab('usuarios')">Usuarios</button>
       <button class="tab" onclick="switchTab('propiedades')">Propiedades</button>
+      <button class="tab" onclick="switchTab('verificaciones')">Verificaciones</button>
     </div>
 
     <!-- PAGOS -->
@@ -357,6 +362,22 @@
       </div>
     </div>
 
+    <!-- VERIFICACIONES -->
+    <div id="tab-verificaciones" class="tab-content">
+      <div class="section-header">
+        <span class="section-title">Solicitudes de verificación (DNI + Nota Simple + selfie)</span>
+        <button class="refresh-btn" onclick="loadVerifications()">↺ Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Inmueble</th><th>Solicitado</th><th>Documentos</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="verifications-body"><tr><td colspan="5"><div class="loading">Cargando...</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -364,13 +385,12 @@
 
 <script>
   // ─── CONFIGURACIÓN ───────────────────────────────────────────────
-  const ADMIN_PASSWORD = 'Sinkomi2026!'; // Cambia esto cuando quieras
   const SUPABASE_URL   = 'https://utrkwpepgviadaygjfyr.supabase.co';
   const SUPABASE_KEY   = 'sb_publishable_JLpiGWpCo6PGCpQ0Ca-HZQ_CasEBaeh';
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // ─── LOGIN ───────────────────────────────────────────────────────
+  // ─── LOGIN (Supabase Auth real + permiso is_admin) ────────────────
   function toggleAdminPassVisibility(){
     const input = document.getElementById('admin-pass');
     const btn = document.getElementById('admin-pass-toggle');
@@ -379,33 +399,59 @@
     btn.textContent = isHidden ? 'Ocultar' : 'Ver';
   }
 
-  function checkLogin(){
+  async function checkLogin(){
+    const email = document.getElementById('admin-email').value.trim();
     const pass = document.getElementById('admin-pass').value;
     const btn = document.querySelector('.login-submit');
-    if(pass === ADMIN_PASSWORD){
-      if(btn){ btn.textContent = 'Accediendo…'; }
-      document.getElementById('login-error').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('admin').style.display = 'block';
-      sessionStorage.setItem('sk_admin', '1');
-      loadAll();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
+    const errorEl = document.getElementById('login-error');
+    errorEl.style.display = 'none';
+    if(!email || !pass){ errorEl.textContent = 'Introduce tu email y contraseña.'; errorEl.style.display = 'block'; return; }
+
+    if(btn){ btn.disabled = true; btn.textContent = 'Comprobando…'; }
+
+    const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password: pass });
+    if(authError || !authData?.user){
+      errorEl.textContent = 'Email o contraseña incorrectos.';
+      errorEl.style.display = 'block';
+      if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+      return;
     }
+
+    const { data: profile, error: profileError } = await sb.from('profiles').select('is_admin').eq('id', authData.user.id).single();
+    if(profileError || !profile?.is_admin){
+      errorEl.textContent = 'Esta cuenta no tiene permiso de administrador.';
+      errorEl.style.display = 'block';
+      await sb.auth.signOut();
+      if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+      return;
+    }
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin').style.display = 'block';
+    loadAll();
   }
   document.getElementById('admin-pass').addEventListener('keydown', e => { if(e.key==='Enter') checkLogin(); });
+  document.getElementById('admin-email').addEventListener('keydown', e => { if(e.key==='Enter') checkLogin(); });
 
-  function logout(){
-    sessionStorage.removeItem('sk_admin');
+  async function logout(){
+    await sb.auth.signOut();
     location.reload();
   }
 
-  // Auto-login si ya estaba dentro
-  if(sessionStorage.getItem('sk_admin')==='1'){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('admin').style.display='block';
-    loadAll();
-  }
+  // Auto-login si ya había una sesión real de Supabase activa y con permiso de admin
+  (async function checkExistingSession(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(session?.user){
+      const { data: profile } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).single();
+      if(profile?.is_admin){
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('admin').style.display='block';
+        loadAll();
+      } else {
+        await sb.auth.signOut();
+      }
+    }
+  })();
 
   // ─── TABS ────────────────────────────────────────────────────────
   function switchTab(name){
@@ -418,7 +464,7 @@
   // ─── LOAD ALL ────────────────────────────────────────────────────
   async function loadAll(){
     document.getElementById('last-update').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
-    await Promise.all([loadPayments(), loadUsers(), loadProperties()]);
+    await Promise.all([loadPayments(), loadUsers(), loadProperties(), loadVerifications()]);
   }
 
   // ─── PAGOS ───────────────────────────────────────────────────────
@@ -490,6 +536,58 @@
         <td style="font-size:11px;color:var(--muted);">${p.featured_until ? new Date(p.featured_until).toLocaleDateString('es-ES') : '—'}</td>
         <td style="font-size:11px;color:var(--muted);">${p.verified_until ? new Date(p.verified_until).toLocaleDateString('es-ES') : '—'}</td>
       </tr>`).join('');
+  }
+
+  // ─── VERIFICACIONES (DNI + Nota Simple + selfie) ──────────────────
+  async function loadVerifications(){
+    const { data, error } = await sb.from('verification_documents').select('*, properties(title, municipality)').order('submitted_at', {ascending:false});
+    const tbody = document.getElementById('verifications-body');
+    if(error || !data){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Error cargando verificaciones</div></td></tr>`; return; }
+    if(!data.length){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Sin solicitudes aún</div></td></tr>`; return; }
+
+    const pendientes = data.filter(v=>v.status==='pendiente').length;
+    document.getElementById('stat-pending').textContent = pendientes;
+
+    tbody.innerHTML = data.map(v=>{
+      const statusBadge = v.status==='aprobado' ? '<span class="badge badge-green">Aprobado</span>'
+        : v.status==='rechazado' ? '<span class="badge badge-red">Rechazado</span>'
+        : '<span class="badge badge-orange">Pendiente</span>';
+      const docs = [
+        v.dni_url ? `<a href="${v.dni_url}" target="_blank" class="btn" style="text-decoration:none;">DNI</a>` : '',
+        v.nota_simple_url ? `<a href="${v.nota_simple_url}" target="_blank" class="btn" style="text-decoration:none;">Nota Simple</a>` : '',
+        v.selfie_url ? `<a href="${v.selfie_url}" target="_blank" class="btn" style="text-decoration:none;">Selfie</a>` : ''
+      ].filter(Boolean).join(' ');
+      const actions = v.status==='pendiente'
+        ? `<button class="btn btn-green" onclick="approveVerification('${v.id}','${v.property_id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectVerification('${v.id}')">Rechazar</button>`
+        : (v.admin_note ? `<span style="color:var(--muted);font-size:10px;">${v.admin_note}</span>` : '—');
+      return `
+      <tr>
+        <td>${v.properties?.title || 'Inmueble eliminado'}<br><span style="color:var(--muted);font-size:10px;">${v.properties?.municipality||''}</span></td>
+        <td style="font-size:11px;color:var(--muted);">${v.submitted_at ? new Date(v.submitted_at).toLocaleDateString('es-ES') : '—'}</td>
+        <td>${docs}</td>
+        <td>${statusBadge}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function approveVerification(verificationId, propertyId){
+    if(!confirm('¿Aprobar esta verificación? El inmueble pasará a mostrar el sello "Verificado".')) return;
+    const { error: e1 } = await sb.from('verification_documents').update({ status:'aprobado', reviewed_at: new Date().toISOString() }).eq('id', verificationId);
+    const { error: e2 } = await sb.from('properties').update({ verified: true }).eq('id', propertyId);
+    if(e1 || e2){ showToast('Error al aprobar'); console.error(e1||e2); return; }
+    showToast('Verificación aprobada');
+    loadVerifications();
+    loadProperties();
+  }
+
+  async function rejectVerification(verificationId){
+    const motivo = prompt('Motivo del rechazo (lo verá el propietario):');
+    if(motivo === null) return;
+    const { error } = await sb.from('verification_documents').update({ status:'rechazado', admin_note: motivo, reviewed_at: new Date().toISOString() }).eq('id', verificationId);
+    if(error){ showToast('Error al rechazar'); console.error(error); return; }
+    showToast('Verificación rechazada');
+    loadVerifications();
   }
 
   // ─── HELPERS ─────────────────────────────────────────────────────
