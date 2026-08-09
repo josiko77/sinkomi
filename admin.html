@@ -557,6 +557,12 @@
         v.nota_simple_url ? `<a href="${v.nota_simple_url}" target="_blank" class="btn" style="text-decoration:none;">Nota Simple</a>` : '',
         v.selfie_url ? `<a href="${v.selfie_url}" target="_blank" class="btn" style="text-decoration:none;">Selfie</a>` : ''
       ].filter(Boolean).join(' ');
+      const codeNote = v.selfie_code ? `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Código a comprobar en la foto: <b style="color:var(--accent);">${v.selfie_code}</b></div>` : '';
+      const aiNote = (typeof v.selfie_ai_score === 'number')
+        ? (v.selfie_ai_score >= 0.5
+            ? `<div style="margin-top:.35rem;font-size:9px;color:var(--red);font-weight:800;">⚠ Sightengine: ${Math.round(v.selfie_ai_score*100)}% posible IA — revisar con cuidado</div>`
+            : `<div style="margin-top:.35rem;font-size:9px;color:var(--accent);">Sightengine: ${Math.round(v.selfie_ai_score*100)}% IA (parece real)</div>`)
+        : `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Sightengine: sin comprobar</div>`;
       const actions = v.status==='pendiente'
         ? `<button class="btn btn-green" onclick="approveVerification('${v.id}','${v.property_id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectVerification('${v.id}')">Rechazar</button>`
         : (v.admin_note ? `<span style="color:var(--muted);font-size:10px;">${v.admin_note}</span>` : '—');
@@ -564,7 +570,7 @@
       <tr>
         <td>${v.properties?.title || 'Inmueble eliminado'}<br><span style="color:var(--muted);font-size:10px;">${v.properties?.municipality||''}</span></td>
         <td style="font-size:11px;color:var(--muted);">${v.submitted_at ? new Date(v.submitted_at).toLocaleDateString('es-ES') : '—'}</td>
-        <td>${docs}</td>
+        <td>${docs}${codeNote}${aiNote}</td>
         <td>${statusBadge}</td>
         <td>${actions}</td>
       </tr>`;
