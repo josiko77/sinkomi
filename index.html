@@ -4352,7 +4352,7 @@ async function submitPublishForm(){
   const community=document.getElementById('publish-community').value||'No especificado';
   const ibi=document.getElementById('publish-ibi').value||'No especificado';
   const negotiable=document.getElementById('publish-negotiable').value;
-  const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):'';
+  const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):null;
   const phone=document.getElementById('publish-phone').value.trim();
   const extras=getCheckedExtras();
   const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
