@@ -2092,7 +2092,7 @@
   </div>
 </div>
 
-<div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 class="text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+<div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><select id="publish-location" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800"><option value="">Selecciona un municipio...</option></select></div></div>
 <div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285000"></div></div>
@@ -3712,6 +3712,8 @@ function matchesAdvancedFilters(prop, tab){
 
 // ── SUBIDA DE FOTOS Y VÍDEO EN FORMULARIO DE PUBLICACIÓN ─────────────────
 var publishedPhotos = []; // URLs object locales de las fotos seleccionadas
+var editingPropertyId = null; // null = publicando nuevo · uuid = editando anuncio existente
+var editingPropertyOriginalImages = []; // imágenes ya guardadas del anuncio que se está editando
 var publishedVideo  = null;
 
 function handlePublishPhotos(input){
@@ -3989,7 +3991,9 @@ function openUserPanel(){
       <div class="panel p-5 mt-3">
         <div class="section-label mb-3" style="color:var(--accent);">Mis inmuebles publicados</div>
         <button onclick="openPublishModal();closeUserPanel();" class="px-5 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">+ Publicar nuevo inmueble</button>
+        <div id="my-listings-list" class="mt-4 space-y-2"></div>
       </div>`;
+    loadMyListings();
   } else if(role==='inquilino'){
     roleSection.innerHTML = `
       <div class="panel p-5 bg-white">
@@ -4062,12 +4066,23 @@ function openPublishModal(){
     }
     return;
   }
-  // Propietario → abre el formulario directamente
+  // Propietario publicando nuevo → modo creación, no edición
+  editingPropertyId = null;
+  editingPropertyOriginalImages = [];
+  publishedPhotos = [];
+  publishedVideo = null;
+  document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
+  const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
+  if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
   document.getElementById('publish-modal').classList.remove('hidden');
   updatePublishTotal();
   togglePublishSeasonality();
 }
-function closePublishModal(){document.getElementById('publish-modal').classList.add('hidden');}
+function closePublishModal(){
+  document.getElementById('publish-modal').classList.add('hidden');
+  editingPropertyId = null;
+  editingPropertyOriginalImages = [];
+}
 function openPlanSelector(){
   if(!SinKomiAuth.isLoggedIn()){ openRegisterModal('propietario'); return; }
   // Crear modal selector si no existe
@@ -4297,15 +4312,86 @@ document.addEventListener('change', function(e){
 });
 function updatePublishTotal(){document.getElementById('publish-total').textContent=document.getElementById('publish-verified')?.checked?'8,99 €':'0 €';}
 function getCheckedExtras(){const extras=[];[['extra-ascensor','Ascensor'],['extra-terraza','Terraza'],['extra-balcon','Balcón'],['extra-garaje','Garaje'],['extra-trastero','Trastero'],['extra-piscina','Piscina'],['extra-jardin','Jardín'],['extra-aire','Aire acondicionado']].forEach(([id,label])=>{if(document.getElementById(id)?.checked)extras.push(label);});return extras.length?extras.join(' · '):'Consultar';}
-function submitPublishForm(){
+async function submitPublishForm(){
+  if(!SinKomiAuth.isLoggedIn()){ alert('Debes iniciar sesión para publicar un inmueble.'); return; }
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ alert('No se ha podido identificar tu cuenta. Vuelve a iniciar sesión e inténtalo de nuevo.'); return; }
+
   const title=escapeHtml(document.getElementById('publish-title').value.trim())||'Nuevo inmueble publicado';
   let _locVal=document.getElementById('publish-location').value||'Mallorca';let _mun=_locVal,_nuc='';if(_locVal.indexOf('|')>-1){const _p=_locVal.split('|');_mun=_p[0];_nuc=_p[1];}const location=_nuc||_mun;
   const type=document.getElementById('publish-type').value;
   const category=document.getElementById('publish-category').value||'Piso';
   const price=Number(document.getElementById('publish-price').value)||0;
   if(price <= 0){ alert('Por favor, introduce un precio válido para tu inmueble.'); return; }
-  const img = publishedPhotos.length > 0 ? publishedPhotos[0] : propertyBlueprints[0].img;
-  const images = publishedPhotos.length > 0 ? [...publishedPhotos] : [propertyBlueprints[0].img];const verified=document.getElementById('publish-verified').checked;const description=escapeHtml(document.getElementById('publish-description').value.trim())||'Propiedad publicada recientemente. Contacta con el propietario/a para más detalles.';const declareParticular=document.getElementById('declare-particular').checked;if(!declareParticular){alert('Debes declarar que publicas como particular o autorizado por el propietario.');return;}const builtM2=document.getElementById('publish-built-m2').value||'No especificado';const usefulM2=document.getElementById('publish-useful-m2').value||'';const bedrooms=document.getElementById('publish-bedrooms').value||'No especificado';const bathrooms=document.getElementById('publish-bathrooms').value||'No especificado';const floor=document.getElementById('publish-floor').value||'No especificado';const condition=document.getElementById('publish-condition').value;const energy=document.getElementById('publish-energy').value;const orientation=document.getElementById('publish-orientation').value;const community=document.getElementById('publish-community').value||'No especificado';const ibi=document.getElementById('publish-ibi').value||'No especificado';const negotiable=document.getElementById('publish-negotiable').value;const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):'';const phone=document.getElementById('publish-phone').value.trim();const extras=getCheckedExtras();const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||'Tu perfil';properties.unshift({id:`user-${Date.now()}`,title,location,municipality:_mun,nucleo:_nuc,category,type,price,img,images,sellerName:ownerName,responseTime:'Nuevo',rating:'5,0',reviews:0,initials:ownerName.slice(0,1).toUpperCase()||'T',featured:isPremiumPlan(),verified,description,surface:usefulM2?`${builtM2} m² construidos · ${usefulM2} m² útiles`:`${builtM2} m² construidos`,bedrooms:bedrooms==='No especificado'?bedrooms:`${bedrooms} dormitorios`,bathrooms:bathrooms==='No especificado'?bathrooms:`${bathrooms} baños`,extras:`${extras} · ${floor} · ${condition} · Energía ${energy} · ${orientation} · Comunidad ${community}€/mes · IBI ${ibi}€ · Negociable: ${negotiable}`,daysAgo:0,priceDrop:0,savingPct:0.06,seasonality,phone});publishedPhotos=[];publishedVideo=null;renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');updateMunicipalityLabels();closePublishModal();alert('¡Inmueble publicado correctamente!');}
+  const images = publishedPhotos.length > 0 ? [...publishedPhotos] : (editingPropertyOriginalImages.length > 0 ? [...editingPropertyOriginalImages] : [propertyBlueprints[0].img]);
+  const img = images[0];
+  const verified=document.getElementById('publish-verified').checked;
+  const description=escapeHtml(document.getElementById('publish-description').value.trim())||'Propiedad publicada recientemente. Contacta con el propietario/a para más detalles.';
+  const declareParticular=document.getElementById('declare-particular').checked;
+  if(!declareParticular){alert('Debes declarar que publicas como particular o autorizado por el propietario.');return;}
+  const builtM2=document.getElementById('publish-built-m2').value||'No especificado';
+  const usefulM2=document.getElementById('publish-useful-m2').value||'';
+  const bedrooms=document.getElementById('publish-bedrooms').value||'No especificado';
+  const bathrooms=document.getElementById('publish-bathrooms').value||'No especificado';
+  const floor=document.getElementById('publish-floor').value||'No especificado';
+  const condition=document.getElementById('publish-condition').value;
+  const energy=document.getElementById('publish-energy').value;
+  const orientation=document.getElementById('publish-orientation').value;
+  const community=document.getElementById('publish-community').value||'No especificado';
+  const ibi=document.getElementById('publish-ibi').value||'No especificado';
+  const negotiable=document.getElementById('publish-negotiable').value;
+  const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):'';
+  const phone=document.getElementById('publish-phone').value.trim();
+  const extras=getCheckedExtras();
+  const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
+
+  const payload = {
+    owner_id: user.supabase_id,
+    owner_name: ownerName,
+    title, description, type, category, price,
+    municipality: _mun, nucleo: _nuc, location,
+    built_m2: builtM2, useful_m2: usefulM2,
+    bedrooms, bathrooms, floor, condition, energy, orientation,
+    negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
+    extras, images, video_url: publishedVideo || null,
+    verified, featured: isPremiumPlan(), phone: phone || null,
+    seasonality
+  };
+
+  const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
+  const originalBtnText = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+
+  try{
+    let error;
+    if(editingPropertyId){
+      ({ error } = await supabase.from('properties').update(payload).eq('id', editingPropertyId).eq('owner_id', user.supabase_id));
+    } else {
+      payload.active = true;
+      ({ error } = await supabase.from('properties').insert(payload));
+    }
+    if(error){
+      console.error('Error guardando en Supabase:', error);
+      alert('No se ha podido guardar el anuncio. Inténtalo de nuevo en unos segundos.');
+      if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
+      return;
+    }
+  } catch(e){
+    console.error('Error de red guardando el anuncio:', e);
+    alert('Ha ocurrido un error de conexión. Comprueba tu internet e inténtalo de nuevo.');
+    if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
+    return;
+  }
+
+  // Reflejar también en la UI local de esta sesión (grids de compra/alquiler)
+  properties.unshift({id:editingPropertyId||`user-${Date.now()}`,title,location,municipality:_mun,nucleo:_nuc,category,type,price,img,images,sellerName:ownerName,responseTime:'Nuevo',rating:'5,0',reviews:0,initials:ownerName.slice(0,1).toUpperCase()||'T',featured:isPremiumPlan(),verified,description,surface:usefulM2?`${builtM2} m² construidos · ${usefulM2} m² útiles`:`${builtM2} m² construidos`,bedrooms:bedrooms==='No especificado'?bedrooms:`${bedrooms} dormitorios`,bathrooms:bathrooms==='No especificado'?bathrooms:`${bathrooms} baños`,extras:`${extras} · ${floor} · ${condition} · Energía ${energy} · ${orientation} · Comunidad ${community}€/mes · IBI ${ibi}€ · Negociable: ${negotiable}`,daysAgo:0,priceDrop:0,savingPct:0.06,seasonality,phone});
+
+  publishedPhotos=[];publishedVideo=null;editingPropertyId=null;editingPropertyOriginalImages=[];
+  renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');updateMunicipalityLabels();closePublishModal();
+  if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
+  loadMyListings();
+  alert('¡Inmueble guardado correctamente!');
+}
 async function activateVerification(){
   // ─────────────────────────────────────────────────────────────────────
   // Llama a la Edge Function sinkomi-checkout, que crea una sesión de
@@ -4346,6 +4432,137 @@ async function activateVerification(){
   }
 }
 document.addEventListener('change',e=>{if(e.target.id==='publish-verified')updatePublishTotal();});
+
+// ═══════════════════════════════════════════════════════════════
+// MIS ANUNCIOS — gestión real de las propiedades del usuario en Supabase
+// ═══════════════════════════════════════════════════════════════
+async function loadMyListings(){
+  const container = document.getElementById('my-listings-list');
+  if(!container) return; // el panel de cuenta no está abierto ahora mismo
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ container.innerHTML = ''; return; }
+
+  container.innerHTML = `<div class="text-xs text-zinc-500 py-3">Cargando tus anuncios…</div>`;
+
+  const { data, error } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('owner_id', user.supabase_id)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    console.error('Error cargando Mis anuncios:', error);
+    container.innerHTML = `<div class="text-xs text-red-600 py-3">No se han podido cargar tus anuncios. Inténtalo de nuevo más tarde.</div>`;
+    return;
+  }
+  renderMyListingsList(data || []);
+}
+
+function renderMyListingsList(rows){
+  const container = document.getElementById('my-listings-list');
+  if(!container) return;
+
+  if(!rows.length){
+    container.innerHTML = `<div class="text-xs text-zinc-500 py-3">Aún no has publicado ningún inmueble.</div>`;
+    return;
+  }
+
+  container.innerHTML = rows.map(p => {
+    const isActive = p.active !== false;
+    const statusPill = isActive
+      ? `<span style="background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Activo</span>`
+      : `<span style="background:rgba(0,0,0,0.05);color:#888;border:1px solid rgba(0,0,0,0.1);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Pausado</span>`;
+    const img = (p.images && p.images[0]) ? p.images[0] : '';
+    return `
+    <div class="flex items-center gap-3 p-3 border border-black/8 bg-white" style="opacity:${isActive?'1':'.6'};">
+      <div class="w-14 h-14 shrink-0 bg-zinc-100 overflow-hidden">${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;">` : ''}</div>
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-sm truncate">${escapeHtml(p.title||'Sin título')}</div>
+        <div class="text-xs text-zinc-500">${escapeHtml(p.location||p.municipality||'')} · ${Number(p.price||0).toLocaleString('es-ES')} € ${statusPill}</div>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button onclick="editPropertyListing('${p.id}')" title="Editar" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid fa-pen text-xs"></i></button>
+        <button onclick="togglePropertyActive('${p.id}', ${isActive})" title="${isActive?'Pausar':'Reactivar'}" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid ${isActive?'fa-pause':'fa-play'} text-xs"></i></button>
+        <button onclick="deleteProperty('${p.id}')" title="Eliminar" class="w-8 h-8 flex items-center justify-center border border-red-200 hover:bg-red-50 text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function togglePropertyActive(id, currentlyActive){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  const { error } = await supabase.from('properties').update({ active: !currentlyActive }).eq('id', id).eq('owner_id', user.supabase_id);
+  if(error){ console.error('Error al pausar/reactivar:', error); alert('No se ha podido actualizar el anuncio. Inténtalo de nuevo.'); return; }
+  loadMyListings();
+}
+
+async function deleteProperty(id){
+  if(!confirm('¿Seguro que quieres eliminar este anuncio? Esta acción no se puede deshacer.')) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  const { error } = await supabase.from('properties').delete().eq('id', id).eq('owner_id', user.supabase_id);
+  if(error){ console.error('Error al eliminar el anuncio:', error); alert('No se ha podido eliminar el anuncio. Inténtalo de nuevo.'); return; }
+  loadMyListings();
+}
+
+async function editPropertyListing(id){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  const { data: p, error } = await supabase.from('properties').select('*').eq('id', id).eq('owner_id', user.supabase_id).single();
+  if(error || !p){ console.error('Error cargando el anuncio a editar:', error); alert('No se ha podido cargar este anuncio.'); return; }
+
+  editingPropertyId = p.id;
+  editingPropertyOriginalImages = Array.isArray(p.images) ? [...p.images] : [];
+  publishedPhotos = [];
+  publishedVideo = null;
+
+  closeUserPanel();
+  document.getElementById('publish-modal').classList.remove('hidden');
+  document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Editar inmueble');
+  const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
+  if(submitBtn) submitBtn.textContent = 'Guardar cambios';
+
+  document.getElementById('publish-title').value = p.title || '';
+  const locSelect = document.getElementById('publish-location');
+  if(locSelect){ const wanted = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||''); if([...locSelect.options].some(o=>o.value===wanted)) locSelect.value = wanted; }
+  document.getElementById('publish-type').value = p.type || 'Venta';
+  populatePublishCategory();
+  if(p.category) document.getElementById('publish-category').value = p.category;
+  document.getElementById('publish-price').value = p.price || '';
+  document.getElementById('publish-built-m2').value = (p.built_m2 && p.built_m2!=='No especificado') ? p.built_m2 : '';
+  document.getElementById('publish-useful-m2').value = p.useful_m2 || '';
+  document.getElementById('publish-bedrooms').value = (p.bedrooms && p.bedrooms!=='No especificado') ? p.bedrooms : '';
+  document.getElementById('publish-bathrooms').value = (p.bathrooms && p.bathrooms!=='No especificado') ? p.bathrooms : '';
+  document.getElementById('publish-floor').value = (p.floor && p.floor!=='No especificado') ? p.floor : '';
+  if(p.condition) document.getElementById('publish-condition').value = p.condition;
+  if(p.energy) document.getElementById('publish-energy').value = p.energy;
+  if(p.orientation) document.getElementById('publish-orientation').value = p.orientation;
+  document.getElementById('publish-community').value = p.community || '';
+  document.getElementById('publish-ibi').value = p.ibi || '';
+  if(p.negotiable) document.getElementById('publish-negotiable').value = p.negotiable;
+  document.getElementById('publish-phone').value = p.phone || '';
+  document.getElementById('publish-description').value = p.description || '';
+  document.getElementById('publish-verified').checked = !!p.verified;
+  document.getElementById('declare-particular').checked = true;
+  togglePublishSeasonality();
+  if(p.seasonality) { const sEl=document.getElementById('publish-seasonality'); if(sEl) sEl.value = p.seasonality; }
+
+  renderPublishPhotoPreviews_External(editingPropertyOriginalImages);
+  updatePublishTotal();
+}
+
+// Muestra en el bloque de fotos las imágenes ya guardadas de un anuncio al entrar en modo edición
+function renderPublishPhotoPreviews_External(urls){
+  const container = document.getElementById('publish-photos-preview');
+  if(!container) return;
+  container.innerHTML = urls.map((url, i) => `
+    <div style="position:relative;aspect-ratio:1;overflow:hidden;border:1px solid rgba(0,0,0,0.08);">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">
+      ${i===0 ? '<div style="position:absolute;top:0;left:0;background:var(--accent);color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;">Principal</div>' : ''}
+    </div>
+  `).join('') + `<div class="text-[10px] text-zinc-500 col-span-full mt-1">Estas son las fotos actuales del anuncio. Si subes fotos nuevas, sustituirán a estas.</div>`;
+}
 function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');}
 let selectedDestacadoDays = 30;
