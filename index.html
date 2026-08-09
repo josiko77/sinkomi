@@ -63,9 +63,9 @@
       return data;
     }
 
-    // Escuchar cambios de sesión
+    // Escuchar cambios de sesión (incluye INITIAL_SESSION: la sesión ya existente al cargar la página)
     supabase.auth.onAuthStateChange(async (event, session) => {
-      if(event === 'SIGNED_IN' && session?.user){
+      if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user){
         const profile = await ensureUserProfile(session.user);
         if(profile){
           SinKomiAuth.loginFromSupabase(profile);
@@ -4317,6 +4317,18 @@ async function submitPublishForm(){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id){ alert('No se ha podido identificar tu cuenta. Vuelve a iniciar sesión e inténtalo de nuevo.'); return; }
 
+  // Verificación de sesión REAL con Supabase antes de escribir nada.
+  // No basta con confiar en lo guardado en el navegador: la sesión pudo caducar.
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if(sessionError || !sessionData?.session || sessionData.session.user.id !== user.supabase_id){
+    alert('Tu sesión ha caducado. Vuelve a iniciar sesión para poder publicar tu inmueble.');
+    SinKomiAuth.clearLocalSession();
+    syncUI();
+    closePublishModal();
+    openLoginModal();
+    return;
+  }
+
   const title=escapeHtml(document.getElementById('publish-title').value.trim())||'Nuevo inmueble publicado';
   let _locVal=document.getElementById('publish-location').value||'Mallorca';let _mun=_locVal,_nuc='';if(_locVal.indexOf('|')>-1){const _p=_locVal.split('|');_mun=_p[0];_nuc=_p[1];}const location=_nuc||_mun;
   const type=document.getElementById('publish-type').value;
@@ -4489,9 +4501,25 @@ function renderMyListingsList(rows){
   }).join('');
 }
 
+// Comprueba que la sesión de Supabase sigue siendo válida antes de una acción protegida.
+// Devuelve true si todo está en orden; si no, avisa al usuario y lo manda a loguearse de nuevo.
+async function ensureValidSession(user){
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if(sessionError || !sessionData?.session || sessionData.session.user.id !== user.supabase_id){
+    alert('Tu sesión ha caducado. Vuelve a iniciar sesión para continuar.');
+    SinKomiAuth.clearLocalSession();
+    syncUI();
+    closeUserPanel();
+    openLoginModal();
+    return false;
+  }
+  return true;
+}
+
 async function togglePropertyActive(id, currentlyActive){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id) return;
+  if(!(await ensureValidSession(user))) return;
   const { error } = await supabase.from('properties').update({ active: !currentlyActive }).eq('id', id).eq('owner_id', user.supabase_id);
   if(error){ console.error('Error al pausar/reactivar:', error); alert('No se ha podido actualizar el anuncio. Inténtalo de nuevo.'); return; }
   loadMyListings();
@@ -4501,6 +4529,7 @@ async function deleteProperty(id){
   if(!confirm('¿Seguro que quieres eliminar este anuncio? Esta acción no se puede deshacer.')) return;
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id) return;
+  if(!(await ensureValidSession(user))) return;
   const { error } = await supabase.from('properties').delete().eq('id', id).eq('owner_id', user.supabase_id);
   if(error){ console.error('Error al eliminar el anuncio:', error); alert('No se ha podido eliminar el anuncio. Inténtalo de nuevo.'); return; }
   loadMyListings();
@@ -4509,6 +4538,7 @@ async function deleteProperty(id){
 async function editPropertyListing(id){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id) return;
+  if(!(await ensureValidSession(user))) return;
   const { data: p, error } = await supabase.from('properties').select('*').eq('id', id).eq('owner_id', user.supabase_id).single();
   if(error || !p){ console.error('Error cargando el anuncio a editar:', error); alert('No se ha podido cargar este anuncio.'); return; }
 
