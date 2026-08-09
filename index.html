@@ -318,6 +318,16 @@
       clip-path:polygon(0 0,100% 0,calc(100% - 10px) 50%,100% 100%,0 100%);
       box-shadow:0 4px 14px rgba(232,160,32,0.4);
     }
+    .prop-card-status-stamp{
+      position:absolute;top:14px;right:-38px;z-index:15;
+      transform:rotate(38deg);
+      color:white;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;
+      padding:.35rem 3rem;
+      box-shadow:0 4px 14px rgba(0,0,0,0.35);
+      pointer-events:none;
+    }
+    .prop-card-status-reservado{ background:#e8a020; }
+    .prop-card-status-vendido{ background:#c0392b; }
 
     /* ══════════════════════════════════
        NIVEL 1 — VERIFICADO + DESTACADO
@@ -2352,7 +2362,69 @@ function buildProperties(){
   });
   return all;
 }
-const properties=buildProperties();
+// Convierte una fila real de la tabla `properties` de Supabase al mismo formato
+// que usa toda la web para pintar tarjetas, mapa y fichas (mismo shape que antes usaba el generador falso).
+function mapDbRowToProperty(row){
+  const builtM2 = row.built_m2 || 0;
+  const usefulM2 = row.useful_m2 || 0;
+  const surface = usefulM2 ? `${builtM2} m² construidos · ${usefulM2} m² útiles` : (builtM2 ? `${builtM2} m² construidos` : 'No especificado');
+  const bedrooms = (row.bedrooms===null||row.bedrooms===undefined||row.bedrooms==='') ? 'No especificado' : `${row.bedrooms} dormitorios`;
+  const bathrooms = (row.bathrooms===null||row.bathrooms===undefined||row.bathrooms==='') ? 'No especificado' : `${row.bathrooms} baños`;
+  const extrasParts = [row.extras, row.floor, row.condition, row.energy?`Energía ${row.energy}`:null, row.orientation, row.community?`Comunidad ${row.community}€/mes`:null, row.ibi?`IBI ${row.ibi}€`:null, row.negotiable?`Negociable: ${row.negotiable}`:null].filter(Boolean);
+  const images = (Array.isArray(row.images) && row.images.length) ? row.images : [];
+  const img = images[0] || fallbackImg;
+  const createdAt = row.created_at ? new Date(row.created_at) : new Date();
+  const daysAgo = Math.max(0, Math.floor((Date.now()-createdAt.getTime())/86400000));
+  return {
+    id: row.id,
+    title: row.title,
+    price: row.price,
+    location: row.location || row.nucleo || row.municipality,
+    municipality: row.municipality,
+    nucleo: row.nucleo,
+    category: row.category,
+    img, images,
+    type: row.type,
+    sellerName: row.owner_name || 'Propietario',
+    responseTime: 'Nuevo',
+    rating: null,
+    reviews: 0,
+    initials: (row.owner_name||'P').slice(0,1).toUpperCase(),
+    featured: !!row.featured,
+    verified: !!row.verified,
+    description: row.description || '',
+    surface, bedrooms, bathrooms,
+    extras: extrasParts.join(' · '),
+    daysAgo, priceDrop: 0, savingPct: 0,
+    seasonality: row.seasonality || '',
+    phone: row.phone || '',
+    owner_id: row.owner_id,
+    status: row.status || 'Disponible'
+  };
+}
+
+// Carga los inmuebles reales y activos desde Supabase, y repinta todas las vistas que dependen de ellos.
+async function loadRealProperties(){
+  try{
+    const { data, error } = await supabase.from('properties').select('*').eq('active', true).order('created_at', { ascending:false });
+    if(error){ console.error('Error cargando inmuebles reales:', error); return; }
+    properties = (data||[]).map(mapDbRowToProperty);
+  }catch(e){
+    console.error('Error de red cargando inmuebles reales:', e);
+  }
+  refreshAllPropertyViews();
+}
+
+// Vuelve a pintar parrillas, mapa y contadores tras cargar/actualizar los datos reales.
+function refreshAllPropertyViews(){
+  if(document.getElementById('buy-grid')) renderPropertyCards('buy-grid','Venta');
+  if(document.getElementById('rent-grid')) renderPropertyCards('rent-grid','Alquiler');
+  if(typeof updateMunicipalityLabels==='function') updateMunicipalityLabels();
+  if(typeof renderMunicipiosDropdown==='function') renderMunicipiosDropdown();
+  if(typeof renderMapMarkersHero==='function') renderMapMarkersHero();
+}
+
+let properties=[];
 let currentProperty=null,selectedMunicipality='all',selectedNucleo='',buyTypeFilter='Todos',rentTypeFilter='Todos',zoneTypeFilter='Todos',zoneOperationFilter='Todas',currentTool=null,calcPct=4.5;
 let buySortOrder='featured',rentSortOrder='featured';
 const PAGE_SIZE=8;
@@ -2623,11 +2695,18 @@ function buildPropertyCardEl(prop){
 
     const imgTopPad = '';
 
+    // Sello de estado (Reservado / Vendido / Alquilado) — se ve tachando la ficha si no está Disponible
+    const statusLabel = prop.type==='Alquiler' ? 'Alquilado' : 'Vendido';
+    const statusStampHtml = (prop.status && prop.status!=='Disponible')
+      ? `<div class="prop-card-status-stamp prop-card-status-${prop.status==='Reservado'?'reservado':'vendido'}">${prop.status==='Reservado'?'Reservado':statusLabel}</div>`
+      : '';
+
     card.innerHTML=`
       <div class="prop-card-img" onclick="openPropertyModal('${prop.id}')" style="cursor:pointer;position:relative;">
         ${tier===2 ? topBadge : ''}
         ${tier===1 ? topBadge : ''}
         ${tier===3 ? featuredCorner : ''}
+        ${statusStampHtml}
         <button class="heart-btn" data-id="${prop.id}" onclick="toggleFavourite('${prop.id}',this,event)" title="Guardar en favoritos"><i class="fa-regular fa-heart"></i></button>
         <img src="${prop.img}" alt="${escapeHtml(prop.title)}" ${imgAttrs}>
         <div class="prop-card-overlay"></div>
@@ -3137,27 +3216,36 @@ function initMapHero(){
           })
           .catch(e => console.warn('Límites municipales no disponibles:', e));
       } catch(e){ console.warn('Límites municipales no disponibles:', e); }
-      municipalityList.forEach(name => {
-        const coords = municipalityCoords[name];
-        if(!coords) return;
-        const count = properties.filter(p=>p.municipality===name).length;
-        if(count === 0) return;
-        const el = createMarkerEl(count, false);
-        const popup = new maptilersdk.Popup({ closeButton: false, maxWidth: '200px', offset: 20 }).setHTML(`
-          <div class="map-popup">
-            <div class="map-popup-title">${name}</div>
-            <div class="map-popup-count">${count} inmueble${count!==1?'s':''}</div>
-            <button class="map-popup-btn" onclick="openMunicipiosTab();selectMunicipality('${name}')">Ver inmuebles →</button>
-          </div>
-        `);
-        const marker = new maptilersdk.Marker({ element: el })
-          .setLngLat([coords[1], coords[0]])
-          .setPopup(popup)
-          .addTo(sinkomMapHero);
-        mapMarkersHero[name] = marker;
-      });
+      renderMapMarkersHero();
     });
   } catch(e){ console.error('Error mapa hero:', e); }
+}
+
+// Pinta (o repinta) los marcadores del mapa a partir de los datos reales actuales en `properties`.
+// Se llama al cargar el mapa por primera vez, y de nuevo cada vez que llegan datos nuevos de Supabase.
+function renderMapMarkersHero(){
+  if(!sinkomMapHero || !sinkomMapHero.loaded()) return;
+  Object.values(mapMarkersHero).forEach(m=>m.remove());
+  Object.keys(mapMarkersHero).forEach(k=>delete mapMarkersHero[k]);
+  municipalityList.forEach(name => {
+    const coords = municipalityCoords[name];
+    if(!coords) return;
+    const count = properties.filter(p=>p.municipality===name).length;
+    if(count === 0) return;
+    const el = createMarkerEl(count, false);
+    const popup = new maptilersdk.Popup({ closeButton: false, maxWidth: '200px', offset: 20 }).setHTML(`
+      <div class="map-popup">
+        <div class="map-popup-title">${name}</div>
+        <div class="map-popup-count">${count} inmueble${count!==1?'s':''}</div>
+        <button class="map-popup-btn" onclick="openMunicipiosTab();selectMunicipality('${name}')">Ver inmuebles →</button>
+      </div>
+    `);
+    const marker = new maptilersdk.Marker({ element: el })
+      .setLngLat([coords[1], coords[0]])
+      .setPopup(popup)
+      .addTo(sinkomMapHero);
+    mapMarkersHero[name] = marker;
+  });
 }
 
 // ── DRAW AREA FILTER ─────────────────────────────────────────────────────────
@@ -4395,13 +4483,12 @@ async function submitPublishForm(){
     return;
   }
 
-  // Reflejar también en la UI local de esta sesión (grids de compra/alquiler)
-  properties.unshift({id:editingPropertyId||`user-${Date.now()}`,title,location,municipality:_mun,nucleo:_nuc,category,type,price,img,images,sellerName:ownerName,responseTime:'Nuevo',rating:'5,0',reviews:0,initials:ownerName.slice(0,1).toUpperCase()||'T',featured:isPremiumPlan(),verified,description,surface:usefulM2?`${builtM2} m² construidos · ${usefulM2} m² útiles`:`${builtM2} m² construidos`,bedrooms:bedrooms==='No especificado'?bedrooms:`${bedrooms} dormitorios`,bathrooms:bathrooms==='No especificado'?bathrooms:`${bathrooms} baños`,extras:`${extras} · ${floor} · ${condition} · Energía ${energy} · ${orientation} · Comunidad ${community}€/mes · IBI ${ibi}€ · Negociable: ${negotiable}`,daysAgo:0,priceDrop:0,savingPct:0.06,seasonality,phone});
-
+  // Recargar desde Supabase (fuente única de verdad) para que aparezca en el buscador y el mapa reales.
   publishedPhotos=[];publishedVideo=null;editingPropertyId=null;editingPropertyOriginalImages=[];
-  renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');updateMunicipalityLabels();closePublishModal();
+  closePublishModal();
   if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
   loadMyListings();
+  loadRealProperties();
   alert('¡Inmueble guardado correctamente!');
 }
 async function activateVerification(){
@@ -4485,12 +4572,21 @@ function renderMyListingsList(rows){
       ? `<span style="background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Activo</span>`
       : `<span style="background:rgba(0,0,0,0.05);color:#888;border:1px solid rgba(0,0,0,0.1);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Pausado</span>`;
     const img = (p.images && p.images[0]) ? p.images[0] : '';
+    const soldLabel = p.type==='Alquiler' ? 'Alquilado' : 'Vendido';
+    const currentStatus = p.status || 'Disponible';
+    const statusSelect = `
+      <select onchange="updatePropertyStatus('${p.id}', this.value)" title="Estado del anuncio" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border:1px solid rgba(0,0,0,0.12);background:white;padding:.3rem .4rem;color:#333;">
+        <option value="Disponible" ${currentStatus==='Disponible'?'selected':''}>Disponible</option>
+        <option value="Reservado" ${currentStatus==='Reservado'?'selected':''}>Reservado</option>
+        <option value="Vendido" ${currentStatus==='Vendido'?'selected':''}>${soldLabel}</option>
+      </select>`;
     return `
     <div class="flex items-center gap-3 p-3 border border-black/8 bg-white" style="opacity:${isActive?'1':'.6'};">
       <div class="w-14 h-14 shrink-0 bg-zinc-100 overflow-hidden">${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;">` : ''}</div>
       <div class="min-w-0 flex-1">
         <div class="font-bold text-sm truncate">${escapeHtml(p.title||'Sin título')}</div>
-        <div class="text-xs text-zinc-500">${escapeHtml(p.location||p.municipality||'')} · ${Number(p.price||0).toLocaleString('es-ES')} € ${statusPill}</div>
+        <div class="text-xs text-zinc-500 flex flex-wrap items-center gap-1 mt-1">${escapeHtml(p.location||p.municipality||'')} · ${Number(p.price||0).toLocaleString('es-ES')} € ${statusPill}</div>
+        <div class="mt-2">${statusSelect}</div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
         <button onclick="editPropertyListing('${p.id}')" title="Editar" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -4499,6 +4595,17 @@ function renderMyListingsList(rows){
       </div>
     </div>`;
   }).join('');
+}
+
+// Cambia el estado (Disponible / Reservado / Vendido-Alquilado) de un anuncio propio.
+async function updatePropertyStatus(id, status){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  if(!(await ensureValidSession(user))) return;
+  const { error } = await supabase.from('properties').update({ status }).eq('id', id).eq('owner_id', user.supabase_id);
+  if(error){ console.error('Error al cambiar el estado:', error); alert('No se ha podido actualizar el estado. Inténtalo de nuevo.'); return; }
+  loadMyListings();
+  loadRealProperties();
 }
 
 // Comprueba que la sesión de Supabase sigue siendo válida antes de una acción protegida.
@@ -4523,6 +4630,7 @@ async function togglePropertyActive(id, currentlyActive){
   const { error } = await supabase.from('properties').update({ active: !currentlyActive }).eq('id', id).eq('owner_id', user.supabase_id);
   if(error){ console.error('Error al pausar/reactivar:', error); alert('No se ha podido actualizar el anuncio. Inténtalo de nuevo.'); return; }
   loadMyListings();
+  loadRealProperties();
 }
 
 async function deleteProperty(id){
@@ -4533,6 +4641,7 @@ async function deleteProperty(id){
   const { error } = await supabase.from('properties').delete().eq('id', id).eq('owner_id', user.supabase_id);
   if(error){ console.error('Error al eliminar el anuncio:', error); alert('No se ha podido eliminar el anuncio. Inténtalo de nuevo.'); return; }
   loadMyListings();
+  loadRealProperties();
 }
 
 async function editPropertyListing(id){
@@ -4674,6 +4783,7 @@ window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();
   initFundadores();
   setTimeout(initPreciosChart, 300);
   setTimeout(initMapHero, 500);
+  loadRealProperties();
 };
 </script>
 
