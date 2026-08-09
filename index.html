@@ -2274,6 +2274,56 @@
   </div>
 </div>
 
+<!-- Cámara en directo para la selfie de verificación -->
+<div id="selfie-camera-modal" class="hidden fixed inset-0 z-[130]" style="background:#0d1a14;">
+  <div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;">
+    <div style="padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:3;">
+      <div>
+        <div style="color:white;font-weight:900;font-size:13px;letter-spacing:.04em;">Verificación de identidad</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:.15rem;">Encaja tu cara y tu DNI dentro del óvalo</div>
+      </div>
+      <button onclick="closeSelfieCameraModal()" style="color:rgba(255,255,255,0.6);font-size:1.6rem;background:none;border:none;cursor:pointer;line-height:1;">×</button>
+    </div>
+
+    <div style="flex:1;position:relative;overflow:hidden;background:#000;">
+      <video id="selfie-camera-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1);"></video>
+      <canvas id="selfie-camera-canvas" style="display:none;"></canvas>
+      <img id="selfie-camera-preview" style="display:none;width:100%;height:100%;object-fit:cover;">
+
+      <!-- Guía ovalada -->
+      <div id="selfie-oval-guide" style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;">
+        <svg width="100%" height="100%" style="position:absolute;inset:0;">
+          <defs>
+            <mask id="selfie-mask">
+              <rect width="100%" height="100%" fill="white"/>
+              <ellipse cx="50%" cy="46%" rx="120" ry="160" fill="black"/>
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="rgba(0,0,0,0.5)" mask="url(#selfie-mask)"/>
+          <ellipse cx="50%" cy="46%" rx="120" ry="160" fill="none" stroke="#00a878" stroke-width="3"/>
+        </svg>
+      </div>
+
+      <div id="selfie-camera-error" class="hidden" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:2rem;text-align:center;color:white;">
+        <div style="font-size:2rem;">📷</div>
+        <div style="font-size:13px;font-weight:800;">Necesitamos acceso a tu cámara</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;">Por seguridad, la selfie de verificación solo se puede hacer en directo — no se admite subir una foto ya existente. Revisa los permisos de cámara de tu navegador y vuelve a intentarlo.</div>
+        <button onclick="openSelfieCameraModal()" style="background:var(--accent);color:white;border:none;padding:.75rem 1.5rem;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;">Reintentar</button>
+      </div>
+    </div>
+
+    <div id="selfie-camera-controls" style="padding:2rem 1.5rem 2.5rem;display:flex;align-items:center;justify-content:center;position:relative;z-index:3;">
+      <button id="selfie-capture-btn" onclick="captureSelfiePhoto()" style="width:68px;height:68px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,0.3);cursor:pointer;"></button>
+    </div>
+
+    <div id="selfie-preview-controls" class="hidden" style="padding:1.5rem;display:flex;gap:.75rem;position:relative;z-index:3;">
+      <button onclick="retakeSelfiePhoto()" style="flex:1;padding:.9rem;background:transparent;border:1px solid rgba(255,255,255,0.3);color:white;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;">Repetir foto</button>
+      <button onclick="confirmSelfiePhoto()" style="flex:1;padding:.9rem;background:var(--accent);border:none;color:white;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;">Usar esta foto</button>
+    </div>
+
+  </div>
+</div>
+
 <div id="tool-modal" class="hidden fixed inset-0 bg-black/70 z-[114] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-4xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="tool-title" class="text-2xl font-semibold tracking-tight">Herramienta</h3><p id="tool-subtitle" class="text-sm text-zinc-700">Simulación rápida</p></div><button onclick="closeToolModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6"><div id="tool-content" class="grid md:grid-cols-2 gap-4"></div><div class="mt-6"><button onclick="simulateTool()" class="w-full py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Calcular</button></div></div></div></div>
 
 <div id="alert-modal" class="hidden fixed inset-0 bg-black/70 z-[115] flex items-center justify-center px-4 py-4">
@@ -4808,6 +4858,7 @@ function openVerificationDocsModal(propertyId){
   verifyingPropertyId = propertyId;
   verificationUpload = { dni_url:null, nota_simple_url:null, selfie_url:null };
   verificationUploading = { dni:false, nota_simple:false, selfie:false };
+  selfieAiScore = null;
   document.getElementById('verification-docs-modal').classList.remove('hidden');
   loadVerificationStatus();
 }
@@ -4865,14 +4916,16 @@ function renderVerificationPanel(existing){
 
 function verificationSlotHtml(key, label, url){
   const uploading = verificationUploading[key];
+  const isSelfie = key === 'selfie';
+  const trigger = isSelfie ? `openSelfieCameraModal()` : null;
   return `
     <div style="position:relative;">
-      <label style="display:block;aspect-ratio:1;border:1.5px dashed rgba(0,0,0,0.15);cursor:pointer;overflow:hidden;position:relative;background:${url?'#fff':'#fafafa'};">
-        <input type="file" accept="image/*,.pdf" style="display:none;" onchange="handleVerificationUpload(this,'${key}')">
-        ${url ? `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:20px;">+</div>`}
+      <div onclick="${isSelfie ? trigger : `document.getElementById('verif-file-${key}').click()`}" style="display:block;aspect-ratio:1;border:1.5px dashed rgba(0,0,0,0.15);cursor:pointer;overflow:hidden;position:relative;background:${url?'#fff':'#fafafa'};">
+        ${!isSelfie ? `<input type="file" id="verif-file-${key}" accept="image/*,.pdf" style="display:none;" onchange="handleVerificationUpload(this,'${key}')">` : ''}
+        ${url ? `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">` : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#bbb;gap:.3rem;">${isSelfie ? `<span style="font-size:18px;">📷</span>` : `<span style="font-size:20px;">+</span>`}</div>`}
         ${uploading ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);"><div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>` : ''}
         ${url && !uploading ? `<div style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--accent);color:white;border-radius:999px;font-size:9px;display:flex;align-items:center;justify-content:center;">✓</div>` : ''}
-      </label>
+      </div>
       <div style="font-size:9px;text-align:center;color:#888;font-weight:700;margin-top:.3rem;text-transform:uppercase;letter-spacing:.04em;">${label}</div>
     </div>`;
 }
@@ -4880,24 +4933,150 @@ function verificationSlotHtml(key, label, url){
 async function handleVerificationUpload(input, key){
   const file = input.files[0];
   if(!file) return;
+  await uploadVerificationFile(file, key);
+  input.value = '';
+}
+
+// Sube cualquier documento/foto de verificación (compartido entre file input y la cámara en directo).
+let selfieAiScore = null; // 0-1: probabilidad de que la selfie esté generada por IA (Sightengine)
+
+async function uploadVerificationFile(file, key){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id){ alert('Debes iniciar sesión.'); return; }
   verificationUploading[key] = true;
   renderVerificationPanel(null);
   try{
-    const ext = (file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
-    const path = `${user.supabase_id}/${verifyingPropertyId}-${key}-${Date.now()}.${ext}`;
+    const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'') : 'jpg';
+    const path = `${user.supabase_id}/${verifyingPropertyId}-${key}-${Date.now()}.${ext||'jpg'}`;
     const { error: uploadError } = await supabase.storage.from('verification-docs').upload(path, file, { cacheControl:'3600', upsert:false });
     if(uploadError) throw uploadError;
     const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(path, 60*60*24*365);
     verificationUpload[key+'_url'] = signed?.signedUrl || null;
+    if(key === 'selfie' && verificationUpload.selfie_url){
+      checkSelfieForAi(verificationUpload.selfie_url); // no bloqueante, se comprueba en segundo plano
+    }
   }catch(e){
     console.error('Error subiendo documento:', e);
     alert('No se ha podido subir el documento. Inténtalo de nuevo.');
   }
   verificationUploading[key] = false;
   renderVerificationPanel(null);
-  input.value = '';
+}
+
+// Pregunta a Sightengine (vía nuestra Edge Function) si la selfie parece generada por IA.
+// No bloquea la subida: es un aviso adicional para que lo revise el equipo de SINKOMI.
+async function checkSelfieForAi(imageUrl){
+  try{
+    const resp = await fetch('https://utrkwpepgviadaygjfyr.supabase.co/functions/v1/sinkomi-ai-detect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl })
+    });
+    const data = await resp.json();
+    if(typeof data.ai_score === 'number'){
+      selfieAiScore = data.ai_score;
+    }
+  }catch(e){
+    console.error('No se ha podido comprobar la selfie con Sightengine:', e);
+  }
+}
+
+// ── CÁMARA EN DIRECTO PARA LA SELFIE ──────────────────────────────────────
+let selfieCameraStream = null;
+let selfieCapturedBlob = null;
+let selfieVerificationCode = null;
+
+function generateSelfieCode(){
+  return 'SNK-' + Math.floor(1000 + Math.random()*9000);
+}
+
+async function openSelfieCameraModal(){
+  const modal = document.getElementById('selfie-camera-modal');
+  modal.classList.remove('hidden');
+  document.getElementById('selfie-camera-error').classList.add('hidden');
+  document.getElementById('selfie-camera-video').style.display = 'block';
+  document.getElementById('selfie-oval-guide').style.display = 'flex';
+  document.getElementById('selfie-camera-preview').style.display = 'none';
+  document.getElementById('selfie-camera-controls').classList.remove('hidden');
+  document.getElementById('selfie-preview-controls').classList.add('hidden');
+
+  selfieVerificationCode = generateSelfieCode();
+
+  try{
+    selfieCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 } }, audio: false });
+    const video = document.getElementById('selfie-camera-video');
+    video.srcObject = selfieCameraStream;
+  }catch(e){
+    console.error('No se ha podido acceder a la cámara:', e);
+    document.getElementById('selfie-camera-video').style.display = 'none';
+    document.getElementById('selfie-oval-guide').style.display = 'none';
+    document.getElementById('selfie-camera-controls').classList.add('hidden');
+    document.getElementById('selfie-camera-error').classList.remove('hidden');
+  }
+}
+
+function stopSelfieCameraStream(){
+  if(selfieCameraStream){
+    selfieCameraStream.getTracks().forEach(t => t.stop());
+    selfieCameraStream = null;
+  }
+}
+
+function closeSelfieCameraModal(){
+  stopSelfieCameraStream();
+  document.getElementById('selfie-camera-modal').classList.add('hidden');
+}
+
+function captureSelfiePhoto(){
+  const video = document.getElementById('selfie-camera-video');
+  const canvas = document.getElementById('selfie-camera-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  // Espejamos el canvas igual que se ve el vídeo en pantalla (más natural para una selfie)
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.setTransform(1,0,0,1,0,0); // reset para que el texto no salga espejado
+
+  // Grabamos el código y la fecha/hora directamente en la foto, como prueba de que se hizo en el momento.
+  const stamp = `${selfieVerificationCode} · ${new Date().toLocaleString('es-ES')}`;
+  const fontSize = Math.round(canvas.width * 0.032);
+  ctx.font = `900 ${fontSize}px 'Plus Jakarta Sans', Arial, sans-serif`;
+  const textWidth = ctx.measureText(stamp).width;
+  const padX = fontSize*0.6, padY = fontSize*0.5;
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, canvas.height - fontSize - padY*2, textWidth + padX*2, fontSize + padY*2);
+  ctx.fillStyle = '#00d999';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(stamp, padX, canvas.height - (fontSize/2) - padY);
+
+  canvas.toBlob(blob => {
+    selfieCapturedBlob = blob;
+    const previewUrl = URL.createObjectURL(blob);
+    document.getElementById('selfie-camera-preview').src = previewUrl;
+    document.getElementById('selfie-camera-preview').style.display = 'block';
+    document.getElementById('selfie-camera-video').style.display = 'none';
+    document.getElementById('selfie-oval-guide').style.display = 'none';
+    document.getElementById('selfie-camera-controls').classList.add('hidden');
+    document.getElementById('selfie-preview-controls').classList.remove('hidden');
+  }, 'image/jpeg', 0.92);
+}
+
+function retakeSelfiePhoto(){
+  selfieCapturedBlob = null;
+  document.getElementById('selfie-camera-preview').style.display = 'none';
+  document.getElementById('selfie-camera-video').style.display = 'block';
+  document.getElementById('selfie-oval-guide').style.display = 'flex';
+  document.getElementById('selfie-camera-controls').classList.remove('hidden');
+  document.getElementById('selfie-preview-controls').classList.add('hidden');
+}
+
+async function confirmSelfiePhoto(){
+  if(!selfieCapturedBlob) return;
+  const file = new File([selfieCapturedBlob], 'selfie.jpg', { type: 'image/jpeg' });
+  closeSelfieCameraModal();
+  await uploadVerificationFile(file, 'selfie');
 }
 
 async function submitVerificationDocuments(){
@@ -4917,6 +5096,8 @@ async function submitVerificationDocuments(){
       dni_url: verificationUpload.dni_url,
       nota_simple_url: verificationUpload.nota_simple_url,
       selfie_url: verificationUpload.selfie_url,
+      selfie_code: selfieVerificationCode,
+      selfie_ai_score: selfieAiScore,
       status: 'pendiente'
     });
     if(error) throw error;
