@@ -6,56 +6,157 @@
 <title>SINKOMI · Admin</title>
 <meta name="robots" content="noindex, nofollow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   :root{
     --bg:#0a0f0c;
     --panel:#111a14;
+    --panel-2:#0d1611;
     --border:#1e2e22;
     --accent:#00a878;
+    --accent-glow:rgba(0,168,120,0.35);
     --orange:#e8a020;
     --red:#e84c1e;
     --text:#e8f0eb;
     --muted:rgba(232,240,235,0.4);
+    --muted-2:rgba(232,240,235,0.62);
     --font:'SF Mono','Fira Mono','Consolas',monospace;
+    --font-display:'Space Grotesk',var(--font);
   }
   body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;}
 
-  /* LOGIN */
+  /* ══════════════════════════════════════════
+     LOGIN — Torre de control de las Baleares
+  ══════════════════════════════════════════ */
   #login-screen{
     position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    background:var(--bg);z-index:100;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0,168,120,0.10), transparent 70%),
+      var(--bg);
+    z-index:100;overflow:hidden;
   }
-  .login-box{
-    border:1px solid var(--border);padding:2.5rem;width:100%;max-width:360px;
-    background:var(--panel);
+  /* Rejilla de coordenadas, como una carta náutica */
+  #login-screen::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(0,168,120,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,168,120,0.055) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(ellipse 70% 65% at 50% 45%, black 30%, transparent 78%);
+    -webkit-mask-image:radial-gradient(ellipse 70% 65% at 50% 45%, black 30%, transparent 78%);
   }
-  .login-box h1{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;}
-  .login-box input{
-    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
-    padding:.75rem 1rem;font-family:var(--font);font-size:13px;margin-bottom:1rem;outline:none;
+  /* Barrido de radar */
+  .radar-sweep{
+    position:absolute;top:50%;left:50%;width:1400px;height:1400px;
+    transform:translate(-50%,-50%);
+    background:conic-gradient(from 0deg, transparent 0deg, rgba(0,168,120,0.14) 18deg, transparent 60deg);
+    animation:sweep 7s linear infinite;
+    pointer-events:none;
   }
-  .login-box input:focus{border-color:var(--accent);}
-  .login-box button{
-    width:100%;background:var(--accent);color:#0a0f0c;border:none;padding:.85rem;
-    font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.16em;
-    text-transform:uppercase;cursor:pointer;
-  }
-  .login-box button:hover{opacity:.9;}
-  #login-error{color:var(--red);font-size:11px;margin-top:.75rem;display:none;}
+  @keyframes sweep{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
 
-  /* LAYOUT */
+  /* Etiquetas de coordenadas reales de las cuatro islas, en las esquinas */
+  .coord-tag{
+    position:absolute;font-size:9.5px;letter-spacing:.1em;color:var(--muted);
+    display:flex;flex-direction:column;gap:.15rem;line-height:1.5;
+    opacity:.75;
+  }
+  .coord-tag b{color:var(--accent);font-weight:700;letter-spacing:.16em;}
+  .coord-tl{top:2rem;left:2rem;text-align:left;}
+  .coord-tr{top:2rem;right:2rem;text-align:right;}
+  .coord-bl{bottom:2rem;left:2rem;text-align:left;}
+  .coord-br{bottom:2rem;right:2rem;text-align:right;}
+  @media (max-width:720px){ .coord-tag{display:none;} }
+
+  .login-box{
+    position:relative;z-index:2;
+    border:1px solid var(--border);width:100%;max-width:380px;
+    background:linear-gradient(180deg, rgba(17,26,20,0.92), rgba(13,22,17,0.96));
+    backdrop-filter:blur(6px);
+    box-shadow:0 0 0 1px rgba(0,168,120,0.06), 0 30px 70px -20px rgba(0,0,0,0.7), 0 0 60px -20px var(--accent-glow);
+    padding:2.75rem 2.25rem 2.25rem;
+  }
+  .login-crest{
+    width:42px;height:42px;margin:0 auto 1.25rem;position:relative;
+    border:1px solid var(--accent);transform:rotate(45deg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .login-crest span{
+    transform:rotate(-45deg);font-family:var(--font-display);font-weight:700;
+    font-size:14px;color:var(--accent);letter-spacing:0;
+  }
+  .login-eyebrow{
+    text-align:center;font-size:9px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:.5rem;
+  }
+  .login-box h1{
+    font-family:var(--font-display);font-size:17px;font-weight:600;letter-spacing:.01em;
+    text-align:center;color:var(--text);margin-bottom:1.75rem;
+  }
+  .login-field{position:relative;margin-bottom:1.1rem;}
+  .login-field input{
+    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:.85rem 2.6rem .85rem 2.6rem;font-family:var(--font);font-size:13px;outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,120,0.12);}
+  .login-field .field-icon{
+    position:absolute;left:.85rem;top:50%;transform:translateY(-50%);
+    color:var(--muted);pointer-events:none;font-size:13px;
+  }
+  .login-field .field-toggle{
+    position:absolute;right:.7rem;top:50%;transform:translateY(-50%);
+    background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;
+    font-family:var(--font);letter-spacing:.08em;text-transform:uppercase;padding:.3rem;
+  }
+  .login-field .field-toggle:hover{color:var(--accent);}
+  .login-box button.login-submit{
+    width:100%;background:var(--accent);color:#06110c;border:none;padding:.9rem;
+    font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;
+    transition:filter .15s ease, transform .1s ease;
+  }
+  .login-box button.login-submit:hover{filter:brightness(1.08);}
+  .login-box button.login-submit:active{transform:scale(.99);}
+  #login-error{
+    color:var(--red);font-size:11px;margin-top:1rem;display:none;text-align:center;
+    letter-spacing:.03em;
+  }
+  .login-footer{
+    text-align:center;margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--border);
+    font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  }
+  .login-footer b{color:var(--muted-2);}
+
+  /* ══════════════════════════════════════════
+     LAYOUT
+  ══════════════════════════════════════════ */
   #admin{display:none;}
   header{
-    background:var(--panel);border-bottom:1px solid var(--border);
-    padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border-bottom:1px solid var(--border);position:relative;
+    padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;
   }
-  header h1{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);}
+  header::after{
+    content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+    background:linear-gradient(90deg, var(--accent), transparent 55%);opacity:.5;
+  }
+  .header-brand{display:flex;align-items:center;gap:.7rem;}
+  .header-crest{
+    width:24px;height:24px;border:1px solid var(--accent);transform:rotate(45deg);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .header-crest span{transform:rotate(-45deg);font-family:var(--font-display);font-weight:700;font-size:9px;color:var(--accent);}
+  header h1{font-family:var(--font-display);font-size:13px;letter-spacing:.08em;color:var(--text);font-weight:600;}
+  header h1 em{color:var(--accent);font-style:normal;}
   header span{font-size:10px;color:var(--muted);}
   .logout-btn{
     background:none;border:1px solid var(--border);color:var(--muted);
     padding:.4rem .8rem;font-family:var(--font);font-size:10px;letter-spacing:.1em;
-    text-transform:uppercase;cursor:pointer;
+    text-transform:uppercase;cursor:pointer;transition:border-color .15s,color .15s;
   }
   .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
@@ -63,11 +164,21 @@
 
   /* STATS */
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
-  .stat{background:var(--panel);border:1px solid var(--border);padding:1.25rem 1.5rem;}
-  .stat-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
-  .stat-value{font-size:1.75rem;font-weight:700;color:var(--text);}
+  .stat{
+    background:var(--panel);border:1px solid var(--border);padding:1.25rem 1.5rem;
+    position:relative;overflow:hidden;transition:border-color .15s ease, transform .15s ease;
+  }
+  .stat::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--stat-accent, var(--border));opacity:.8;
+  }
+  .stat:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-1px);}
+  .stat-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;}
+  .stat-value{font-family:var(--font-display);font-size:1.9rem;font-weight:600;color:var(--text);}
   .stat-value.green{color:var(--accent);}
   .stat-value.orange{color:var(--orange);}
+  .stat.accent-green{--stat-accent:var(--accent);}
+  .stat.accent-orange{--stat-accent:var(--orange);}
 
   /* TABS */
   .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;}
@@ -75,27 +186,32 @@
     background:none;border:none;border-bottom:2px solid transparent;
     color:var(--muted);font-family:var(--font);font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;padding:.75rem 1.25rem;cursor:pointer;margin-bottom:-1px;
+    transition:color .15s ease;
   }
+  .tab:hover{color:var(--muted-2);}
   .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
   .tab-content{display:none;}
   .tab-content.active{display:block;}
 
   /* TABLE */
-  .table-wrap{overflow-x:auto;}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);}
   table{width:100%;border-collapse:collapse;font-size:12px;}
   th{
     text-align:left;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--muted);padding:.75rem 1rem;border-bottom:1px solid var(--border);
-    white-space:nowrap;
+    color:var(--muted);padding:.8rem 1rem;border-bottom:1px solid var(--border);
+    background:var(--panel-2);white-space:nowrap;
   }
   td{padding:.85rem 1rem;border-bottom:1px solid var(--border);vertical-align:middle;}
-  tr:hover td{background:rgba(0,168,120,0.03);}
+  tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .12s ease;}
+  tbody tr:hover td{background:rgba(0,168,120,0.04);}
 
   /* BADGES */
   .badge{
-    display:inline-block;font-size:9px;font-weight:700;letter-spacing:.1em;
-    text-transform:uppercase;padding:.2rem .55rem;
+    display:inline-flex;align-items:center;gap:.35rem;font-size:9px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;padding:.28rem .6rem;
   }
+  .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
   .badge-green{background:rgba(0,168,120,0.15);color:var(--accent);}
   .badge-orange{background:rgba(232,160,32,0.15);color:var(--orange);}
   .badge-red{background:rgba(232,76,30,0.15);color:var(--red);}
@@ -125,15 +241,15 @@
   .refresh-btn{
     background:none;border:1px solid var(--border);color:var(--muted);
     font-family:var(--font);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
-    padding:.3rem .6rem;cursor:pointer;
+    padding:.3rem .6rem;cursor:pointer;transition:border-color .15s,color .15s;
   }
   .refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
 
   /* TOAST */
   #toast{
     position:fixed;bottom:2rem;right:2rem;background:var(--accent);color:#0a0f0c;
-    padding:.75rem 1.25rem;font-size:11px;font-weight:700;letter-spacing:.1em;
-    text-transform:uppercase;display:none;z-index:999;
+    padding:.8rem 1.35rem;font-size:11px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;display:none;z-index:999;box-shadow:0 12px 30px -8px rgba(0,168,120,0.5);
   }
 </style>
 </head>
@@ -141,18 +257,34 @@
 
 <!-- LOGIN -->
 <div id="login-screen">
+  <div class="radar-sweep"></div>
+  <div class="coord-tag coord-tl">MALLORCA<br><b>39.5696°N 2.6502°E</b></div>
+  <div class="coord-tag coord-tr">MENORCA<br><b>39.9496°N 4.1103°E</b></div>
+  <div class="coord-tag coord-bl">EIVISSA<br><b>38.9067°N 1.4206°E</b></div>
+  <div class="coord-tag coord-br">FORMENTERA<br><b>38.6989°N 1.4200°E</b></div>
+
   <div class="login-box">
-    <h1>SINKOMI · Panel de administración</h1>
-    <input type="password" id="admin-pass" placeholder="Contraseña de acceso" autocomplete="off">
-    <button onclick="checkLogin()">Entrar</button>
+    <div class="login-crest"><span>SK</span></div>
+    <div class="login-eyebrow">Acceso restringido</div>
+    <h1>Panel de administración</h1>
+    <div class="login-field">
+      <span class="field-icon">🔒</span>
+      <input type="password" id="admin-pass" placeholder="Contraseña de acceso" autocomplete="off">
+      <button type="button" class="field-toggle" onclick="toggleAdminPassVisibility()" id="admin-pass-toggle">Ver</button>
+    </div>
+    <button class="login-submit" onclick="checkLogin()">Entrar</button>
     <div id="login-error">Contraseña incorrecta</div>
+    <div class="login-footer">SINKOMI · Mallorca · Menorca · Eivissa · Formentera</div>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
 <div id="admin">
   <header>
-    <h1>SINKOMI Admin</h1>
+    <div class="header-brand">
+      <div class="header-crest"><span>SK</span></div>
+      <h1><em>SINKOMI</em> Admin</h1>
+    </div>
     <div style="display:flex;align-items:center;gap:1rem;">
       <span id="last-update"></span>
       <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
@@ -162,12 +294,12 @@
   <main>
     <!-- STATS -->
     <div class="stats" id="stats">
-      <div class="stat"><div class="stat-label">Usuarios registrados</div><div class="stat-value green" id="stat-users">—</div></div>
-      <div class="stat"><div class="stat-label">Pagos totales</div><div class="stat-value green" id="stat-payments">—</div></div>
-      <div class="stat"><div class="stat-label">Ingresos totales</div><div class="stat-value orange" id="stat-revenue">—</div></div>
-      <div class="stat"><div class="stat-label">Ingresos este mes</div><div class="stat-value orange" id="stat-revenue-month">—</div></div>
+      <div class="stat accent-green"><div class="stat-label">Usuarios registrados</div><div class="stat-value green" id="stat-users">—</div></div>
+      <div class="stat accent-green"><div class="stat-label">Pagos totales</div><div class="stat-value green" id="stat-payments">—</div></div>
+      <div class="stat accent-orange"><div class="stat-label">Ingresos totales</div><div class="stat-value orange" id="stat-revenue">—</div></div>
+      <div class="stat accent-orange"><div class="stat-label">Ingresos este mes</div><div class="stat-value orange" id="stat-revenue-month">—</div></div>
       <div class="stat"><div class="stat-label">Propiedades activas</div><div class="stat-value" id="stat-properties">—</div></div>
-      <div class="stat"><div class="stat-label">Verificaciones pendientes</div><div class="stat-value orange" id="stat-pending">—</div></div>
+      <div class="stat accent-orange"><div class="stat-label">Verificaciones pendientes</div><div class="stat-value orange" id="stat-pending">—</div></div>
     </div>
 
     <!-- TABS -->
@@ -232,16 +364,27 @@
 
 <script>
   // ─── CONFIGURACIÓN ───────────────────────────────────────────────
-  const ADMIN_PASSWORD = 'Lunita3012013teamo.'; // Cambia esto cuando quieras
+  const ADMIN_PASSWORD = 'Sinkomi2026!'; // Cambia esto cuando quieras
   const SUPABASE_URL   = 'https://utrkwpepgviadaygjfyr.supabase.co';
   const SUPABASE_KEY   = 'sb_publishable_JLpiGWpCo6PGCpQ0Ca-HZQ_CasEBaeh';
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // ─── LOGIN ───────────────────────────────────────────────────────
+  function toggleAdminPassVisibility(){
+    const input = document.getElementById('admin-pass');
+    const btn = document.getElementById('admin-pass-toggle');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.textContent = isHidden ? 'Ocultar' : 'Ver';
+  }
+
   function checkLogin(){
     const pass = document.getElementById('admin-pass').value;
+    const btn = document.querySelector('.login-submit');
     if(pass === ADMIN_PASSWORD){
+      if(btn){ btn.textContent = 'Accediendo…'; }
+      document.getElementById('login-error').style.display = 'none';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('admin').style.display = 'block';
       sessionStorage.setItem('sk_admin', '1');
