@@ -26,6 +26,51 @@
     const SUPABASE_KEY = 'sb_publishable_JLpiGWpCo6PGCpQ0Ca-HZQ_CasEBaeh';
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // ═══════════════════════════════════════════════
+    // AVISOS CON MARCA SINKOMI — sustituye al alert() genérico del navegador
+    // por una tarjeta propia, con icono y color según el tipo de mensaje.
+    // ═══════════════════════════════════════════════
+    (function(){
+      const nativeAlert = window.alert.bind(window);
+      function classify(msg){
+        const m = String(msg);
+        if(/no se ha podido|error|incorrect|caducad|ha ocurrido|superad?a?|debes|máximo|válid/i.test(m)) return 'error';
+        if(/correctamente|guardado|actualizad|enviad|activad|✓/i.test(m)) return 'success';
+        return 'info';
+      }
+      function ensureOverlay(){
+        let overlay = document.getElementById('sk-alert-overlay');
+        if(overlay) return overlay;
+        overlay = document.createElement('div');
+        overlay.id = 'sk-alert-overlay';
+        overlay.innerHTML = `
+          <div id="sk-alert-card">
+            <div id="sk-alert-icon"></div>
+            <div id="sk-alert-msg"></div>
+            <button id="sk-alert-btn" type="button">Entendido</button>
+          </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', e => { if(e.target === overlay) closeSkAlert(); });
+        document.getElementById('sk-alert-btn').addEventListener('click', closeSkAlert);
+        return overlay;
+      }
+      window.closeSkAlert = function(){
+        const overlay = document.getElementById('sk-alert-overlay');
+        if(overlay) overlay.classList.remove('sk-alert-open');
+      };
+      window.showSkAlert = function(message){
+        const overlay = ensureOverlay();
+        const type = classify(message);
+        const icons = { success:'✓', error:'✕', info:'i' };
+        overlay.querySelector('#sk-alert-card').className = 'sk-alert-' + type;
+        overlay.querySelector('#sk-alert-icon').textContent = icons[type];
+        overlay.querySelector('#sk-alert-msg').textContent = message;
+        overlay.classList.add('sk-alert-open');
+      };
+      window.alert = function(message){ window.showSkAlert(message); };
+      window._nativeAlert = nativeAlert; // por si hiciera falta el nativo alguna vez
+    })();
+
     // Helper: usuario actual
     async function getCurrentUser(){
       const { data: { user } } = await supabase.auth.getUser();
@@ -70,11 +115,13 @@
         if(profile){
           SinKomiAuth.loginFromSupabase(profile);
           syncUI();
+          if(typeof loadFavouritesFromSupabase==='function') loadFavouritesFromSupabase();
         }
       }
       if(event === 'SIGNED_OUT'){
         SinKomiAuth.clearLocalSession();
         syncUI();
+        if(typeof favIdsCache!=='undefined'){ favIdsCache = []; if(typeof initHearts==='function') initHearts(); }
       }
     });
 
@@ -101,6 +148,35 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Special+Elite&family=Bebas+Neue&display=swap');
     :root{--bg:#f4f2ef;--paper:#ffffff;--ink:#101010;--muted:#6b6b6b;--line:rgba(0,0,0,0.08);--accent:#00a878;--accent-dark:#008f66;--accent-soft:rgba(0,168,120,0.10);--dark:#0d1a14;--orange:#e8a020;--orange-soft:rgba(232,160,32,0.09);--gold:#e8a020;}
+    /* ── AVISO CON MARCA SINKOMI (sustituye al alert() nativo) ── */
+    #sk-alert-overlay{
+      position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;
+      background:rgba(13,26,20,0.55);backdrop-filter:blur(3px);
+      opacity:0;pointer-events:none;transition:opacity .18s ease;padding:1.25rem;
+    }
+    #sk-alert-overlay.sk-alert-open{opacity:1;pointer-events:auto;}
+    #sk-alert-card{
+      background:var(--paper,#fff);width:100%;max-width:360px;padding:2rem 1.75rem 1.75rem;
+      box-shadow:0 30px 70px -20px rgba(0,0,0,0.4);text-align:center;
+      transform:translateY(10px) scale(.97);transition:transform .18s ease;
+    }
+    #sk-alert-overlay.sk-alert-open #sk-alert-card{transform:translateY(0) scale(1);}
+    #sk-alert-icon{
+      width:44px;height:44px;border-radius:50%;margin:0 auto 1rem;
+      display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;
+    }
+    .sk-alert-success #sk-alert-icon{background:var(--accent);}
+    .sk-alert-error #sk-alert-icon{background:#c0392b;}
+    .sk-alert-info #sk-alert-icon{background:var(--orange);}
+    #sk-alert-msg{font-size:14px;line-height:1.55;color:var(--ink);white-space:pre-line;margin-bottom:1.4rem;font-weight:500;}
+    #sk-alert-btn{
+      background:var(--dark);color:#fff;border:none;padding:.75rem 1.75rem;
+      font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+      cursor:pointer;transition:opacity .15s ease;
+    }
+    .sk-alert-success #sk-alert-btn{background:var(--accent);}
+    .sk-alert-error #sk-alert-btn{background:#c0392b;}
+    #sk-alert-btn:hover{opacity:.88;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html{scroll-behavior:smooth;}
     body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
@@ -2106,7 +2182,7 @@
 <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><select id="publish-location" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800"><option value="">Selecciona un municipio...</option></select></div></div>
-<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285000"></div></div>
+<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
 <div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p></div>
 <div class="panel p-5"><div class="section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
 <div class="panel p-5"><div class="section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label></div></div>
@@ -4464,6 +4540,18 @@ document.addEventListener('change', function(e){
 });
 function updatePublishTotal(){document.getElementById('publish-total').textContent=document.getElementById('publish-verified')?.checked?'8,99 €':'0 €';}
 function getCheckedExtras(){const extras=[];[['extra-ascensor','Ascensor'],['extra-terraza','Terraza'],['extra-balcon','Balcón'],['extra-garaje','Garaje'],['extra-trastero','Trastero'],['extra-piscina','Piscina'],['extra-jardin','Jardín'],['extra-aire','Aire acondicionado']].forEach(([id,label])=>{if(document.getElementById(id)?.checked)extras.push(label);});return extras.length?extras.join(' · '):'Consultar';}
+// Formatea en vivo el campo de precio con puntos de miles (estilo español), p.ej. 400.000
+function formatPriceInput(el){
+  const digitsOnly = el.value.replace(/[^\d]/g,'');
+  const cursorFromEnd = el.value.length - el.selectionStart;
+  el.value = digitsOnly ? Number(digitsOnly).toLocaleString('es-ES') : '';
+  const newPos = Math.max(0, el.value.length - cursorFromEnd);
+  el.setSelectionRange(newPos, newPos);
+}
+// Extrae el número real (sin puntos) del campo de precio para guardarlo en la base de datos
+function getPublishPriceValue(){
+  return Number((document.getElementById('publish-price').value||'').replace(/[^\d]/g,'')) || 0;
+}
 async function submitPublishForm(){
   if(!SinKomiAuth.isLoggedIn()){ alert('Debes iniciar sesión para publicar un inmueble.'); return; }
   const user = SinKomiAuth.getUser();
@@ -4485,7 +4573,7 @@ async function submitPublishForm(){
   let _locVal=document.getElementById('publish-location').value||'Mallorca';let _mun=_locVal,_nuc='';if(_locVal.indexOf('|')>-1){const _p=_locVal.split('|');_mun=_p[0];_nuc=_p[1];}const location=_nuc||_mun;
   const type=document.getElementById('publish-type').value;
   const category=document.getElementById('publish-category').value||'Piso';
-  const price=Number(document.getElementById('publish-price').value)||0;
+  const price=getPublishPriceValue();
   if(price <= 0){ alert('Por favor, introduce un precio válido para tu inmueble.'); return; }
   if(publishedPhotos.some(p => p.uploading)){
     alert('Espera a que terminen de subirse las fotos antes de publicar.');
@@ -4741,7 +4829,7 @@ async function editPropertyListing(id){
   document.getElementById('publish-type').value = p.type || 'Venta';
   populatePublishCategory();
   if(p.category) document.getElementById('publish-category').value = p.category;
-  document.getElementById('publish-price').value = p.price || '';
+  document.getElementById('publish-price').value = p.price ? Number(p.price).toLocaleString('es-ES') : '';
   document.getElementById('publish-built-m2').value = (p.built_m2 && p.built_m2!=='No especificado') ? p.built_m2 : '';
   document.getElementById('publish-useful-m2').value = p.useful_m2 || '';
   document.getElementById('publish-bedrooms').value = (p.bedrooms && p.bedrooms!=='No especificado') ? p.bedrooms : '';
@@ -4794,18 +4882,61 @@ function openInfoTooltip(){document.getElementById('info-tooltip').style.display
 function closeInfoTooltip(){document.getElementById('info-tooltip').style.display='none';}
 
 
-function getFavourites(){
-  try{ return JSON.parse(localStorage.getItem('sinkomi_favs')||'[]'); }
-  catch(e){ return []; }
+// ── FAVORITOS (Supabase) ──────────────────────────────────────────────
+// favIdsCache mantiene en memoria los favoritos del usuario logueado, para
+// que los corazones se pinten al instante sin tener que consultar la base
+// de datos en cada tarjeta. Se recarga de Supabase al iniciar sesión.
+let favIdsCache = [];
+
+// Carga los favoritos reales del usuario logueado desde Supabase.
+async function loadFavouritesFromSupabase(){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ favIdsCache = []; initHearts(); return; }
+  try{
+    const { data, error } = await supabase.from('favourites').select('property_id').eq('user_id', user.supabase_id);
+    if(error){ console.error('Error cargando favoritos:', error); return; }
+    favIdsCache = (data||[]).map(r=>r.property_id);
+  }catch(e){
+    console.error('Error de red cargando favoritos:', e);
+  }
+  initHearts();
+  // Si el panel "Mi cuenta" está abierto, refrescar también la lista de favoritos que muestra
+  const panel = document.getElementById('user-panel-modal');
+  if(panel && panel.style.display !== 'none' && typeof openUserPanel==='function') openUserPanel();
 }
-function toggleFavourite(id, btn, e){
+
+function getFavourites(){
+  return favIdsCache;
+}
+
+async function toggleFavourite(id, btn, e){
   if(e) e.stopPropagation();
   else if(window.event) window.event.stopPropagation();
-  var favs = getFavourites();
-  var idx = favs.indexOf(id);
-  if(idx>=0){ favs.splice(idx,1); }
-  else{ favs.push(id); }
-  localStorage.setItem('sinkomi_favs', JSON.stringify(favs));
+
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){
+    alert('Inicia sesión para guardar inmuebles en tus favoritos.');
+    openLoginModal();
+    return;
+  }
+  if(!(await ensureValidSession(user))) return;
+
+  const isFav = favIdsCache.includes(id);
+  try{
+    if(isFav){
+      const { error } = await supabase.from('favourites').delete().eq('user_id', user.supabase_id).eq('property_id', id);
+      if(error) throw error;
+      favIdsCache = favIdsCache.filter(fid => fid !== id);
+    } else {
+      const { error } = await supabase.from('favourites').insert({ user_id: user.supabase_id, property_id: id });
+      if(error) throw error;
+      favIdsCache.push(id);
+    }
+  }catch(e){
+    console.error('Error actualizando favoritos:', e);
+    alert('No se ha podido actualizar tus favoritos. Inténtalo de nuevo.');
+    return;
+  }
   updateHeartBtn(id, btn);
 }
 function updateHeartBtn(id, btn){
@@ -6173,12 +6304,6 @@ function closeLegal() {
         </div>
         <!-- Sección según rol (propietario / inquilino / comprador) -->
         <div id="user-panel-role-section"></div>
-      </div>
-
-      <!-- Nota Supabase — siempre visible -->
-      <div class="flex items-start gap-3 px-4 py-3 border border-black/6 bg-white text-[11px] text-zinc-500 leading-relaxed">
-        <i class="fa-solid fa-circle-info text-[var(--accent)] mt-0.5 shrink-0"></i>
-        <span>Cuando conectemos tu base de datos en Supabase, este perfil guardará tus preferencias en tiempo real en la nube.</span>
       </div>
 
     </div>
