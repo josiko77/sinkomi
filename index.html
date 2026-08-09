@@ -120,6 +120,7 @@
     .hover-lift{transition:all 0.38s cubic-bezier(0.23,1,0.32,1);}
     .hover-lift:hover{transform:translateY(-6px);box-shadow:0 30px 64px rgba(0,0,0,0.10);}
     @keyframes fadeUp{from{transform:translateY(18px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    @keyframes spin{to{transform:rotate(360deg);}}
     @keyframes pulseSoft{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.76;transform:scale(1.015);}}
     @keyframes glowSoft{0%,100%{box-shadow:0 0 0 rgba(0,168,120,0);}50%{box-shadow:0 0 22px rgba(0,168,120,.4);}}
     @keyframes glowOrange{0%,100%{box-shadow:0 0 0 rgba(255,90,44,0);}50%{box-shadow:0 0 22px rgba(255,90,44,.45);}}
@@ -3799,35 +3800,62 @@ function matchesAdvancedFilters(prop, tab){
 // ─────────────────────────────────────────────────────────────────────────
 
 // ── SUBIDA DE FOTOS Y VÍDEO EN FORMULARIO DE PUBLICACIÓN ─────────────────
-var publishedPhotos = []; // URLs object locales de las fotos seleccionadas
+// Cada foto es {url, uploading, error}: url empieza como vista previa local (blob:)
+// y se sustituye por la URL pública real de Supabase Storage en cuanto termina de subir.
+var publishedPhotos = [];
 var editingPropertyId = null; // null = publicando nuevo · uuid = editando anuncio existente
 var editingPropertyOriginalImages = []; // imágenes ya guardadas del anuncio que se está editando
 var publishedVideo  = null;
+var publishedVideoUploading = false;
 
 function handlePublishPhotos(input){
   const files = Array.from(input.files);
   if(!files.length) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ alert('Debes iniciar sesión para subir fotos.'); input.value=''; return; }
   const max = getMaxPhotos();
   const total = publishedPhotos.length + files.length;
   const allowed = files.slice(0, max - publishedPhotos.length);
   if(total > max) alert(`Máximo ${max} fotos. Solo se han añadido ${allowed.length}.`);
 
   allowed.forEach(file => {
-    const url = URL.createObjectURL(file);
-    publishedPhotos.push(url);
+    const photoObj = { url: URL.createObjectURL(file), uploading: true, error: false };
+    publishedPhotos.push(photoObj);
+    uploadPropertyPhoto(file, user.supabase_id, photoObj);
   });
 
   renderPublishPhotoPreviews();
   input.value = ''; // Reset input para permitir volver a seleccionar
 }
 
+// Sube una foto de verdad al bucket 'property-images' de Supabase Storage
+// y sustituye la vista previa local por la URL pública real.
+async function uploadPropertyPhoto(file, ownerId, photoObj){
+  try{
+    const ext = (file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const path = `${ownerId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('property-images').upload(path, file, { cacheControl:'3600', upsert:false });
+    if(uploadError) throw uploadError;
+    const { data } = supabase.storage.from('property-images').getPublicUrl(path);
+    photoObj.url = data.publicUrl;
+    photoObj.uploading = false;
+  }catch(e){
+    console.error('Error subiendo foto:', e);
+    photoObj.uploading = false;
+    photoObj.error = true;
+  }
+  renderPublishPhotoPreviews();
+}
+
 function renderPublishPhotoPreviews(){
   const container = document.getElementById('publish-photos-preview');
   if(!container) return;
-  container.innerHTML = publishedPhotos.map((url, i) => `
+  container.innerHTML = publishedPhotos.map((p, i) => `
     <div style="position:relative;aspect-ratio:1;overflow:hidden;border:1px solid rgba(0,0,0,0.08);">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      ${i===0 ? '<div style="position:absolute;top:0;left:0;background:var(--accent);color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;">Principal</div>' : ''}
+      <img src="${p.url}" style="width:100%;height:100%;object-fit:cover;display:block;${p.uploading?'opacity:.45;':''}">
+      ${i===0 && !p.uploading && !p.error ? '<div style="position:absolute;top:0;left:0;background:var(--accent);color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;">Principal</div>' : ''}
+      ${p.uploading ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);"><div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>' : ''}
+      ${p.error ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(200,40,40,0.88);color:white;font-size:8px;font-weight:800;text-align:center;padding:2px;letter-spacing:.05em;">Error al subir</div>' : ''}
       <button onclick="removePublishPhoto(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:999px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
     </div>
   `).join('');
@@ -3842,27 +3870,63 @@ function handlePublishVideo(input){
   const file = input.files[0];
   if(!file) return;
   if(!isPremiumPlan()){ alert('El vídeo tour está disponible con el plan Verificado + Destacado (desde 12,99€/7 días).'); input.value=''; return; }
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ alert('Debes iniciar sesión para subir un vídeo.'); input.value=''; return; }
   const maxMB = 200;
   if(file.size > maxMB * 1024 * 1024){
     alert(`El vídeo supera los ${maxMB}MB. Por favor elige un archivo más pequeño.`);
     input.value = '';
     return;
   }
-  publishedVideo = URL.createObjectURL(file);
+  publishedVideo = URL.createObjectURL(file); // vista previa local mientras sube
+  publishedVideoUploading = true;
   const container = document.getElementById('publish-video-preview');
-  if(!container) return;
-  container.innerHTML = `
-    <div style="position:relative;border:1px solid rgba(0,0,0,0.08);background:#000;border-radius:2px;overflow:hidden;">
-      <video src="${publishedVideo}" controls style="width:100%;max-height:200px;display:block;"></video>
-      <button onclick="removePublishVideo()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.75);color:white;border:none;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;letter-spacing:.1em;">✕ Quitar</button>
-    </div>
-    <div style="font-size:10px;color:#aaa;font-weight:600;margin-top:4px;">${file.name} · ${(file.size/1024/1024).toFixed(1)}MB</div>
-  `;
+  if(container){
+    container.innerHTML = `
+      <div style="position:relative;border:1px solid rgba(0,0,0,0.08);background:#000;border-radius:2px;overflow:hidden;">
+        <video src="${publishedVideo}" controls style="width:100%;max-height:200px;display:block;opacity:.5;"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div style="width:24px;height:24px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>
+        <button onclick="removePublishVideo()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.75);color:white;border:none;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;letter-spacing:.1em;">✕ Quitar</button>
+      </div>
+      <div style="font-size:10px;color:#aaa;font-weight:600;margin-top:4px;">Subiendo vídeo… · ${(file.size/1024/1024).toFixed(1)}MB</div>
+    `;
+  }
+  uploadPropertyVideo(file, user.supabase_id);
   input.value = '';
+}
+
+// Sube el vídeo de verdad al bucket 'property-videos' de Supabase Storage.
+async function uploadPropertyVideo(file, ownerId){
+  try{
+    const ext = (file.name.split('.').pop()||'mp4').toLowerCase().replace(/[^a-z0-9]/g,'') || 'mp4';
+    const path = `${ownerId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('property-videos').upload(path, file, { cacheControl:'3600', upsert:false });
+    if(uploadError) throw uploadError;
+    const { data } = supabase.storage.from('property-videos').getPublicUrl(path);
+    publishedVideo = data.publicUrl;
+    publishedVideoUploading = false;
+    const container = document.getElementById('publish-video-preview');
+    if(container){
+      container.innerHTML = `
+        <div style="position:relative;border:1px solid rgba(0,0,0,0.08);background:#000;border-radius:2px;overflow:hidden;">
+          <video src="${publishedVideo}" controls style="width:100%;max-height:200px;display:block;"></video>
+          <button onclick="removePublishVideo()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.75);color:white;border:none;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;letter-spacing:.1em;">✕ Quitar</button>
+        </div>
+        <div style="font-size:10px;color:var(--accent);font-weight:700;margin-top:4px;">✓ Vídeo subido correctamente</div>
+      `;
+    }
+  }catch(e){
+    console.error('Error subiendo vídeo:', e);
+    publishedVideoUploading = false;
+    const container = document.getElementById('publish-video-preview');
+    if(container) container.innerHTML = `<div style="font-size:10px;color:#c0392b;font-weight:700;">No se ha podido subir el vídeo. Inténtalo de nuevo.</div>`;
+    publishedVideo = null;
+  }
 }
 
 function removePublishVideo(){
   publishedVideo = null;
+  publishedVideoUploading = false;
   const container = document.getElementById('publish-video-preview');
   if(container) container.innerHTML = '';
 }
@@ -4423,7 +4487,16 @@ async function submitPublishForm(){
   const category=document.getElementById('publish-category').value||'Piso';
   const price=Number(document.getElementById('publish-price').value)||0;
   if(price <= 0){ alert('Por favor, introduce un precio válido para tu inmueble.'); return; }
-  const images = publishedPhotos.length > 0 ? [...publishedPhotos] : (editingPropertyOriginalImages.length > 0 ? [...editingPropertyOriginalImages] : [propertyBlueprints[0].img]);
+  if(publishedPhotos.some(p => p.uploading)){
+    alert('Espera a que terminen de subirse las fotos antes de publicar.');
+    return;
+  }
+  if(publishedVideoUploading){
+    alert('Espera a que termine de subirse el vídeo antes de publicar.');
+    return;
+  }
+  const validPhotos = publishedPhotos.filter(p => !p.error).map(p => p.url);
+  const images = validPhotos.length > 0 ? validPhotos : (editingPropertyOriginalImages.length > 0 ? [...editingPropertyOriginalImages] : [propertyBlueprints[0].img]);
   const img = images[0];
   const verified=document.getElementById('publish-verified').checked;
   const description=escapeHtml(document.getElementById('publish-description').value.trim())||'Propiedad publicada recientemente. Contacta con el propietario/a para más detalles.';
