@@ -542,7 +542,7 @@
   async function loadVerifications(){
     const { data, error } = await sb.from('verification_documents').select('*, properties(title, municipality)').order('submitted_at', {ascending:false});
     const tbody = document.getElementById('verifications-body');
-    if(error || !data){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Error cargando verificaciones</div></td></tr>`; return; }
+    if(error || !data){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Error cargando verificaciones<br><span style="font-size:9px;color:var(--red);">${error?.message || 'Sin datos'} ${error?.hint ? '· '+error.hint : ''}</span></div></td></tr>`; console.error('Error verificaciones:', error); return; }
     if(!data.length){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Sin solicitudes aún</div></td></tr>`; return; }
 
     const pendientes = data.filter(v=>v.status==='pendiente').length;
