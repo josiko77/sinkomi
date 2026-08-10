@@ -540,10 +540,18 @@
 
   // ─── VERIFICACIONES (DNI + Nota Simple + selfie) ──────────────────
   async function loadVerifications(){
-    const { data, error } = await sb.from('verification_documents').select('*, properties(title, municipality)').order('submitted_at', {ascending:false});
+    const { data, error } = await sb.from('verification_documents').select('*').order('submitted_at', {ascending:false});
     const tbody = document.getElementById('verifications-body');
     if(error || !data){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Error cargando verificaciones<br><span style="font-size:9px;color:var(--red);">${error?.message || 'Sin datos'} ${error?.hint ? '· '+error.hint : ''}</span></div></td></tr>`; console.error('Error verificaciones:', error); return; }
     if(!data.length){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Sin solicitudes aún</div></td></tr>`; return; }
+
+    // Traemos los inmuebles relacionados por separado, sin depender del "join" automático de Supabase.
+    const propertyIds = [...new Set(data.map(v=>v.property_id).filter(Boolean))];
+    let propertiesMap = {};
+    if(propertyIds.length){
+      const { data: props } = await sb.from('properties').select('id,title,municipality').in('id', propertyIds);
+      (props||[]).forEach(p => { propertiesMap[p.id] = p; });
+    }
 
     const pendientes = data.filter(v=>v.status==='pendiente').length;
     document.getElementById('stat-pending').textContent = pendientes;
@@ -566,9 +574,10 @@
       const actions = v.status==='pendiente'
         ? `<button class="btn btn-green" onclick="approveVerification('${v.id}','${v.property_id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectVerification('${v.id}')">Rechazar</button>`
         : (v.admin_note ? `<span style="color:var(--muted);font-size:10px;">${v.admin_note}</span>` : '—');
+      const prop = propertiesMap[v.property_id];
       return `
       <tr>
-        <td>${v.properties?.title || 'Inmueble eliminado'}<br><span style="color:var(--muted);font-size:10px;">${v.properties?.municipality||''}</span></td>
+        <td>${prop?.title || 'Inmueble eliminado'}<br><span style="color:var(--muted);font-size:10px;">${prop?.municipality||''}</span></td>
         <td style="font-size:11px;color:var(--muted);">${v.submitted_at ? new Date(v.submitted_at).toLocaleDateString('es-ES') : '—'}</td>
         <td>${docs}${codeNote}${aiNote}</td>
         <td>${statusBadge}</td>
