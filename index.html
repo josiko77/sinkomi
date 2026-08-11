@@ -790,7 +790,7 @@
   </div>
 </section>
 
-<!-- SECCIÓN 50 FUNDADORES -->
+<!-- SECCIÓN 60 FUNDADORES -->
 <section class="w-full px-6 pb-8" id="fundadores">
   <div class="relative overflow-hidden" style="background:linear-gradient(135deg,#0a1f14 0%,#0d2e1a 50%,#1a0a00 100%);padding:3.5rem 3rem;border:1px solid rgba(255,255,255,0.06);">
 
@@ -809,7 +809,7 @@
         </div>
 
         <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.5rem);font-weight:700;font-style:italic;color:white;line-height:1.05;margin-bottom:1rem;">
-          Sé uno de los <em style="color:var(--orange);font-style:normal;font-weight:900;">50</em> propietarios<br>
+          Sé uno de los <em style="color:var(--orange);font-style:normal;font-weight:900;">60</em> propietarios<br>
           en publicar <em style="color:var(--orange);font-style:normal;font-weight:900;">con verificación gratis</em><br>
           en SINKOMI
         </h2>
@@ -847,12 +847,12 @@
       <!-- CONTADOR DERECHA -->
       <div style="text-align:center;flex-shrink:0;">
         <div style="border:1px solid rgba(232,160,32,0.25);padding:2.5rem 2rem;background:rgba(0,0,0,0.25);min-width:180px;">
-          <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);margin-bottom:.75rem;">Plazas restantes</div>
-          <div id="fundadores-count" style="font-size:6rem;font-weight:900;line-height:1;color:white;letter-spacing:-0.06em;font-family:'Plus Jakarta Sans',sans-serif;">50</div>
+          <div id="fundadores-label" style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);margin-bottom:.75rem;">Plazas restantes</div>
+          <div id="fundadores-count" style="font-size:6rem;font-weight:900;line-height:1;color:white;letter-spacing:-0.06em;font-family:'Plus Jakarta Sans',sans-serif;">60</div>
           <div style="width:100%;height:4px;background:rgba(255,255,255,0.08);margin:1rem 0;overflow:hidden;">
             <div id="fundadores-bar" style="height:100%;background:var(--orange);width:100%;transition:width 1.2s cubic-bezier(0.23,1,0.32,1);"></div>
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:.14em;">de 50 disponibles</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:.14em;">de 60 disponibles</div>
         </div>
         <div style="margin-top:1rem;font-size:10px;color:rgba(255,255,255,0.25);font-weight:700;text-transform:uppercase;letter-spacing:.14em;">Cuando se acaben, se acaban.</div>
       </div>
@@ -4278,9 +4278,24 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 // ─────────────────────────────────────────────────────────────────────────
-function initFundadores(){
-  // DEMO: contador estático hasta tener backend real
-  // No simular escasez falsa — el número se actualizará con datos reales de Supabase
+const FUNDADORES_TOTAL = 60;
+async function initFundadores(){
+  try{
+    const { count, error } = await supabase.from('properties').select('id', { count:'exact', head:true }).eq('verified', true);
+    if(error){ console.error('Error cargando contador de fundadores:', error); return; }
+    const usados = count || 0;
+    const restantes = Math.max(0, FUNDADORES_TOTAL - usados);
+    const countEl = document.getElementById('fundadores-count');
+    const barEl = document.getElementById('fundadores-bar');
+    if(countEl) countEl.textContent = restantes;
+    if(barEl) barEl.style.width = Math.max(0, Math.min(100, (restantes / FUNDADORES_TOTAL) * 100)) + '%';
+    if(restantes === 0){
+      const label = document.getElementById('fundadores-label');
+      if(label) label.textContent = 'Plazas agotadas';
+    }
+  }catch(e){
+    console.error('Error de red cargando contador de fundadores:', e);
+  }
 }
 // ─────────────────────────────────────────────────────────────────────────
 // Capa de autenticación simulada. Cuando llegue Supabase, solo cambia el
