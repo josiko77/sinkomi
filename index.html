@@ -3155,6 +3155,12 @@ function reportProperty(id){
 // ═══════════════════════════════════════════════════════════════
 // CHAT P2P REAL — persistente en Supabase, en vivo con Realtime.
 // ═══════════════════════════════════════════════════════════════
+let chatMyLang = 'Español';   // idioma en el que quiero leer los mensajes que me llegan
+let chatTheirLang = '';        // idioma al que se traduce lo que YO escribo (vacío = sin traducir)
+function onChatLangChange(){
+  chatMyLang = document.getElementById('chat-my-lang')?.value || 'Español';
+  chatTheirLang = document.getElementById('chat-their-lang')?.value || '';
+}
 let currentChatPropertyId = null;
 let currentChatOtherUserId = null;
 let chatRealtimeChannel = null;
