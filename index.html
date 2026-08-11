@@ -3208,15 +3208,26 @@ async function openChat(id){
 async function loadChatHistory(){
   const user = SinKomiAuth.getUser();
   const messagesEl = document.getElementById('chat-messages');
-  const { data, error } = await supabase.from('messages').select('*')
+
+  // Traemos todos los mensajes de este inmueble, y filtramos aquí mismo los de esta conversación
+  // concreta (más simple y fiable que un filtro complejo dentro de Supabase).
+  const { data: allData, error } = await supabase.from('messages').select('*')
     .eq('property_id', currentChatPropertyId)
-    .or(`and(sender_id.eq.${user.supabase_id},recipient_id.eq.${currentChatOtherUserId}),and(sender_id.eq.${currentChatOtherUserId},recipient_id.eq.${user.supabase_id})`)
     .order('created_at', { ascending: true });
 
-  if(error){ console.error('Error cargando el chat:', error); messagesEl.innerHTML = `<div class="text-center text-xs text-red-500 py-6">No se ha podido cargar la conversación.</div>`; return; }
+  if(error){
+    console.error('Error cargando el chat:', error);
+    messagesEl.innerHTML = `<div class="text-center text-xs text-red-500 py-6">No se ha podido cargar la conversación.<br><span style="font-size:10px;">${escapeHtml(error.message||'')} ${error.code?'· Código '+error.code:''}</span></div>`;
+    return;
+  }
+
+  const data = (allData||[]).filter(m =>
+    (m.sender_id === user.supabase_id && m.recipient_id === currentChatOtherUserId) ||
+    (m.sender_id === currentChatOtherUserId && m.recipient_id === user.supabase_id)
+  );
 
   messagesEl.innerHTML = '';
-  if(!data || !data.length){
+  if(!data.length){
     messagesEl.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Estás preguntando por <span class="font-medium">${escapeHtml(currentProperty.title)}</span>.</p><p class="mt-2 text-sm text-zinc-700">Escribe tu primer mensaje a ${escapeHtml(currentProperty.sellerName)} para empezar la conversación.</p></div></div>`;
   } else {
     data.forEach(msg => renderMessageBubble(msg));
@@ -3264,6 +3275,15 @@ function closeChat(){
 
 // Pinta un mensaje real (mío o del propietario) en la conversación, con traducción si toca.
 async function renderMessageBubble(msg){
+  try{
+    await renderMessageBubbleInner(msg);
+  }catch(e){
+    console.error('Error pintando mensaje:', e, msg);
+    const m = document.getElementById('chat-messages');
+    if(m) m.insertAdjacentHTML('beforeend', `<div class="text-center text-[10px] text-red-500 py-1">⚠ Error mostrando un mensaje: ${escapeHtml(e.message||String(e))}</div>`);
+  }
+}
+async function renderMessageBubbleInner(msg){
   if(chatRenderedIds.has(msg.id)) return;
   chatRenderedIds.add(msg.id);
 
