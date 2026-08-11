@@ -1398,6 +1398,7 @@
       <button class="sort-btn" onclick="setSortOrder('buy','price-drop')" id="buy-sort-price-drop"><i class="fa-solid fa-arrow-trend-down"></i> Han bajado</button>
       <button class="sort-btn" onclick="setSortOrder('buy','saving-desc')" id="buy-sort-saving-desc"><i class="fa-solid fa-piggy-bank"></i> Mayor ahorro</button>
       <span class="results-count" id="buy-results-count"></span>
+      <button onclick="saveCurrentSearch('buy')" style="margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(0,217,143,0.3);padding:.4rem .8rem;cursor:pointer;"><i class="fa-solid fa-bell"></i> Guardar esta búsqueda</button>
     </div>
     <div class="flex items-center gap-2.5 mb-4 flex-wrap">
       <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(0,168,120,0.08);border:1px solid rgba(0,168,120,0.2);padding:.35rem .85rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#0d7a5a;"><i class="fa-solid fa-shield-check"></i> Recomendamos propietarios verificados</span>
@@ -1542,6 +1543,7 @@
       <button class="sort-btn" onclick="setSortOrder('rent','price-drop')" id="rent-sort-price-drop"><i class="fa-solid fa-arrow-trend-down"></i> Han bajado</button>
       <button class="sort-btn" onclick="setSortOrder('rent','saving-desc')" id="rent-sort-saving-desc"><i class="fa-solid fa-piggy-bank"></i> Mayor ahorro</button>
       <span class="results-count" id="rent-results-count"></span>
+      <button onclick="saveCurrentSearch('rent')" style="margin-left:auto;display:inline-flex;align-items:center;gap:.4rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(0,217,143,0.3);padding:.4rem .8rem;cursor:pointer;"><i class="fa-solid fa-bell"></i> Guardar esta búsqueda</button>
     </div>
     <div class="flex items-center gap-2.5 mb-4 flex-wrap">
       <span style="display:inline-flex;align-items:center;gap:.45rem;background:rgba(0,168,120,0.08);border:1px solid rgba(0,168,120,0.2);padding:.35rem .85rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#0d7a5a;"><i class="fa-solid fa-shield-check"></i> Recomendamos propietarios verificados</span>
@@ -2550,6 +2552,7 @@ function mapDbRowToProperty(row){
     surface, bedrooms, bathrooms,
     extras: extrasParts.join(' · '),
     daysAgo, priceDrop: 0, savingPct: 0,
+    createdAt: row.created_at || null,
     seasonality: row.seasonality || '',
     phone: row.phone || '',
     owner_id: row.owner_id,
@@ -4506,9 +4509,10 @@ function openUserPanel(){
   } else {
     roleSection.innerHTML = `
       <div class="panel p-5">
-        <div class="section-label mb-3">Mis búsquedas</div>
-        <p class="text-sm text-zinc-500">Cuando conectemos Supabase podrás guardar búsquedas y recibir alertas de nuevos inmuebles.</p>
+        <div class="section-label mb-3">Mis búsquedas guardadas</div>
+        <div id="saved-searches-list"><p class="text-sm text-zinc-400">Cargando…</p></div>
       </div>`;
+    loadSavedSearches();
   }
 
   document.getElementById('user-panel-modal').style.display = 'flex';
@@ -5662,6 +5666,139 @@ function initHearts(){
   });
 }
 
+// ── BÚSQUEDAS GUARDADAS + AVISOS DE NUEVOS INMUEBLES ──────────────────────
+// Guarda de verdad los filtros actuales en Supabase, y avisa dentro de la web
+// cuántos inmuebles nuevos han aparecido desde la última vez que se miró.
+function buildSearchFiltersSnapshot(tab){
+  const f = advancedFilters[tab];
+  return {
+    tab,
+    type: tab==='buy' ? 'Venta' : 'Alquiler',
+    category: tab==='buy' ? buyTypeFilter : rentTypeFilter,
+    municipality: selectedMunicipality,
+    nucleo: selectedNucleo,
+    priceMin: f.priceMin || '', priceMax: f.priceMax || '',
+    m2Min: f.m2Min || '', m2Max: f.m2Max || '',
+    beds: f.beds || [], baths: f.baths || [],
+    condition: f.condition || [], extras: f.extras || [],
+    verifiedOnly: !!f.verifiedOnly, featuredOnly: !!f.featuredOnly,
+    seasonality: f.seasonality || ''
+  };
+}
+
+function buildSearchLabel(filters){
+  const parts = [];
+  parts.push(filters.type);
+  if(filters.category && filters.category !== 'Todos') parts.push(filters.category);
+  if(filters.nucleo) parts.push(filters.nucleo);
+  else if(filters.municipality && filters.municipality !== 'all') parts.push(filters.municipality);
+  else parts.push('toda la isla');
+  if(filters.priceMax) parts.push('hasta ' + Number(filters.priceMax).toLocaleString('es-ES') + '€');
+  return parts.join(' · ');
+}
+
+async function saveCurrentSearch(tab){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  const user = SinKomiAuth.getUser();
+  const filters = buildSearchFiltersSnapshot(tab);
+  const label = buildSearchLabel(filters);
+  try{
+    const { error } = await supabase.from('saved_searches').insert({
+      user_id: user.supabase_id, label, tab, filters
+    });
+    if(error) throw error;
+    alert(`Búsqueda guardada: "${label}". Te avisaremos dentro de la web cuando aparezcan inmuebles nuevos que encajen.`);
+  }catch(e){
+    console.error('Error guardando búsqueda:', e);
+    alert('No se ha podido guardar la búsqueda. Inténtalo de nuevo.');
+  }
+}
+
+// Comprueba si un inmueble concreto encaja con los filtros de una búsqueda guardada.
+function propertyMatchesSavedFilters(prop, filters){
+  if(prop.type !== filters.type) return false;
+  if(filters.category && filters.category !== 'Todos' && !matchesCategory(prop, filters.category)) return false;
+  if(filters.nucleo){ if(prop.nucleo !== filters.nucleo) return false; }
+  else if(filters.municipality && filters.municipality !== 'all'){ if(prop.municipality !== filters.municipality) return false; }
+  const price = Number(prop.price)||0;
+  if(filters.priceMin && price < Number(filters.priceMin)) return false;
+  if(filters.priceMax && price > Number(filters.priceMax)) return false;
+  if(filters.verifiedOnly && !prop.verified) return false;
+  if(filters.featuredOnly && !(prop.verified && prop.featured)) return false;
+  return true;
+}
+
+// Pinta la lista de búsquedas guardadas en "Mi cuenta", con cuántos inmuebles nuevos hay en cada una.
+async function loadSavedSearches(){
+  const container = document.getElementById('saved-searches-list');
+  if(!container) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+
+  const { data, error } = await supabase.from('saved_searches').select('*').eq('user_id', user.supabase_id).order('created_at', {ascending:false});
+  if(error){ console.error('Error cargando búsquedas guardadas:', error); container.innerHTML = `<p class="text-sm text-red-500">No se han podido cargar tus búsquedas.</p>`; return; }
+
+  if(!data || !data.length){
+    container.innerHTML = `<p class="text-sm text-zinc-500">Aún no has guardado ninguna búsqueda. Ve a "Comprar" o "Alquilar", ajusta los filtros que te interesen, y pulsa "Guardar esta búsqueda".</p>`;
+    return;
+  }
+
+  container.innerHTML = data.map(s => {
+    const nuevos = properties.filter(p =>
+      propertyMatchesSavedFilters(p, s.filters) &&
+      p.createdAt && new Date(p.createdAt) > new Date(s.last_seen_at)
+    ).length;
+    const badge = nuevos > 0
+      ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:.2rem .55rem;margin-left:.5rem;">${nuevos} nuevo${nuevos!==1?'s':''}</span>`
+      : '';
+    return `
+    <div class="flex items-center gap-3 p-3 border border-black/8 bg-white mb-2">
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-sm">${escapeHtml(s.label)} ${badge}</div>
+        <div class="text-[10px] text-zinc-400 mt-1">Guardada el ${new Date(s.created_at).toLocaleDateString('es-ES')}</div>
+      </div>
+      <button onclick="applySavedSearch('${s.id}')" class="px-3 py-2 accent-btn text-[10px] font-black uppercase tracking-[0.1em]">Ver</button>
+      <button onclick="deleteSavedSearch('${s.id}')" title="Eliminar" class="w-8 h-8 flex items-center justify-center border border-red-200 hover:bg-red-50 text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+    </div>`;
+  }).join('');
+}
+
+async function applySavedSearch(searchId){
+  const user = SinKomiAuth.getUser();
+  const { data, error } = await supabase.from('saved_searches').select('*').eq('id', searchId).eq('user_id', user.supabase_id).single();
+  if(error || !data){ alert('No se ha podido abrir esta búsqueda.'); return; }
+  const f = data.filters;
+
+  if(f.tab === 'buy'){ buyTypeFilter = f.category || 'Todos'; }
+  else{ rentTypeFilter = f.category || 'Todos'; }
+  selectedMunicipality = f.municipality || 'all';
+  selectedNucleo = f.nucleo || '';
+  advancedFilters[f.tab].priceMin = f.priceMin || '';
+  advancedFilters[f.tab].priceMax = f.priceMax || '';
+  advancedFilters[f.tab].m2Min = f.m2Min || '';
+  advancedFilters[f.tab].m2Max = f.m2Max || '';
+  advancedFilters[f.tab].beds = f.beds || [];
+  advancedFilters[f.tab].baths = f.baths || [];
+  advancedFilters[f.tab].condition = f.condition || [];
+  advancedFilters[f.tab].extras = f.extras || [];
+  advancedFilters[f.tab].verifiedOnly = !!f.verifiedOnly;
+  advancedFilters[f.tab].featuredOnly = !!f.featuredOnly;
+  const priceMinInput = document.getElementById(f.tab+'-price-min'); if(priceMinInput) priceMinInput.value = f.priceMin || '';
+  const priceMaxInput = document.getElementById(f.tab+'-price-max'); if(priceMaxInput) priceMaxInput.value = f.priceMax || '';
+
+  await supabase.from('saved_searches').update({ last_seen_at: new Date().toISOString() }).eq('id', searchId);
+
+  closeUserPanel();
+  if(f.tab === 'buy') openExplore(); else switchToRentTab();
+  renderPropertyCards(f.tab==='buy'?'buy-grid':'rent-grid', f.tab==='buy'?'Venta':'Alquiler');
+}
+
+async function deleteSavedSearch(searchId){
+  if(!confirm('¿Eliminar esta búsqueda guardada?')) return;
+  const user = SinKomiAuth.getUser();
+  await supabase.from('saved_searches').delete().eq('id', searchId).eq('user_id', user.supabase_id);
+  loadSavedSearches();
+}
 
 function populatePublishLocations(){
   var select = document.getElementById('publish-location');
