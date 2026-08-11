@@ -3323,7 +3323,7 @@ async function sendMessage(){
     recipient_id: currentChatOtherUserId,
     content: text
   });
-  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje. Inténtalo de nuevo.'); }
+  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje.\n\nMotivo exacto:\n' + (error.message||'Sin mensaje') + '\n\nCódigo: ' + (error.code||'N/D') + '\n\nDetalles: ' + (error.details||'N/D')); }
 }
 function quickReply(text){ document.getElementById('chat-input').value = text; sendMessage(); }
 
