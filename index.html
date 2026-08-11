@@ -3317,13 +3317,19 @@ async function sendMessage(){
   if(window.chatAttachedFile){ sendChatFile(window.chatAttachedFile); }
   if(!text) return;
   input.value = '';
-  const { error } = await supabase.from('messages').insert({
+  const { data, error } = await supabase.from('messages').insert({
     property_id: currentChatPropertyId,
     sender_id: user.supabase_id,
     recipient_id: currentChatOtherUserId,
     content: text
-  });
-  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje.\n\nMotivo exacto:\n' + (error.message||'Sin mensaje') + '\n\nCódigo: ' + (error.code||'N/D') + '\n\nDetalles: ' + (error.details||'N/D')); }
+  }).select().single();
+  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje.\n\nMotivo exacto:\n' + (error.message||'Sin mensaje') + '\n\nCódigo: ' + (error.code||'N/D') + '\n\nDetalles: ' + (error.details||'N/D')); input.value = text; return; }
+  if(data){
+    renderMessageBubble(data);
+    const messagesEl = document.getElementById('chat-messages');
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    loadChatThreads(currentChatPropertyId);
+  }
 }
 function quickReply(text){ document.getElementById('chat-input').value = text; sendMessage(); }
 
