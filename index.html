@@ -2174,7 +2174,7 @@
             <button onclick="document.getElementById('chat-file-input').click()" title="Adjuntar imagen o documento" class="w-12 h-12 border border-black/10 flex items-center justify-center text-zinc-500 hover:bg-zinc-100 transition-colors flex-shrink-0">
               <i class="fa-solid fa-paperclip"></i>
             </button>
-            <input id="chat-input" type="text" placeholder="Escribe tu mensaje al propietario..." class="flex-1 border border-black/8 px-6 py-4 focus:outline-none focus:border-[var(--accent)]">
+            <input id="chat-input" type="text" placeholder="Escribe tu mensaje al propietario..." class="flex-1 border border-black/8 px-6 py-4 focus:outline-none focus:border-[var(--accent)]" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}">
             <button onclick="sendMessage()" class="w-12 h-12 accent-btn flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
           <div id="chat-file-preview" style="display:none;" class="mt-3 flex items-center gap-3 px-4 py-3 bg-zinc-50 border border-black/8">
@@ -3323,7 +3323,13 @@ async function sendMessage(){
     recipient_id: currentChatOtherUserId,
     content: text
   }).select().single();
-  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje.\n\nMotivo exacto:\n' + (error.message||'Sin mensaje') + '\n\nCódigo: ' + (error.code||'N/D') + '\n\nDetalles: ' + (error.details||'N/D')); input.value = text; return; }
+  if(error){
+    console.error('Error enviando mensaje:', error);
+    alert('No se ha podido enviar el mensaje.\n\nMotivo exacto:\n' + (error.message||'Sin mensaje') + '\n\nCódigo: ' + (error.code||'N/D') + '\n\nDetalles: ' + (error.details||'N/D'));
+    return;
+  }
+  // Lo pintamos al instante nosotros mismos, sin esperar a que llegue por Realtime
+  // (evita que el propio mensaje tarde en aparecer si la conexión en directo aún se está estableciendo).
   if(data){
     renderMessageBubble(data);
     const messagesEl = document.getElementById('chat-messages');
