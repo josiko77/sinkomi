@@ -1841,10 +1841,10 @@
         <h3 class="text-2xl font-black mb-2">Verificado</h3>
         <p class="text-sm text-zinc-500 mb-6 leading-relaxed">Los compradores filtran por propietarios verificados. Ser uno de ellos significa que hablan contigo primero, no con el resto.</p>
         <div class="flex items-end gap-2 mb-1">
-          <span class="text-5xl font-black" style="color:var(--accent);">8,99€</span>
+          <span class="text-5xl font-black" id="verificado-price-display" style="color:var(--accent);">8,99€</span>
           <span class="text-sm text-zinc-400 mb-1.5 font-semibold">por inmueble</span>
         </div>
-        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7">Pago único · válido 1 año · renovación a 4,99€</div>
+        <div class="text-xs text-zinc-400 uppercase font-black tracking-[0.14em] mb-7" id="verificado-price-subtext">Pago único · válido 1 año · renovación a 4,99€</div>
         <div class="space-y-3 text-sm text-zinc-600 mb-8 flex-1">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Todo lo del plan Básico</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Badge Propietario verificado — visible en tu ficha y en resultados</span></div>
@@ -1853,7 +1853,7 @@
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Más contactos y menos ruido — solo gente que ha visto que eres real</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span>Verificación de identidad realizada una sola vez</span></div>
         </div>
-        <button onclick="openVerificationEntryPoint('verificado')" class="w-full px-5 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Activar verificación · desde 8,99€</button>
+        <button onclick="openVerificationEntryPoint('verificado')" id="verificado-price-btn" class="w-full px-5 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Activar verificación · desde 8,99€</button>
         <div class="mt-3 flex items-center justify-center gap-2 py-2 px-3" style="background:var(--accent-soft);border:1px solid rgba(0,217,143,0.25);">
           <i class="fa-solid fa-shield-halved" style="color:var(--accent);font-size:12px;"></i>
           <span class="text-[10px] font-black uppercase tracking-[0.08em]" style="color:var(--accent-dark);">Selfie en directo + detector de fotos con IA</span>
@@ -3152,84 +3152,180 @@ function reportProperty(id){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// CHAT P2P REAL — persistente en Supabase, en vivo con Realtime.
+// ═══════════════════════════════════════════════════════════════
+let currentChatPropertyId = null;
+let currentChatOtherUserId = null;
+let chatRealtimeChannel = null;
+let chatRenderedIds = new Set();
+
 function openChatFromProperty(){if(!currentProperty)return;closePropertyModal();openChat(currentProperty.id);}
 
-/* CHAT */
-function renderChatThreads(activeId){const list=document.getElementById('chat-thread-list');if(!list)return;const featured=properties.filter(p=>p.featured).slice(0,7);list.innerHTML='';featured.forEach(prop=>{const item=document.createElement('div');item.className=`chat-thread-item ${prop.id===activeId?'active':''}`;item.onclick=()=>openChat(prop.id);item.innerHTML=`<img src="${prop.img}" class="chat-thread-img" ${imgAttrs}><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><div class="font-bold text-sm truncate">${prop.sellerName}</div><div class="text-[10px] text-zinc-600">${prop.type}</div></div><div class="text-xs text-zinc-700 truncate mt-1">${prop.title}</div><div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">${formatPrice(prop)}</div></div>`;list.appendChild(item);});}
-let chatMyLang = 'Español';
-let chatTheirLang = '';
-function onChatLangChange(){
-  chatMyLang = document.getElementById('chat-my-lang').value;
-  chatTheirLang = document.getElementById('chat-their-lang').value;
-}
-async function translateText(text, targetLang){
-  try{
-    const resp = await fetch(SINKOMI_AI_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        system: `Eres un traductor. Traduce el mensaje del usuario al idioma "${targetLang}". Responde ÚNICAMENTE con la traducción, sin comillas, sin explicaciones, sin texto adicional.`,
-        messages: [{ role:'user', content: text }]
-      })
-    });
-    const data = await resp.json();
-    const out = data.content && data.content[0] ? data.content[0].text : null;
-    return out ? out.trim() : null;
-  } catch(e){
-    console.warn('Traducción falló:', e);
-    return null;
-  }
-}
-function openChat(id){
+async function openChat(id){
   if(!SinKomiAuth.isLoggedIn()){
     openLoginModal();
     return;
-  }currentProperty=findProperty(id);if(!currentProperty)return;document.getElementById('chat-modal').classList.remove('hidden');renderChatThreads(id);document.getElementById('chat-property-img').src=currentProperty.img;document.getElementById('chat-property-title').textContent=currentProperty.title;document.getElementById('chat-property-price').textContent=`${formatPrice(currentProperty)} • ${currentProperty.location} • ${currentProperty.category}`;document.getElementById('chat-saving-pill').textContent=currentProperty.type==='Venta'?'Ahorro P2P':'Chat directo';document.getElementById('chat-property-m2').textContent=currentProperty.surface||'m²';document.getElementById('chat-property-rooms').textContent=currentProperty.bedrooms||'Hab.';document.getElementById('chat-property-baths').textContent=currentProperty.bathrooms||'Baños';document.getElementById('seller-name').textContent=currentProperty.sellerName;document.getElementById('seller-avatar').textContent=currentProperty.initials;document.getElementById('seller-status').textContent=currentProperty.verified?'Propietario verificado':'Propietario particular';document.getElementById('chat-messages').innerHTML=`<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Hola 👋 soy ${currentProperty.sellerName}.</p><p class="mt-2">Estás preguntando por <span class="font-medium">${currentProperty.title}</span>.</p><p class="mt-3 text-sm text-zinc-700 leading-relaxed">${currentProperty.description}</p><div class="mt-4 grid grid-cols-2 gap-2 text-xs"><div class="bg-zinc-50 border border-black/5 p-3"><span class="font-bold">Tipo:</span> ${currentProperty.category}</div><div class="bg-zinc-50 border border-black/5 p-3"><span class="font-bold">Zona:</span> ${currentProperty.location}</div></div></div></div>`;document.getElementById('chat-input').value='';}
-function closeChat(){document.getElementById('chat-modal').classList.add('hidden');}
-async function appendUserMessage(text){
-  const m=document.getElementById('chat-messages');
-  const el=document.createElement('div');
-  el.className='flex flex-col items-end message-enter gap-1.5';
-  const translId = 'transl-'+Date.now();
-  el.innerHTML=`<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm"><div>${escapeHtml(text)}</div><div class="message-status">✓ Enviado</div></div>${chatTheirLang?`<div id="${translId}" style="background:#0d1a14;border:1px solid rgba(0,168,120,0.35);" class="px-3 py-2 max-w-[85%] flex items-center gap-2"><span class="text-sm">🌐</span><span style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traduciendo…</span></div>`:''}`;
-  m.appendChild(el);
-  m.scrollTop=m.scrollHeight;
-  if(chatTheirLang){
-    const translated = await translateText(text, chatTheirLang);
-    const box = document.getElementById(translId);
-    if(box){
-      box.innerHTML = translated
-        ? `<span class="text-sm shrink-0">🌐</span><div class="min-w-0"><div style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Recibido en ${chatTheirLang}</div><div style="color:#fff;font-size:13px;">${escapeHtml(translated)}</div></div>`
+  }
+  const user = SinKomiAuth.getUser();
+  currentProperty = findProperty(id);
+  if(!currentProperty) return;
+  if(!currentProperty.owner_id){
+    alert('Este anuncio no tiene un propietario identificado todavía.');
+    return;
+  }
+  if(currentProperty.owner_id === user.supabase_id){
+    alert('Este es tu propio anuncio — no puedes chatear contigo mismo.');
+    return;
+  }
+
+  currentChatPropertyId = id;
+  currentChatOtherUserId = currentProperty.owner_id;
+  chatRenderedIds = new Set();
+
+  document.getElementById('chat-modal').classList.remove('hidden');
+  document.getElementById('chat-property-img').src=currentProperty.img;
+  document.getElementById('chat-property-title').textContent=currentProperty.title;
+  document.getElementById('chat-property-price').textContent=`${formatPrice(currentProperty)} • ${currentProperty.location} • ${currentProperty.category}`;
+  document.getElementById('chat-saving-pill').textContent=currentProperty.type==='Venta'?'Ahorro P2P':'Chat directo';
+  document.getElementById('chat-property-m2').textContent=currentProperty.surface||'m²';
+  document.getElementById('chat-property-rooms').textContent=currentProperty.bedrooms||'Hab.';
+  document.getElementById('chat-property-baths').textContent=currentProperty.bathrooms||'Baños';
+  document.getElementById('seller-name').textContent=currentProperty.sellerName;
+  document.getElementById('seller-avatar').textContent=currentProperty.initials;
+  document.getElementById('seller-status').textContent=currentProperty.verified?'Propietario verificado':'Propietario particular';
+  document.getElementById('chat-input').value='';
+
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML = `<div class="text-center text-xs text-zinc-400 py-6">Cargando conversación…</div>`;
+
+  loadChatThreads(id);
+  await loadChatHistory();
+  subscribeChatRealtime();
+}
+
+// Carga todo el historial real de esta conversación (yo ↔ propietario, sobre este inmueble).
+async function loadChatHistory(){
+  const user = SinKomiAuth.getUser();
+  const messagesEl = document.getElementById('chat-messages');
+  const { data, error } = await supabase.from('messages').select('*')
+    .eq('property_id', currentChatPropertyId)
+    .or(`and(sender_id.eq.${user.supabase_id},recipient_id.eq.${currentChatOtherUserId}),and(sender_id.eq.${currentChatOtherUserId},recipient_id.eq.${user.supabase_id})`)
+    .order('created_at', { ascending: true });
+
+  if(error){ console.error('Error cargando el chat:', error); messagesEl.innerHTML = `<div class="text-center text-xs text-red-500 py-6">No se ha podido cargar la conversación.</div>`; return; }
+
+  messagesEl.innerHTML = '';
+  if(!data || !data.length){
+    messagesEl.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Estás preguntando por <span class="font-medium">${escapeHtml(currentProperty.title)}</span>.</p><p class="mt-2 text-sm text-zinc-700">Escribe tu primer mensaje a ${escapeHtml(currentProperty.sellerName)} para empezar la conversación.</p></div></div>`;
+  } else {
+    data.forEach(msg => renderMessageBubble(msg));
+  }
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  markIncomingMessagesAsRead();
+}
+
+// Marca como leídos los mensajes que me han mandado a mí en esta conversación.
+async function markIncomingMessagesAsRead(){
+  const user = SinKomiAuth.getUser();
+  await supabase.from('messages').update({ read_at: new Date().toISOString() })
+    .eq('property_id', currentChatPropertyId)
+    .eq('sender_id', currentChatOtherUserId)
+    .eq('recipient_id', user.supabase_id)
+    .is('read_at', null);
+}
+
+// Se conecta en directo: en cuanto llega un mensaje nuevo de esta conversación, aparece al instante.
+function subscribeChatRealtime(){
+  if(chatRealtimeChannel){ supabase.removeChannel(chatRealtimeChannel); chatRealtimeChannel = null; }
+  const user = SinKomiAuth.getUser();
+  chatRealtimeChannel = supabase.channel('chat-' + currentChatPropertyId + '-' + user.supabase_id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `property_id=eq.${currentChatPropertyId}` }, (payload) => {
+      const msg = payload.new;
+      const belongsHere = (msg.sender_id === user.supabase_id && msg.recipient_id === currentChatOtherUserId)
+                        || (msg.sender_id === currentChatOtherUserId && msg.recipient_id === user.supabase_id);
+      if(!belongsHere) return;
+      renderMessageBubble(msg);
+      const messagesEl = document.getElementById('chat-messages');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      if(msg.recipient_id === user.supabase_id){ markIncomingMessagesAsRead(); }
+      loadChatThreads(currentChatPropertyId); // refresca la lista de conversaciones (último mensaje, no leídos)
+    })
+    .subscribe();
+}
+
+function closeChat(){
+  document.getElementById('chat-modal').classList.add('hidden');
+  if(chatRealtimeChannel){ supabase.removeChannel(chatRealtimeChannel); chatRealtimeChannel = null; }
+  currentChatPropertyId = null;
+  currentChatOtherUserId = null;
+}
+
+// Pinta un mensaje real (mío o del propietario) en la conversación, con traducción si toca.
+async function renderMessageBubble(msg){
+  if(chatRenderedIds.has(msg.id)) return;
+  chatRenderedIds.add(msg.id);
+
+  const user = SinKomiAuth.getUser();
+  const isMine = msg.sender_id === user.supabase_id;
+  const m = document.getElementById('chat-messages');
+  const el = document.createElement('div');
+  const translId = 'transl-' + msg.id;
+
+  const fileHtml = msg.file_url
+    ? (/\.(jpe?g|png|gif|webp)$/i.test(msg.file_name||msg.file_url)
+        ? `<img src="${msg.file_url}" alt="${escapeHtml(msg.file_name||'')}" style="max-width:220px;max-height:180px;object-fit:cover;display:block;margin-bottom:.4rem;">`
+        : `<a href="${msg.file_url}" target="_blank" class="flex items-center gap-2" style="text-decoration:none;color:inherit;"><i class="fa-solid fa-file-pdf"></i><span class="text-sm font-medium">${escapeHtml(msg.file_name||'Documento')}</span></a>`)
+    : '';
+  const textHtml = msg.content ? `<div>${escapeHtml(msg.content)}</div>` : '';
+  const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+
+  if(isMine){
+    el.className = 'flex flex-col items-end message-enter gap-1.5';
+    const needsTranslation = !!chatTheirLang;
+    el.innerHTML = `<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm">${fileHtml}${textHtml}<div class="message-status">${timeStr} · ${msg.read_at?'✓✓ Leído':'✓ Enviado'}</div></div>${needsTranslation && msg.content ? `<div id="${translId}" style="background:#0d1a14;border:1px solid rgba(0,168,120,0.35);" class="px-3 py-2 max-w-[85%] flex items-center gap-2"><span class="text-sm">🌐</span><span style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traduciendo…</span></div>` : ''}`;
+    m.appendChild(el);
+    if(needsTranslation && msg.content){
+      const translated = await translateText(msg.content, chatTheirLang);
+      const box = document.getElementById(translId);
+      if(box) box.innerHTML = translated
+        ? `<span class="text-sm shrink-0">🌐</span><div class="min-w-0"><div style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traducido a ${chatTheirLang}</div><div style="color:#fff;font-size:13px;">${escapeHtml(translated)}</div></div>`
         : `<span class="text-sm">⚠️</span><span style="color:#f0b84a;font-size:11px;">No se pudo traducir</span>`;
     }
-  }
-  /* DEMO ONLY: eliminar el setTimeout de "✓✓ Leído" en producción — reemplazar con evento real de Supabase Realtime */
-}
-function appendTypingThenReply(html){const m=document.getElementById('chat-messages');const typing=document.createElement('div');typing.className='flex items-start gap-3 message-enter';typing.innerHTML=`<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><span class="typing-dots"><span></span><span></span><span></span></span></div>`;m.appendChild(typing);m.scrollTop=m.scrollHeight;setTimeout(()=>{typing.remove();appendSellerMessage(html);},700);}
-async function appendSellerMessage(html){
-  const m=document.getElementById('chat-messages');
-  const el=document.createElement('div');
-  el.className='flex items-start gap-3 message-enter';
-  const translId = 'transl-in-'+Date.now();
-  const needsTranslation = chatMyLang && chatMyLang !== 'Español';
-  el.innerHTML=`<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5">${html}${needsTranslation?`<div id="${translId}" class="mt-2 pt-2 border-t border-black/5 text-xs italic flex items-center gap-1.5 text-zinc-600"><i class="fa-solid fa-globe"></i> <span>Traduciendo a ${chatMyLang}…</span></div>`:''}<div class="text-[10px] text-zinc-600 mt-2">Ahora</div></div>`;
-  m.appendChild(el);
-  m.scrollTop=m.scrollHeight;
-  if(needsTranslation){
-    const plainText = html.replace(/<[^>]*>/g,'');
-    const translated = await translateText(plainText, chatMyLang);
-    const box = document.getElementById(translId);
-    if(box){
-      box.innerHTML = translated
+  } else {
+    el.className = 'flex items-start gap-3 message-enter';
+    const needsTranslation = chatMyLang && chatMyLang !== 'Español';
+    el.innerHTML = `<div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5">${fileHtml}${textHtml}${needsTranslation && msg.content ? `<div id="${translId}" class="mt-2 pt-2 border-t border-black/5 text-xs italic flex items-center gap-1.5 text-zinc-600"><i class="fa-solid fa-globe"></i> <span>Traduciendo a ${chatMyLang}…</span></div>` : ''}<div class="text-[10px] text-zinc-600 mt-2">${timeStr}</div></div>`;
+    m.appendChild(el);
+    if(needsTranslation && msg.content){
+      const translated = await translateText(msg.content, chatMyLang);
+      const box = document.getElementById(translId);
+      if(box) box.innerHTML = translated
         ? `<i class="fa-solid fa-globe"></i> <span>${escapeHtml(translated)}</span>`
         : `<i class="fa-solid fa-triangle-exclamation"></i> <span>No se pudo traducir</span>`;
     }
   }
 }
-function getSmartReply(text){const lower=text.toLowerCase();if(lower.includes('visit'))return `Claro. Te propongo <span class="font-medium">jueves 17:30</span> o <span class="font-medium">sábado 11:00</span>.`;if(lower.includes('negociable')||lower.includes('precio'))return `El precio es algo negociable si la operación avanza de forma seria.`;if(lower.includes('disponible'))return `Sí, ahora mismo sigue disponible. Hay varias personas interesadas pero sin reserva.`;if(lower.includes('nota')||lower.includes('document'))return `Puedo aportar documentación básica para revisión.`;if(lower.includes('oferta'))return `Puedes enviarme una oferta razonada. Si es seria, la valoramos.`;return `Gracias por tu mensaje. Te respondo por aquí para que quede todo claro dentro de SINKOMI.`;}
-function sendMessage(){const input=document.getElementById('chat-input');const text=input.value.trim();if(!text&&!window.chatAttachedFile)return;if(window.chatAttachedFile){sendChatFile(window.chatAttachedFile);}if(text){appendUserMessage(text);appendTypingThenReply(getSmartReply(text));}input.value='';}
+
+// Envía un mensaje de texto real, guardado en Supabase.
+async function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  const user = SinKomiAuth.getUser();
+  if(!currentChatPropertyId || !currentChatOtherUserId) return;
+  if(window.chatAttachedFile){ sendChatFile(window.chatAttachedFile); }
+  if(!text) return;
+  input.value = '';
+  const { error } = await supabase.from('messages').insert({
+    property_id: currentChatPropertyId,
+    sender_id: user.supabase_id,
+    recipient_id: currentChatOtherUserId,
+    content: text
+  });
+  if(error){ console.error('Error enviando mensaje:', error); alert('No se ha podido enviar el mensaje. Inténtalo de nuevo.'); }
+}
+function quickReply(text){ document.getElementById('chat-input').value = text; sendMessage(); }
 
 var chatAttachedFile = null;
 
@@ -3250,44 +3346,90 @@ function removeChatFile(){
   if(preview) preview.style.display = 'none';
 }
 
-function sendChatFile(file){
-  const isImage = file.type.startsWith('image/');
-  const m = document.getElementById('chat-messages');
-  const el = document.createElement('div');
-  el.className = 'flex justify-end message-enter';
-
-  if(isImage){
-    const url = URL.createObjectURL(file);
-    el.innerHTML = `<div class="chat-bubble bg-[var(--accent)] text-white p-3 shadow-sm">
-      <img src="${url}" alt="${file.name}" style="max-width:200px;max-height:160px;object-fit:cover;display:block;margin-bottom:.4rem;">
-      <div class="text-[10px] opacity-75">${file.name}</div>
-      <div class="message-status">✓ Enviado</div>
-    </div>`;
-  } else {
-    el.innerHTML = `<div class="chat-bubble bg-[var(--accent)] text-white p-3 shadow-sm">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-file-pdf text-white/80"></i>
-        <span class="text-sm font-medium">${file.name}</span>
-      </div>
-      <div class="message-status">✓ Enviado</div>
-    </div>`;
-  }
-  m.appendChild(el);
-  m.scrollTop = m.scrollHeight;
+// Sube de verdad el archivo adjunto y lo manda como mensaje real.
+async function sendChatFile(file){
+  const user = SinKomiAuth.getUser();
   removeChatFile();
-
-  // Respuesta automática al recibir documentación
-  setTimeout(()=>{
-    appendSellerMessage('📎 He recibido tu documento <span class="font-medium">' + escapeHtml(file.name) + '</span>. Lo reviso y te confirmo.');
-  }, 900);
+  try{
+    const ext = (file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+    const path = `${user.supabase_id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('chat-attachments').upload(path, file, { cacheControl:'3600', upsert:false });
+    if(uploadError) throw uploadError;
+    const { data } = supabase.storage.from('chat-attachments').getPublicUrl(path);
+    const { error } = await supabase.from('messages').insert({
+      property_id: currentChatPropertyId,
+      sender_id: user.supabase_id,
+      recipient_id: currentChatOtherUserId,
+      file_url: data.publicUrl,
+      file_name: file.name
+    });
+    if(error) throw error;
+  }catch(e){
+    console.error('Error enviando archivo:', e);
+    alert('No se ha podido enviar el archivo. Inténtalo de nuevo.');
+  }
 }
-function quickReply(text){appendUserMessage(text);appendTypingThenReply(getSmartReply(text));}
-function showScheduleVisit(){appendSellerMessage(`<div><p class="font-medium mb-3">Elige una hora para visitar:</p><div class="grid sm:grid-cols-3 gap-2"><button onclick="confirmVisit('Martes 18:00')" class="px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm font-medium">Martes 18:00</button><button onclick="confirmVisit('Jueves 17:30')" class="px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm font-medium">Jueves 17:30</button><button onclick="confirmVisit('Sábado 11:00')" class="px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm font-medium">Sábado 11:00</button></div></div>`);}
-function confirmVisit(slot){appendUserMessage(`Me va bien: ${slot}`);appendTypingThenReply(`Perfecto, dejo propuesta de visita para <span class="font-medium">${slot}</span>. Te confirmo la dirección exacta.`);}
-function showOfferBox(){appendSellerMessage(`<div><p class="font-medium mb-3">Puedes enviar una oferta orientativa:</p><div class="flex gap-2"><input id="offer-input" type="number" placeholder="Ej. 295000" class="flex-1 border border-black/8 px-4 py-3 text-sm"><button onclick="sendOffer()" class="px-4 py-3 accent-btn text-sm font-bold">Enviar oferta</button></div></div>`);}
-function sendOffer(){const input=document.getElementById('offer-input');const value=Number(input?.value||0);if(!value){alert('Introduce una cantidad.');return;}appendUserMessage(`Mi oferta es de ${value.toLocaleString('es-ES')} €`);appendTypingThenReply(`Gracias. He recibido tu oferta de <span class="font-medium">${value.toLocaleString('es-ES')} €</span>. La valoro y seguimos hablando.`);}
-function showHelpMenu(){appendSellerMessage(`<div><p class="font-medium mb-3">¿Qué apoyo necesitas?</p><div class="grid sm:grid-cols-2 gap-2"><button onclick="selectHelp('Asesor hipotecario')" class="text-left px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm">🏦 Asesor hipotecario</button><button onclick="selectHelp('Abogado inmobiliario')" class="text-left px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm">⚖️ Abogado inmobiliario</button><button onclick="selectHelp('Arquitecto')" class="text-left px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm">📐 Arquitecto</button><button onclick="selectHelp('Constructor')" class="text-left px-4 py-3 bg-zinc-100 hover:bg-zinc-200 text-sm">🛠 Constructor</button></div></div>`);}
-function selectHelp(service){appendUserMessage(`Necesito ayuda con: ${service}`);appendTypingThenReply(`Perfecto. En SINKOMI podrás solicitar apoyo de <span class="font-medium">${service}</span> sin perder el trato directo con el propietario.`);}
+
+// Lista real de conversaciones (no propiedades destacadas al azar): agrupa mensajes por
+// inmueble + la otra persona, y muestra el último mensaje y cuántos hay sin leer.
+async function loadChatThreads(activePropertyId){
+  const list = document.getElementById('chat-thread-list');
+  if(!list) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+
+  const { data, error } = await supabase.from('messages').select('*')
+    .or(`sender_id.eq.${user.supabase_id},recipient_id.eq.${user.supabase_id}`)
+    .order('created_at', { ascending: false });
+  if(error){ console.error('Error cargando conversaciones:', error); return; }
+
+  const threadsMap = {};
+  (data||[]).forEach(msg => {
+    const otherId = msg.sender_id === user.supabase_id ? msg.recipient_id : msg.sender_id;
+    const key = msg.property_id + '::' + otherId;
+    if(!threadsMap[key]) threadsMap[key] = { propertyId: msg.property_id, otherId, lastMessage: msg, unread: 0 };
+    if(msg.recipient_id === user.supabase_id && !msg.read_at) threadsMap[key].unread++;
+  });
+  const threads = Object.values(threadsMap);
+
+  if(!threads.length){ list.innerHTML = `<div class="text-xs text-zinc-400 p-5">Aún no tienes conversaciones.</div>`; return; }
+
+  const propIds = [...new Set(threads.map(t=>t.propertyId))];
+  let propMap = {};
+  if(propIds.length){
+    const { data: props } = await supabase.from('properties').select('id,title,images,price,type,owner_name').in('id', propIds);
+    (props||[]).forEach(p => { propMap[p.id] = p; });
+  }
+
+  list.innerHTML = threads.map(t => {
+    const prop = propMap[t.propertyId];
+    if(!prop) return '';
+    const img = (prop.images && prop.images[0]) || fallbackImg;
+    const preview = t.lastMessage.content ? escapeHtml(t.lastMessage.content) : '📎 Archivo adjunto';
+    return `<div class="chat-thread-item ${t.propertyId===activePropertyId?'active':''}" onclick="openChat('${t.propertyId}')">
+      <img src="${img}" class="chat-thread-img">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-2">
+          <div class="font-bold text-sm truncate">${escapeHtml(prop.owner_name||'Propietario')}</div>
+          ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
+        </div>
+        <div class="text-xs text-zinc-700 truncate mt-1">${preview}</div>
+        <div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">${formatPrice({price:prop.price,type:prop.type})}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* CHAT — acciones rápidas: mandan un mensaje real, el propietario responde de verdad por el chat */
+function showScheduleVisit(){ quickReply('Me gustaría agendar una visita. ¿Qué días y horas tienes disponibles?'); }
+function showOfferBox(){
+  const value = prompt('¿Cuál es tu oferta? (solo el número, en euros)');
+  if(!value) return;
+  const num = Number(value.replace(/[^\d]/g,''));
+  if(!num){ alert('Introduce una cantidad válida.'); return; }
+  quickReply(`Mi oferta es de ${num.toLocaleString('es-ES')} €`);
+}
+function showHelpMenu(){ quickReply('¿Me podrías recomendar algún abogado, arquitecto o asesor hipotecario de confianza para esta operación?'); }
 
 /* FAQ */
 function toggleFaq(button){button.parentElement.classList.toggle('open');}
@@ -4469,15 +4611,50 @@ function openPlanSelector(){
   }
 }
 
-// Arranca la verificación de un inmueble concreto: recuerda cuál es, y abre el pago.
+// ═══════════════════════════════════════════════════════════════
+// PROMOCIÓN DE LANZAMIENTO — verificación gratis para los primeros inmuebles.
+// COBRAR_VERIFICACION = false  →  gratis (promoción activa, como ahora)
+// COBRAR_VERIFICACION = true   →  se cobran los 8,99€ normales
+// Solo afecta al plan "Verificado" básico — "Verificado + Destacado" sigue cobrando siempre.
+// ═══════════════════════════════════════════════════════════════
+const COBRAR_VERIFICACION = false;
+
+// Refleja la promo (o su ausencia) en el precio mostrado en la sección de precios,
+// para que el texto nunca prometa un precio distinto al que realmente se cobra.
+function updateVerificationPriceDisplay(){
+  const priceEl = document.getElementById('verificado-price-display');
+  const subtextEl = document.getElementById('verificado-price-subtext');
+  const btnEl = document.getElementById('verificado-price-btn');
+  if(!priceEl) return;
+  if(!COBRAR_VERIFICACION){
+    priceEl.textContent = 'GRATIS';
+    subtextEl.textContent = 'Promoción de lanzamiento · primeros inmuebles · renovación a 4,99€';
+    btnEl.textContent = 'Activar verificación · gratis por lanzamiento';
+  } else {
+    priceEl.textContent = '8,99€';
+    subtextEl.textContent = 'Pago único · válido 1 año · renovación a 4,99€';
+    btnEl.textContent = 'Activar verificación · desde 8,99€';
+  }
+}
+document.addEventListener('DOMContentLoaded', updateVerificationPriceDisplay);
+if(document.readyState !== 'loading') updateVerificationPriceDisplay();
+
+// Arranca la verificación de un inmueble concreto: recuerda cuál es, y abre el pago (o salta directo si hay promo).
 let verifyingPropertyId = null;
 let pendingVerificationAfterPublish = null; // {plan, days} — se usa si aún no tenía ningún inmueble publicado
 function startPropertyVerification(propertyId, plan, days){
   verifyingPropertyId = propertyId;
   localStorage.setItem('sk_verifying_property_id', propertyId);
-  if(plan === 'destacado') selectedDestacadoDays = days || 30;
   closeUserPanel();
   closeVerificationPropertyPicker();
+
+  if(!COBRAR_VERIFICACION && (!plan || plan === 'verificado')){
+    // Promoción activa: nos saltamos el pago y vamos directos a subir los documentos.
+    openVerificationDocsModal(propertyId);
+    return;
+  }
+
+  if(plan === 'destacado') selectedDestacadoDays = days || 30;
   openVerificationModal(plan || 'verificado');
 }
 
@@ -6616,7 +6793,7 @@ const legalContent = {
     title: "Aviso Legal",
     body: `
       <h4 class="font-black text-black text-base">1. Titular del sitio web</h4>
-      <p>En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico (LSSI-CE), se informa que el titular del sitio web <strong>sinkomi.es</strong> es una persona física o jurídica con domicilio en Mallorca, Islas Baleares, España. Contacto: info@sinkomi.es</p>
+      <p>En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico (LSSI-CE), se informa que el titular del sitio web <strong>sinkomi.es</strong> es José Ramírez Felipe, con domicilio en Mallorca, Islas Baleares, España. Alta como autónomo en trámite. Contacto: info@sinkomi.es</p>
 
       <h4 class="font-black text-black text-base mt-4">2. Objeto y condiciones de uso</h4>
       <p>SINKOMI es una plataforma digital de anuncios inmobiliarios P2P (persona a persona) cuyo objetivo es facilitar el contacto directo entre propietarios e interesados en la compra o alquiler de inmuebles ubicados en las Islas Baleares. SINKOMI no actúa como agente inmobiliario ni intermediario en ninguna operación.</p>
@@ -6638,7 +6815,7 @@ const legalContent = {
     title: "Política de Privacidad",
     body: `
       <h4 class="font-black text-black text-base">1. Responsable del tratamiento</h4>
-      <p>El responsable del tratamiento de los datos personales recabados a través de <strong>sinkomi.es</strong> es el titular del sitio, contactable en info@sinkomi.es</p>
+      <p>El responsable del tratamiento de los datos personales recabados a través de <strong>sinkomi.es</strong> es José Ramírez Felipe (alta como autónomo en trámite), contactable en info@sinkomi.es</p>
 
       <h4 class="font-black text-black text-base mt-4">2. Datos que recabamos</h4>
       <p>SINKOMI puede recopilar los siguientes datos personales:</p>
@@ -6646,23 +6823,26 @@ const legalContent = {
         <li>Nombre y apellidos del propietario que publica un anuncio</li>
         <li>Dirección de correo electrónico</li>
         <li>Número de teléfono de contacto</li>
-        <li>Documentación de verificación (DNI e IBI), únicamente para el proceso de verificación de propietario</li>
+        <li>Documentación de verificación (DNI, Nota Simple del inmueble, y una fotografía tipo selfie tomada en el momento), únicamente para el proceso de verificación de propietario</li>
       </ul>
 
       <h4 class="font-black text-black text-base mt-4">3. Finalidad del tratamiento</h4>
-      <p>Los datos se utilizan exclusivamente para gestionar la publicación de anuncios, facilitar el contacto entre usuarios, y verificar la identidad del propietario cuando este lo solicita voluntariamente.</p>
+      <p>Los datos se utilizan exclusivamente para gestionar la publicación de anuncios, facilitar el contacto entre usuarios, y verificar la identidad del propietario y su titularidad sobre el inmueble cuando este lo solicita voluntariamente. La fotografía de verificación puede analizarse mediante un servicio automatizado de detección de imágenes generadas por inteligencia artificial, como medida antifraude; el resultado de este análisis es siempre revisado por una persona antes de aprobar o rechazar la verificación.</p>
 
       <h4 class="font-black text-black text-base mt-4">4. Base jurídica</h4>
       <p>El tratamiento se basa en el consentimiento expreso del usuario al publicar su anuncio o activar la verificación, de conformidad con el Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD).</p>
 
       <h4 class="font-black text-black text-base mt-4">5. Conservación de datos</h4>
-      <p>Los datos se conservan durante el tiempo en que el anuncio esté activo y, una vez eliminado, por el plazo legalmente exigible. Los documentos de verificación se eliminan una vez completado el proceso.</p>
+      <p>Los datos del anuncio se conservan durante el tiempo en que este esté activo y, una vez eliminado, por el plazo legalmente exigible. Los documentos de verificación (DNI, Nota Simple y selfie) se conservan de forma privada y cifrada durante un máximo de 6 meses desde su envío, salvo que exista una obligación legal de conservarlos por más tiempo. El usuario puede solicitar su eliminación en cualquier momento escribiendo a info@sinkomi.es</p>
 
-      <h4 class="font-black text-black text-base mt-4">6. Derechos del usuario</h4>
+      <h4 class="font-black text-black text-base mt-4">6. Encargados del tratamiento</h4>
+      <p>Para poder prestar el servicio, SINKOMI se apoya en los siguientes proveedores, que actúan como encargados del tratamiento bajo sus propias garantías de seguridad: Supabase (alojamiento de la base de datos y almacenamiento de documentos), Stripe (procesamiento de pagos), y Sightengine (análisis automatizado antifraude de la fotografía de verificación). Ninguno de estos proveedores utiliza los datos para fines distintos a la prestación del servicio contratado por SINKOMI.</p>
+
+      <h4 class="font-black text-black text-base mt-4">7. Derechos del usuario</h4>
       <p>El usuario puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad enviando un email a info@sinkomi.es También tiene derecho a presentar reclamación ante la Agencia Española de Protección de Datos (aepd.es).</p>
 
-      <h4 class="font-black text-black text-base mt-4">7. Seguridad</h4>
-      <p>SINKOMI aplica medidas técnicas y organizativas para proteger los datos personales frente a accesos no autorizados, pérdida o destrucción.</p>
+      <h4 class="font-black text-black text-base mt-4">8. Seguridad</h4>
+      <p>SINKOMI aplica medidas técnicas y organizativas para proteger los datos personales frente a accesos no autorizados, pérdida o destrucción. Los documentos de verificación se almacenan en un espacio privado, no accesible públicamente, y solo el propio usuario y el equipo de SINKOMI pueden consultarlos.</p>
     `
   },
   cookies: {
