@@ -539,19 +539,19 @@
       <a href="#inicio" id="nav-home" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Inicio</a>
       <a href="javascript:void(0)" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
       <a href="javascript:void(0)" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
-      <a href="javascript:void(0)" onclick="openHelpTab()" id="nav-help" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Ayuda</a>
+      <a href="javascript:void(0)" onclick="openAyudaModal()" id="nav-help" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Ayuda</a>
       <a href="javascript:void(0)" onclick="openContratosTab()" id="nav-contratos" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contratos</a>
       <div class="relative h-10 inline-flex items-center" id="precios-wrapper">
         <button onclick="toggleDropdown('precios')" class="h-10 inline-flex items-center gap-1.5 font-black text-[10.5px] uppercase tracking-[0.18em] text-zinc-700 hover:text-[var(--orange)] transition-colors">Precios <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
         <div id="precios-panel" class="precios-panel">
           <div class="ph-mini">Planes SINKOMI</div>
-          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-list text-[var(--accent)] w-5 text-center"></i> Ver todos los planes</a>
-          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-shield-check text-[var(--orange)] w-5 text-center"></i> Propietario verificado</a>
-          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-fire text-[var(--orange)] w-5 text-center"></i> Destacar anuncio</a>
+          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-list text-[var(--accent)] w-5 text-center"></i> Ver todos los planes</a>
+          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-shield-check text-[var(--orange)] w-5 text-center"></i> Propietario verificado</a>
+          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-fire text-[var(--orange)] w-5 text-center"></i> Destacar anuncio</a>
         </div>
       </div>
-      <a href="#estadisticas" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Datos</a>
-      <a href="#contacto" id="nav-contact" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contacto</a>
+      <a href="javascript:void(0)" onclick="openDatosModal()" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Datos</a>
+      <a href="javascript:void(0)" onclick="openContactoModal()" id="nav-contact" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contacto</a>
     </nav>
     <div class="flex items-center gap-2.5 shrink-0">
       <button onclick="openLoginModal()" id="login-btn" class="h-10 px-4 border border-black/10 text-sm font-semibold hover:bg-zinc-50 transition-colors inline-flex items-center">Iniciar sesión</button>
@@ -949,8 +949,14 @@
 </section>
 
 <!-- ESTADÍSTICAS -->
-<section id="estadisticas" class="w-full px-6 pb-10">
-  <div class="dark-panel p-8 md:p-12 overflow-hidden relative">
+<div id="datos-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="sticky top-0 bg-[#0d1a14] z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
+      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-white/50">Datos · SINKOMI</span>
+      <button onclick="closeDatosModal()" class="text-3xl text-white/50 hover:text-white leading-none">×</button>
+    </div>
+    <div class="w-full px-6 pb-10 pt-0">
+  <div class="dark-panel p-8 md:p-12 overflow-hidden relative" style="border-top:none;">
     <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-[0.04]" style="background:var(--accent);transform:translate(30%,-30%);"></div>
     <div class="section-label text-white/40 mb-4">Datos del mercado</div>
     <h2 class="serif text-4xl md:text-6xl text-white leading-[0.92] mb-10">Baleares en <em class="text-[var(--accent)]">números</em></h2>
@@ -999,7 +1005,9 @@
       <p class="text-[10px] text-white/30 font-semibold mt-5">Fuente: elaboración propia a partir de datos públicos del mercado inmobiliario de Mallorca. Cifras orientativas; no constituyen tasación oficial.</p>
     </div>
   </div>
-</section>
+    </div>
+  </div>
+</div>
 
 <!-- REVOLUCIÓN -->
 <!-- SECCIÓN ALQUILER -->
@@ -1839,7 +1847,13 @@
 </section>
 
 <!-- PRECIOS -->
-<section id="precios" class="w-full px-6 py-20 bg-white/45 border-y border-black/5">
+<div id="precios-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="sticky top-0 bg-white z-10 px-6 py-4 border-b border-black/6 flex items-center justify-between">
+      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Precios · SINKOMI</span>
+      <button onclick="closePreciosModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div class="w-full px-6 py-14 bg-white/45">
   <div class="w-full panel p-8 md:p-14 relative overflow-hidden">
 
     <!-- Cabecera -->
@@ -1943,7 +1957,9 @@
     <p class="text-center text-xs text-zinc-400 mt-8 font-semibold">Básico activo 90 días · renovable gratis. Verificado válido 1 año · renovación a 4,99€. Hasta 5 inmuebles verificados por propietario. Sin contratos de permanencia.</p>
 
   </div>
-</section>
+    </div>
+  </div>
+</div>
 
 <!-- CONTRATOS -->
 <section class="w-full px-6 py-16 bg-zinc-50 border-y border-black/5">
@@ -2080,6 +2096,39 @@
   </div>
 </footer>
 <!-- MODALES -->
+<div id="ayuda-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-6xl max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="sticky top-0 bg-white z-10 px-6 py-4 border-b border-black/6 flex items-center justify-between">
+      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Ayuda · SINKOMI</span>
+      <button onclick="closeAyudaModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div id="ayuda-modal-content" class="p-6 md:p-8"></div>
+  </div>
+</div>
+
+<div id="contacto-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="px-6 py-4 border-b border-black/6 flex items-center justify-between">
+      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Contacto · SINKOMI</span>
+      <button onclick="closeContactoModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="contact-card">
+        <div class="contact-icon"><i class="fa-regular fa-envelope"></i></div>
+        <div class="section-label mb-2">Email</div>
+        <div class="font-bold text-lg break-all" id="contact-email-display-modal"></div>
+        <p class="text-sm text-zinc-700 mt-2">Canal principal para consultas. Respondemos Lun–Vie.</p>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <div class="section-label mb-2">Ubicación</div>
+        <div class="font-bold text-lg">Palma, Baleares</div>
+        <p class="text-sm text-zinc-700 mt-2">Proyecto 100% enfocado en el mercado inmobiliario de Baleares, por ahora.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="property-modal" class="hidden fixed inset-0 bg-black/80 z-[1300] flex items-center justify-center px-4 py-4">
   <div id="property-modal-container" class="bg-white w-full max-w-7xl h-[94vh] shadow-2xl flex flex-col" style="transition:all .3s ease;">
     <div id="property-modal-header" class="border-b border-black/6 px-6 py-4 flex items-center justify-between" style="transition:all .3s ease;">
@@ -2515,6 +2564,23 @@
 const fallbackImg='data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f4f2ef"/><stop offset="1" stop-color="#d8d0c7"/></linearGradient></defs><rect width="900" height="650" fill="url(#g)"/><path d="M260 385 L450 235 L640 385 V520 H310 V385 Z" fill="#fff" stroke="#111" stroke-opacity=".12" stroke-width="10"/><rect x="390" y="420" width="120" height="100" fill="#13a7ff" opacity=".18"/><text x="450" y="590" text-anchor="middle" font-family="Arial" font-size="38" font-weight="700" fill="#222">SINKOMI</text></svg>`);
 const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpolicy="no-referrer"`;
 
+function openPreciosModal(){ document.getElementById('precios-modal').classList.remove('hidden'); }
+function closePreciosModal(){ document.getElementById('precios-modal').classList.add('hidden'); }
+function openDatosModal(){ document.getElementById('datos-modal').classList.remove('hidden'); setTimeout(initPreciosChart,80); }
+function closeDatosModal(){ document.getElementById('datos-modal').classList.add('hidden'); }
+function openContactoModal(){ document.getElementById('contacto-modal').classList.remove('hidden'); }
+function closeContactoModal(){ document.getElementById('contacto-modal').classList.add('hidden'); }
+let _ayudaModalReady=false;
+function openAyudaModal(){
+  const modal=document.getElementById('ayuda-modal');
+  const content=document.getElementById('ayuda-modal-content');
+  if(!_ayudaModalReady){
+    const source=document.getElementById('tab-ayuda');
+    if(source){ content.innerHTML=source.querySelector('.panel').outerHTML; _ayudaModalReady=true; }
+  }
+  modal.classList.remove('hidden');
+}
+function closeAyudaModal(){ document.getElementById('ayuda-modal').classList.add('hidden'); }
 let heroSearchType='Venta';
 function setHeroSearchType(type){
   heroSearchType=type;
@@ -5939,7 +6005,6 @@ window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();
 
   syncUI();
   initFundadores();
-  setTimeout(initPreciosChart, 300);
   setTimeout(initMapHero, 500);
   loadRealProperties();
 };
@@ -6630,6 +6695,7 @@ function generateArrasPDF(){
 function initPreciosChart(){
   const canvas = document.getElementById('preciosChart');
   if(!canvas || !window.Chart) return;
+  if(window._preciosChartInstance){ window._preciosChartInstance.resize(); return; }
   const ctx = canvas.getContext('2d');
 
   const gradVenta = ctx.createLinearGradient(0,0,0,260);
@@ -6643,7 +6709,7 @@ function initPreciosChart(){
   const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00a878';
   const orangeColor = getComputedStyle(document.documentElement).getPropertyValue('--orange').trim() || '#e8a020';
 
-  new Chart(ctx,{
+  window._preciosChartInstance = new Chart(ctx,{
     type:'line',
     data:{
       labels:['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
@@ -7057,6 +7123,8 @@ async function submitLogin(){
   var u='info';var d='sinkomi.es';var e=u+'@'+d;
   var el=document.getElementById('contact-email-display');
   if(el){el.textContent=e;el.setAttribute('data-email',e);}
+  var elm=document.getElementById('contact-email-display-modal');
+  if(elm){elm.textContent=e;elm.setAttribute('data-email',e);}
   document.querySelectorAll('.protected-email').forEach(function(span){
     span.textContent=e;
   });
