@@ -540,7 +540,7 @@
       <a href="javascript:void(0)" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
       <a href="javascript:void(0)" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
       <a href="javascript:void(0)" onclick="openHelpTab()" id="nav-help" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Ayuda</a>
-      <a href="javascript:void(0)" onclick="openContratosTab()" id="nav-contratos" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors font-black" style="color:var(--accent);">Contratos</a>
+      <a href="javascript:void(0)" onclick="openContratosTab()" id="nav-contratos" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contratos</a>
       <div class="relative h-10 inline-flex items-center" id="precios-wrapper">
         <button onclick="toggleDropdown('precios')" class="h-10 inline-flex items-center gap-1.5 font-black text-[10.5px] uppercase tracking-[0.18em] text-zinc-700 hover:text-[var(--orange)] transition-colors">Precios <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
         <div id="precios-panel" class="precios-panel">
@@ -554,14 +554,6 @@
       <a href="#contacto" id="nav-contact" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contacto</a>
     </nav>
     <div class="flex items-center gap-2.5 shrink-0">
-      <div class="vh-dropdown vh-desktop-tools">
-        <button onclick="toggleDropdown('municipios')" class="vh-trigger"><i class="fa-solid fa-map-location-dot text-[var(--accent)]"></i> Municipios <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
-        <div id="municipios-panel" class="vh-panel"><div class="vh-panel-head"><div class="section-label mb-1">Explorar Baleares</div><div class="font-black text-xl">Municipios</div><input id="municipios-search" class="vh-search" type="text" placeholder="Buscar municipio..." oninput="filterDropdown('municipios')"></div><div id="municipios-list" class="vh-list"></div></div>
-      </div>
-      <div class="vh-dropdown vh-desktop-tools">
-        <button onclick="toggleDropdown('types')" class="vh-trigger"><i class="fa-solid fa-house-chimney-window text-[var(--accent)]"></i> Inmuebles <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
-        <div id="types-panel" class="vh-panel"><div class="vh-panel-head"><div class="section-label mb-1">Tipo de inmueble</div><div class="font-black text-xl">Categorías</div><input id="types-search" class="vh-search" type="text" placeholder="Buscar tipo..." oninput="filterDropdown('types')"></div><div id="types-list" class="vh-list"></div></div>
-      </div>
       <button onclick="openLoginModal()" id="login-btn" class="h-10 px-4 border border-black/10 text-sm font-semibold hover:bg-zinc-50 transition-colors inline-flex items-center">Iniciar sesión</button>
       <button onclick="openRegisterModal()" id="register-btn" class="h-10 px-4 dark-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-1.5"><i class="fa-solid fa-user-plus text-[10px]"></i> Registrarse</button>
       <button onclick="openPublishModal()" id="publish-free-btn" class="publish-gate h-10 px-4 accent-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center">Publicar gratis</button>
