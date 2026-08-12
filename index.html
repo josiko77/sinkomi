@@ -566,13 +566,40 @@
       <button onclick="openRegisterModal()" id="register-btn" class="h-10 px-4 dark-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-1.5"><i class="fa-solid fa-user-plus text-[10px]"></i> Registrarse</button>
       <button onclick="openPublishModal()" id="publish-free-btn" class="publish-gate h-10 px-4 accent-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center">Publicar gratis</button>
       <!-- BLOQUE USUARIO LOGUEADO -->
-      <div id="header-user-info" style="display:none;" class="flex items-center gap-3">
-        <button onclick="openUserPanel()" class="text-right hover:opacity-75 transition-opacity">
-          <div id="header-user-name" class="text-sm font-black leading-tight"></div>
-          <div id="header-user-role" class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.12em]"></div>
+      <div id="header-user-info" style="display:none;" class="flex items-center gap-1">
+        <button onclick="openUserPanel();switchUserTab('account');" class="hidden md:flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-600 hover:text-[var(--accent)] transition-colors">
+          <i class="fa-solid fa-house-laptop text-lg"></i>
+          <span class="text-[9.5px] font-black uppercase tracking-[0.08em]">Tus anuncios</span>
         </button>
-        <button onclick="openUserPanel()" class="w-9 h-9 rounded-full bg-[var(--accent)] text-white font-black text-sm flex items-center justify-center" id="header-user-avatar"></button>
-        <button onclick="logoutSinkomi()" class="h-10 px-4 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50 transition-colors">Salir</button>
+        <button onclick="openUserPanel();switchUserTab('favs');" class="hidden md:flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-600 hover:text-[var(--accent)] transition-colors">
+          <i class="fa-regular fa-heart text-lg"></i>
+          <span class="text-[9.5px] font-black uppercase tracking-[0.08em]">Favoritos</span>
+        </button>
+        <button onclick="openChatsList()" class="hidden md:flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-600 hover:text-[var(--accent)] transition-colors">
+          <i class="fa-regular fa-comment-dots text-lg"></i>
+          <span class="text-[9.5px] font-black uppercase tracking-[0.08em]">Chat</span>
+        </button>
+        <div class="relative flex items-center gap-1.5 ml-1 vh-dropdown" id="user-menu-wrapper">
+          <button onclick="openUserPanel()" class="w-9 h-9 rounded-full bg-[var(--accent)] text-white font-black text-sm flex items-center justify-center flex-shrink-0" id="header-user-avatar"></button>
+          <button onclick="toggleUserMenu()" class="w-9 h-9 border border-black/10 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 transition-colors" aria-label="Menú de usuario">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div id="user-menu-panel" class="vh-panel" style="width:250px;right:0;">
+            <div class="vh-panel-head" style="padding-bottom:.75rem;">
+              <div id="header-user-name" class="font-black text-base leading-tight"></div>
+              <div id="header-user-role" class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.12em] mt-0.5"></div>
+            </div>
+            <div class="py-2">
+              <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-house-laptop w-4 text-[var(--accent)]"></i> Tus anuncios</button>
+              <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-bookmark w-4 text-[var(--accent)]"></i> Búsquedas guardadas</button>
+              <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('favs');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-heart w-4 text-[var(--accent)]"></i> Favoritos</button>
+              <button onclick="closeAllDropdowns();openChatsList();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-comment-dots w-4 text-[var(--accent)]"></i> Chat</button>
+              <div class="border-t border-black/6 mt-2 pt-2">
+                <button onclick="closeAllDropdowns();logoutSinkomi();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-right-from-bracket w-4"></i> Cerrar sesión</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2722,7 +2749,7 @@ function calcSaving(){
 const translations={es:{home:'Inicio',help:'Ayuda',contact:'Contacto',explore:'Explorar',login:'Iniciar sesión',publish:'Publicar gratis'},ca:{home:'Inici',help:'Ajuda',contact:'Contacte',explore:'Explorar',login:'Iniciar sessió',publish:'Publicar gratis'},en:{home:'Home',help:'Help',contact:'Contact',explore:'Explore',login:'Log in',publish:'Publish free'},de:{home:'Start',help:'Hilfe',contact:'Kontakt',explore:'Entdecken',login:'Anmelden',publish:'Kostenlos inserieren'},sv:{home:'Hem',help:'Hjälp',contact:'Kontakt',explore:'Utforska',login:'Logga in',publish:'Publicera gratis'}};
 
 /* DROPDOWNS */
-function closeAllDropdowns(except){['municipios','types'].forEach(k=>{if(k!==except){const p=document.getElementById(`${k}-panel`);if(p)p.classList.remove('show');}});if(except!=='precios'){const pp=document.getElementById('precios-panel');if(pp)pp.classList.remove('show');}}
+function closeAllDropdowns(except){['municipios','types'].forEach(k=>{if(k!==except){const p=document.getElementById(`${k}-panel`);if(p)p.classList.remove('show');}});if(except!=='precios'){const pp=document.getElementById('precios-panel');if(pp)pp.classList.remove('show');}const um=document.getElementById('user-menu-panel');if(um&&except!=='userMenu')um.classList.remove('show');}
 function toggleDropdown(key){if(key==='precios'){const p=document.getElementById('precios-panel');if(!p)return;const open=p.classList.contains('show');closeAllDropdowns('precios');p.classList.toggle('show',!open);return;}const id=`${key}-panel`;const p=document.getElementById(id);if(!p)return;const open=p.classList.contains('show');closeAllDropdowns(key);p.classList.toggle('show',!open);}
 function filterDropdown(key){
   const input=document.getElementById(key+'-search');
@@ -2764,7 +2791,13 @@ function renderMunicipiosDropdown(){
 function renderTypesDropdown(){const list=document.getElementById('types-list');if(!list)return;list.innerHTML='';propertyTypeGroups.forEach(group=>{const title=document.createElement('div');title.className='group-title';title.textContent=group.group;list.appendChild(title);group.items.forEach(type=>{const btn=document.createElement('button');btn.innerHTML=`<strong>${type}</strong><span>${group.group}</span>`;btn.onclick=()=>{setTypeFilterFromDropdown(type);closeAllDropdowns();};list.appendChild(btn);});});}
 function setTypeFilterFromDropdown(type){buyTypeFilter=type;rentTypeFilter=type;zoneTypeFilter=type;renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderZoneMiniCatalog();document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
 function selectLang(lang,flag,code){setLang(lang);const visual=document.getElementById('current-lang-visual');if(flag==='senyera'){visual.innerHTML='<span class="flag-senyera"></span>';}else{visual.textContent=flag;}document.getElementById('current-lang-code').textContent=code;localStorage.setItem('langFlag',flag);localStorage.setItem('langCode',code);closeAllDropdowns();}
-document.addEventListener('click',e=>{if(!e.target.closest('.vh-dropdown')&&!e.target.closest('#precios-wrapper'))closeAllDropdowns();});
+function toggleUserMenu(){
+  const p=document.getElementById('user-menu-panel');if(!p)return;
+  const open=p.classList.contains('show');
+  closeAllDropdowns();
+  p.classList.toggle('show',!open);
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.vh-dropdown')&&!e.target.closest('#precios-wrapper')&&!e.target.closest('#user-menu-wrapper'))closeAllDropdowns();});
 function setLang(lang){localStorage.setItem('lang',lang);applyLang(lang);}
 function applyLang(lang){const t=translations[lang]||translations.es;['nav-home','nav-help','nav-contact','nav-explore','login-btn','publish-free-btn'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[t.home,t.help,t.contact,t.explore,t.login,t.publish][i];});}
 
@@ -3225,6 +3258,23 @@ let chatRenderedIds = new Set();
 
 function openChatFromProperty(){if(!currentProperty)return;closePropertyModal();openChat(currentProperty.id);}
 
+async function openChatsList(){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  currentChatPropertyId = null;
+  document.getElementById('chat-modal').classList.remove('hidden');
+  document.getElementById('chat-property-img').src='';
+  document.getElementById('chat-property-title').textContent='Selecciona una conversación';
+  document.getElementById('chat-property-price').textContent='';
+  document.getElementById('chat-saving-pill').textContent='';
+  document.getElementById('chat-property-m2').textContent='';
+  document.getElementById('chat-property-rooms').textContent='';
+  document.getElementById('chat-property-baths').textContent='';
+  document.getElementById('seller-name').textContent='';
+  document.getElementById('seller-avatar').textContent='';
+  document.getElementById('seller-status').textContent='';
+  document.getElementById('chat-messages').innerHTML = `<div class="text-center text-xs text-zinc-400 py-10">Elige una conversación de la lista para verla aquí.</div>`;
+  await loadChatThreads(null);
+}
 async function openChat(id){
   if(!SinKomiAuth.isLoggedIn()){
     openLoginModal();
