@@ -11,6 +11,8 @@
   <meta property="og:url" content="https://sinkomi.es" />
   <link rel="canonical" href="https://sinkomi.es" />
   <meta name="robots" content="index, follow" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMGQxYTE0Ii8+CjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1IDMyIDMyKSI+CjxjaXJjbGUgY3g9IjIxIiBjeT0iMzIiIHI9IjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZDk4ZiIgc3Ryb2tlLXdpZHRoPSI1LjUiLz4KPHJlY3QgeD0iMjkiIHk9IjI5LjIiIHdpZHRoPSIyMiIgaGVpZ2h0PSI1LjYiIGZpbGw9IiMwMGQ5OGYiLz4KPHJlY3QgeD0iNDAiIHk9IjM0LjgiIHdpZHRoPSI1LjIiIGhlaWdodD0iNy41IiBmaWxsPSIjMDBkOThmIi8+CjxyZWN0IHg9IjQ3IiB5PSIzNC44IiB3aWR0aD0iNS4yIiBoZWlnaHQ9IjkuNSIgZmlsbD0iIzAwZDk4ZiIvPgo8L2c+Cjwvc3ZnPg==" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMGQxYTE0Ii8+CjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1IDMyIDMyKSI+CjxjaXJjbGUgY3g9IjIxIiBjeT0iMzIiIHI9IjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZDk4ZiIgc3Ryb2tlLXdpZHRoPSI1LjUiLz4KPHJlY3QgeD0iMjkiIHk9IjI5LjIiIHdpZHRoPSIyMiIgaGVpZ2h0PSI1LjYiIGZpbGw9IiMwMGQ5OGYiLz4KPHJlY3QgeD0iNDAiIHk9IjM0LjgiIHdpZHRoPSI1LjIiIGhlaWdodD0iNy41IiBmaWxsPSIjMDBkOThmIi8+CjxyZWN0IHg9IjQ3IiB5PSIzNC44IiB3aWR0aD0iNS4yIiBoZWlnaHQ9IjkuNSIgZmlsbD0iIzAwZDk4ZiIvPgo8L2c+Cjwvc3ZnPg==" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" />
   <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.umd.min.js"></script>
@@ -245,7 +247,9 @@
     .gallery-thumb{border:1px solid var(--line);cursor:pointer;transition:transform .2s ease,border-color .2s ease;}
     .gallery-thumb:hover{transform:translateY(-2px);border-color:rgba(0,0,0,.18);}
     .modal-scroll{overflow-y:auto;}
-    .chat-bubble{max-width:82%;}
+    .hero-op-btn{color:#0d1a14;opacity:.55;}
+.hero-op-btn.active{background:#0d1a14;color:var(--accent);opacity:1;}
+.chat-bubble{max-width:82%;}
     .chat-shell{display:grid;grid-template-columns:320px 1fr;height:100%;min-height:0;}
     .chat-sidebar{border-right:1px solid var(--line);background:#fbfaf8;overflow-y:auto;}
     .chat-thread-item{display:flex;gap:.75rem;padding:1rem;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer;transition:all .2s ease;background:white;}
@@ -575,6 +579,28 @@
 </header>
 <!-- HERO -->
 <section id="inicio" class="w-full px-6 pt-10 md:pt-14 pb-8">
+
+  <!-- BUSCADOR PRINCIPAL — bloque vivo -->
+  <div class="mb-7 relative overflow-hidden" style="background:var(--accent);box-shadow:0 20px 50px -10px rgba(0,217,143,0.35);">
+    <div class="absolute -top-10 -right-10 w-52 h-52 rounded-full opacity-10" style="background:#fff;"></div>
+    <div class="absolute -bottom-16 left-1/3 w-64 h-64 rounded-full opacity-[0.07]" style="background:#0d1a14;"></div>
+    <div class="relative p-6 md:p-9">
+      <h1 class="text-2xl md:text-4xl font-black text-[#0d1a14] mb-5 leading-tight">Encuentra tu próxima casa en Baleares</h1>
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="inline-flex bg-[#0d1a14]/10 p-1 shrink-0" role="tablist" aria-label="Tipo de operación">
+          <button type="button" id="hero-search-buy" onclick="setHeroSearchType('Venta')" class="hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all">Comprar</button>
+          <button type="button" id="hero-search-rent" onclick="setHeroSearchType('Alquiler')" class="hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all">Alquilar</button>
+        </div>
+        <div class="flex-1 flex items-center bg-white px-4 gap-2">
+          <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
+          <input id="hero-search-input" list="hero-municipality-list" type="text" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" onkeydown="if(event.key==='Enter'){event.preventDefault();runHeroSearch();}">
+          <datalist id="hero-municipality-list"></datalist>
+        </div>
+        <button type="button" onclick="runHeroSearch()" class="px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-colors" style="background:#0d1a14;color:var(--accent);">Buscar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-7 xl:gap-9 items-stretch">
     <div class="panel p-8 md:p-11 overflow-hidden relative h-full flex flex-col justify-between">
       <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-[0.04]" style="background:var(--accent);"></div>
@@ -2470,6 +2496,33 @@
 const fallbackImg='data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f4f2ef"/><stop offset="1" stop-color="#d8d0c7"/></linearGradient></defs><rect width="900" height="650" fill="url(#g)"/><path d="M260 385 L450 235 L640 385 V520 H310 V385 Z" fill="#fff" stroke="#111" stroke-opacity=".12" stroke-width="10"/><rect x="390" y="420" width="120" height="100" fill="#13a7ff" opacity=".18"/><text x="450" y="590" text-anchor="middle" font-family="Arial" font-size="38" font-weight="700" fill="#222">SINKOMI</text></svg>`);
 const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpolicy="no-referrer"`;
 
+let heroSearchType='Venta';
+function setHeroSearchType(type){
+  heroSearchType=type;
+  document.getElementById('hero-search-buy').classList.toggle('active',type==='Venta');
+  document.getElementById('hero-search-rent').classList.toggle('active',type==='Alquiler');
+}
+function normalizeSearchText(str){
+  return (str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+function runHeroSearch(){
+  const raw=document.getElementById('hero-search-input').value;
+  const q=normalizeSearchText(raw);
+  if(q){
+    const match=municipalityList.find(m=>normalizeSearchText(m)===q) ||
+                municipalityList.find(m=>normalizeSearchText(m).startsWith(q)) ||
+                municipalityList.find(m=>normalizeSearchText(m).includes(q));
+    if(match){ selectedMunicipality=match; selectedNucleo=''; }
+  }
+  if(heroSearchType==='Alquiler'){ switchToRentTab(); } else { openExplore(); }
+  if(typeof renderMunicipalities==='function') renderMunicipalities();
+  if(typeof updateMunicipalityLabels==='function') updateMunicipalityLabels();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  setHeroSearchType('Venta');
+  const dl=document.getElementById('hero-municipality-list');
+  if(dl){ dl.innerHTML=municipalityList.map(m=>`<option value="${m}">`).join(''); }
+});
 const municipalityList=["Palma","Calvià","Llucmajor","Marratxí","Inca","Manacor","Alcúdia","Pollença","Sóller","Andratx","Artà","Capdepera","Son Servera","Santanyí","Campos","Felanitx","Montuïri","Algaida","Santa Eugènia","Sencelles","Binissalem","Santa Maria del Camí","Consell","Bunyola","Valldemossa","Deià","Escorca","Selva","Campanet","Sa Pobla","Muro","Santa Margalida","Petra","Vilafranca de Bonany","Ariany","Maria de la Salut","Costitx","Lloret de Vistalegre","Lloseta","Alaró","Fornalutx","Banyalbufar","Búger","Esporles","Estellencs","Llubí","Mancor de la Vall","Porreres","Puigpunyent","Sant Joan","Sant Llorenç des Cardassar","Sineu","Ses Salines","Maó","Ciutadella","Alaior","Es Mercadal","Ferreries","Es Castell","Sant Lluís","Es Migjorn Gran","Eivissa","Santa Eulària des Riu","Sant Antoni de Portmany","Sant Josep de sa Talaia","Sant Joan de Labritja","Formentera"];
 const islandByMunicipio={"Palma":"Mallorca","Calvià":"Mallorca","Llucmajor":"Mallorca","Marratxí":"Mallorca","Inca":"Mallorca","Manacor":"Mallorca","Alcúdia":"Mallorca","Pollença":"Mallorca","Sóller":"Mallorca","Andratx":"Mallorca","Artà":"Mallorca","Capdepera":"Mallorca","Son Servera":"Mallorca","Santanyí":"Mallorca","Campos":"Mallorca","Felanitx":"Mallorca","Montuïri":"Mallorca","Algaida":"Mallorca","Santa Eugènia":"Mallorca","Sencelles":"Mallorca","Binissalem":"Mallorca","Santa Maria del Camí":"Mallorca","Consell":"Mallorca","Bunyola":"Mallorca","Valldemossa":"Mallorca","Deià":"Mallorca","Escorca":"Mallorca","Selva":"Mallorca","Campanet":"Mallorca","Sa Pobla":"Mallorca","Muro":"Mallorca","Santa Margalida":"Mallorca","Petra":"Mallorca","Vilafranca de Bonany":"Mallorca","Ariany":"Mallorca","Maria de la Salut":"Mallorca","Costitx":"Mallorca","Lloret de Vistalegre":"Mallorca","Lloseta":"Mallorca","Alaró":"Mallorca","Fornalutx":"Mallorca","Banyalbufar":"Mallorca","Búger":"Mallorca","Esporles":"Mallorca","Estellencs":"Mallorca","Llubí":"Mallorca","Mancor de la Vall":"Mallorca","Porreres":"Mallorca","Puigpunyent":"Mallorca","Sant Joan":"Mallorca","Sant Llorenç des Cardassar":"Mallorca","Sineu":"Mallorca","Ses Salines":"Mallorca","Maó":"Menorca","Ciutadella":"Menorca","Alaior":"Menorca","Es Mercadal":"Menorca","Ferreries":"Menorca","Es Castell":"Menorca","Sant Lluís":"Menorca","Es Migjorn Gran":"Menorca","Eivissa":"Ibiza","Santa Eulària des Riu":"Ibiza","Sant Antoni de Portmany":"Ibiza","Sant Josep de sa Talaia":"Ibiza","Sant Joan de Labritja":"Ibiza","Formentera":"Formentera"};
 const nucleosByMunicipio={"Palma":["Santa Catalina","Portixol","El Molinar","Génova","Son Vida","Es Coll d'en Rabassa","Sant Jordi","Son Ferriol"],"Calvià":["Santa Ponça","Magaluf","Palmanova","Peguera","Portals Nous","Son Ferrer","El Toro","Costa d'en Blanes","Illetes","Cas Català"],"Llucmajor":["s'Arenal","Badia Gran","Badia Blava","Cala Pi","Vallgornera"],"Andratx":["Port d'Andratx","Camp de Mar","Sant Elm","s'Arracó"],"Pollença":["Port de Pollença","Cala Sant Vicenç"],"Alcúdia":["Port d'Alcúdia","Mal Pas","Bonaire"],"Manacor":["Porto Cristo","s'Illot","Cala Murada","Cales de Mallorca","Son Macià"],"Santanyí":["Cala d'Or","Cala Figuera","Portopetro","s'Alqueria Blanca","Calonge","es Llombards","Cala Santanyí"],"Felanitx":["Portocolom","Cas Concos","s'Horta"],"Capdepera":["Cala Rajada","Canyamel","Font de sa Cala"],"Son Servera":["Cala Millor","Cala Bona","Costa dels Pins"],"Sant Llorenç des Cardassar":["Sa Coma","s'Illot","Cala Millor"],"Campos":["Sa Ràpita","Ses Covetes"],"Muro":["Platja de Muro"],"Santa Margalida":["Can Picafort","Son Serra de Marina"],"Artà":["Colònia de Sant Pere"],"Sóller":["Port de Sóller"],"Ses Salines":["Colònia de Sant Jordi"],"Maó":["Cales Fonts","S'Algar","Sant Climent","Llucmaçanes"],"Ciutadella":["Cala Morell","Cala en Blanes","Sa Caleta","Son Xoriguer","Cala en Bosc"],"Es Mercadal":["Fornells","Arenal d'en Castell","Son Parc"],"Es Castell":["Cales Fonts","Sol del Este"],"Sant Lluís":["Binibeca Vell","Binissafúller","Punta Prima","Alcaufar","Cala Torret"],"Ferreries":["Cala Galdana","Santa Galdana"],"Alaior":["Son Bou","Cala en Porter","Torre Soli Nou"],"Es Migjorn Gran":["Sant Tomàs","Binigaus"],"Eivissa":["Dalt Vila","Marina Botafoch","Talamanca","Platja d'en Bossa","Ses Figueretes"],"Santa Eulària des Riu":["Santa Eulària","Jesús","Santa Gertrudis","Sant Carles de Peralta","Es Puig d'en Valls","Cala Llonga","Siesta"],"Sant Antoni de Portmany":["Sant Antoni","Sant Rafel","Santa Agnès","Sant Mateu d'Albarca","Cala de Bou","Port des Torrent"],"Sant Josep de sa Talaia":["Sant Josep","Sant Jordi de ses Salines","Es Cubells","Cala Vedella","Cala Tarida","Cala d'Hort","Platges de Comte"],"Sant Joan de Labritja":["Sant Joan","Sant Miquel de Balansat","Sant Llorenç de Balàfia","Sant Vicent de sa Cala","Portinatx"],"Formentera":["Sant Francesc Xavier","Sant Ferran de ses Roques","Es Pujols","La Savina","Es Caló de Sant Agustí","El Pilar de la Mola"]};
