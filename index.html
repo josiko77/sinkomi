@@ -6365,7 +6365,12 @@ async function sendAIMessage(){
       </div>
       <div>
         <label class="text-xs font-black uppercase tracking-[0.16em] text-zinc-600 block mb-2">Contraseña</label>
-        <input type="password" placeholder="Tu contraseña" class="w-full border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)]">
+        <div class="relative">
+          <input id="login-password" type="password" placeholder="Tu contraseña" class="w-full border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)] pr-12">
+          <button type="button" onclick="togglePassword('login-password','eye3')" class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700">
+            <i id="eye3" class="fa-regular fa-eye text-sm"></i>
+          </button>
+        </div>
       </div>
       <div class="flex justify-end"><button class="text-xs text-[var(--accent)] font-bold hover:underline">¿Olvidaste tu contraseña?</button></div>
       <button onclick="submitLogin()" class="w-full py-4 accent-btn font-black uppercase tracking-[0.14em] text-[11px]">Entrar en SINKOMI</button>
