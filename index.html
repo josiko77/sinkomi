@@ -545,9 +545,9 @@
         <button onclick="toggleDropdown('precios')" class="h-10 inline-flex items-center gap-1.5 font-black text-[10.5px] uppercase tracking-[0.18em] text-zinc-700 hover:text-[var(--orange)] transition-colors">Precios <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
         <div id="precios-panel" class="precios-panel">
           <div class="ph-mini">Planes SINKOMI</div>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-list text-[var(--accent)] w-5 text-center"></i> Ver todos los planes</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-shield-check text-[var(--orange)] w-5 text-center"></i> Propietario verificado</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPreciosModal();"><i class="fa-solid fa-fire text-[var(--orange)] w-5 text-center"></i> Destacar anuncio</a>
+          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-list text-[var(--accent)] w-5 text-center"></i> Ver todos los planes</a>
+          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-shield-check text-[var(--orange)] w-5 text-center"></i> Propietario verificado</a>
+          <a href="#precios" onclick="closeAllDropdowns()"><i class="fa-solid fa-fire text-[var(--orange)] w-5 text-center"></i> Destacar anuncio</a>
         </div>
       </div>
       <a href="javascript:void(0)" onclick="openDatosModal()" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Datos</a>
@@ -947,239 +947,6 @@
     </div>
   </div>
 </section>
-
-<!-- ESTADÍSTICAS -->
-<div id="datos-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
-  <div class="bg-white w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl">
-    <div class="sticky top-0 bg-[#0d1a14] z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
-      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-white/50">Datos · SINKOMI</span>
-      <button onclick="closeDatosModal()" class="text-3xl text-white/50 hover:text-white leading-none">×</button>
-    </div>
-    <div class="w-full px-6 pb-10 pt-0">
-  <div class="dark-panel p-8 md:p-12 overflow-hidden relative" style="border-top:none;">
-    <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-[0.04]" style="background:var(--accent);transform:translate(30%,-30%);"></div>
-    <div class="section-label text-white/40 mb-4">Datos del mercado</div>
-    <h2 class="serif text-4xl md:text-6xl text-white leading-[0.92] mb-10">Baleares en <em class="text-[var(--accent)]">números</em></h2>
-    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
-      <div><div class="stat-number text-white mb-2">6</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:82%;"></div></div><div class="text-sm text-white/60 font-medium">Idiomas con traducción</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Chat multilingüe automático</div></div>
-      <div><div class="stat-number text-[var(--orange)] mb-2">67</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:100%;background:var(--orange);"></div></div><div class="text-sm text-white/60 font-medium">Municipios</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">4 islas · Baleares</div></div>
-      <div><div class="stat-number text-[var(--accent)] mb-2">100<span class="text-2xl">%</span></div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:95%;"></div></div><div class="text-sm text-white/60 font-medium">Contacto directo</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Propietario – comprador</div></div>
-      <div><div class="stat-number text-[var(--orange)] mb-2">0€</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:100%;background:var(--orange);"></div></div><div class="text-sm text-white/60 font-medium">Coste para publicar</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Publicación básica</div></div>
-    </div>
-    <div class="grid md:grid-cols-3 gap-4 items-stretch">
-      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Ahorro promedio</div><div class="text-3xl font-black text-white mb-2">Decenas de miles de €</div><div class="text-sm text-white/50">Por operación de venta en Mallorca (orientativo)</div></div>
-      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Precio medio isla</div><div class="text-3xl font-black text-white mb-2">5.160 €/m²</div><div class="text-sm text-white/50">Media orientativa 2025</div></div>
-      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Compradores extranjeros</div><div class="text-3xl font-black text-white mb-2">33%</div><div class="text-sm text-white/50">En Baleares. La mayor tasa de España.</div></div>
-    </div>
-
-    <!-- GRÁFICO EVOLUCIÓN PRECIOS -->
-    <div class="mt-8 border border-white/10 p-6 bg-white/5">
-      <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
-        <div>
-          <div class="section-label text-white/40 mb-1">Evolución histórica</div>
-          <h3 class="text-xl font-black text-white leading-tight">Precio del m² en Mallorca <span style="color:var(--accent)">2014 – 2025</span></h3>
-          <p class="text-xs text-white/40 mt-1">Venta (€/m²) · Alquiler (€/m²/mes)</p>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2"><span style="width:12px;height:3px;background:var(--accent);display:inline-block;border-radius:2px;"></span><span class="text-xs text-white/50 font-bold uppercase tracking-wider">Venta</span></div>
-          <div class="flex items-center gap-2"><span style="width:12px;height:3px;background:var(--orange);display:inline-block;border-radius:2px;"></span><span class="text-xs text-white/50 font-bold uppercase tracking-wider">Alquiler</span></div>
-        </div>
-      </div>
-      <div style="position:relative;height:260px;">
-        <canvas id="preciosChart"></canvas>
-      </div>
-      <div class="flex items-center gap-6 mt-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
-          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2020 · Impacto COVID</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
-          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2022 · Boom post-COVID +10,5%</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
-          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2024 · Máximo histórico +13,1%</span>
-        </div>
-      </div>
-      <p class="text-[10px] text-white/30 font-semibold mt-5">Fuente: elaboración propia a partir de datos públicos del mercado inmobiliario de Mallorca. Cifras orientativas; no constituyen tasación oficial.</p>
-    </div>
-  </div>
-    </div>
-  </div>
-</div>
-
-<!-- REVOLUCIÓN -->
-<!-- SECCIÓN ALQUILER -->
-<section id="alquiler" class="w-full px-6 pb-10">
-  <div class="panel p-8 md:p-12 overflow-hidden relative">
-    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.03]" style="background:var(--accent);"></div>
-
-    <!-- Cabecera -->
-    <div class="mb-10">
-      <div class="section-label mb-3" style="color:var(--accent);">Alquiler en Baleares</div>
-      <h2 class="serif text-4xl md:text-6xl leading-[0.92] text-black mb-5">Alquilar en Baleares<br><em class="text-[var(--accent)]">no debería ser tan difícil.</em></h2>
-      <p class="text-zinc-600 text-base md:text-lg leading-relaxed max-w-3xl">Sabemos que en las islas encontrar un alquiler es una de las gestiones más complicadas. En SINKOMI apostamos por la honestidad, la transparencia y el contacto directo entre propietario e inquilino desde el primer momento.</p>
-    </div>
-
-    <!-- Dos columnas -->
-    <div class="grid md:grid-cols-2 gap-6 mb-8">
-
-      <!-- Para el propietario -->
-      <div class="dark-panel p-7 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-0.5 bg-[var(--accent)]"></div>
-        <div class="section-label text-white/40 mb-3">Para el propietario</div>
-        <h3 class="text-2xl font-black text-white leading-tight mb-4">Tú decides quién entra en tu inmueble</h3>
-        <div class="space-y-4 text-white/70 text-sm leading-relaxed">
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Hablas directamente con los inquilinos interesados desde el primer mensaje, sin intermediarios que filtren o distorsionen la información.</p>
-          </div>
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Solicita las garantías y la documentación que consideres oportuna (contrato, nóminas) de forma directa a través del chat privado para tu total tranquilidad.</p>
-          </div>
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Publicas tu inmueble gratis y gestionas las visitas a tu ritmo. Tu piso, tus reglas.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Para el inquilino -->
-      <div class="dark-panel p-7 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-0.5" style="background:var(--orange);"></div>
-        <div class="section-label text-white/40 mb-3" style="color:var(--orange);">Para el inquilino</div>
-        <h3 class="text-2xl font-black text-white leading-tight mb-4">Genera confianza desde el primer mensaje</h3>
-        <div class="space-y-4 text-white/70 text-sm leading-relaxed">
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Preséntate explicando tu situación laboral y personal directamente al dueño del inmueble. Sin agencias, sin esperas y sin comisiones de gestión.</p>
-          </div>
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Comparte tus documentos de forma segura adjuntándolos directamente en el chat privado cuando el propietario te los solicite para avanzar con el alquiler.</p>
-          </div>
-          <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
-            <p>Trato directo de persona a persona. Todo claro, legal y gestionado directamente entre vosotros.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bloque diferencial — Filosofía P2P -->
-    <div class="relative overflow-hidden" style="background:linear-gradient(135deg,#0a1f14 0%,#0d2e1a 100%);padding:2.5rem;border:1px solid rgba(255,255,255,0.06);">
-      <div class="absolute top-0 left-0 right-0 h-px" style="background:linear-gradient(90deg,transparent,var(--accent),transparent);"></div>
-      <div class="grid md:grid-cols-[1fr_auto] gap-6 items-center">
-        <div>
-          <div class="section-label text-white/40 mb-3" style="color:var(--accent);">Filosofía SINKOMI</div>
-          <h3 class="text-2xl md:text-3xl font-black text-white leading-tight mb-3">Gestión de documentos en un clic</h3>
-          <p class="text-white/60 text-sm leading-relaxed max-w-2xl">En SINKOMI defendemos la sencillez. Olvídate de correos que se pierden o mensajes de WhatsApp desordenados. Utiliza el clip de adjuntos de nuestro chat privado para enviar o recibir contratos de trabajo, nóminas o el DNI de forma limpia, directa y segura. Vosotros os ponéis de acuerdo, vosotros gestionáis los papeles.</p>
-          <div class="flex flex-wrap gap-3 mt-5">
-            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,168,120,0.12);border:1px solid rgba(0,168,120,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);">💬 Chat directo</span>
-            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,168,120,0.12);border:1px solid rgba(0,168,120,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);">📎 Adjuntos seguros</span>
-            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--orange);">⚡ De persona a persona</span>
-          </div>
-
-          <!-- Sutil CTA contratos -->
-          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-            <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:360px;">¿Todo acordado? SINKOMI te permite redactar y firmar el contrato de alquiler con validez legal completa, sin salir de aquí.</p>
-            <button onclick="openContratosTab()" style="display:inline-flex;align-items:center;gap:.5rem;background:white;color:#0d1a14;padding:.6rem 1.2rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;border:none;cursor:pointer;transition:all .2s ease;" onmouseover="this.style.background='var(--accent)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#0d1a14'">
-              📄 Ver contratos SINKOMI
-            </button>
-          </div>
-        </div>
-        <div class="text-center" style="flex-shrink:0;">
-          <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);padding:1rem 0;">100% P2P · Sin intermediarios</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="flex flex-col sm:flex-row gap-4 mt-8">
-      <button onclick="openPublishModal()" class="publish-gate px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2"><i class="fa-solid fa-house"></i> Publicar mi alquiler</button>
-      <button onclick="openRegisterModal('inquilino')" class="px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50 transition-colors flex items-center gap-2"><i class="fa-solid fa-user"></i> Crear perfil de inquilino</button>
-    </div>
-
-  </div>
-</section>
-
-<section id="revolucion" class="w-full px-6 pb-10">
-  <div class="panel p-6 md:p-10 overflow-hidden">
-    <div class="grid xl:grid-cols-[1.02fr_0.98fr] gap-8 xl:gap-10 items-start">
-      <div class="space-y-5">
-        <div class="blue-panel p-7 md:p-9"><div class="flex items-center gap-2.5 mb-4"><span style="width:24px;height:2px;background:var(--accent);display:inline-block;flex-shrink:0;"></span><span class="text-[11px] md:text-xs font-black uppercase tracking-[0.22em]" style="color:var(--accent);">Modelo SINKOMI</span></div><h3 class="text-2xl md:text-4xl font-black leading-[1.1] mb-5">Vender una vivienda no debería obligarte a pagar decenas de miles de euros en honorarios de inmobiliaria</h3><p class="text-white/75 text-[15px] md:text-lg leading-relaxed">En SINKOMI eso se acabó. Hemos venido a cambiar la forma de comprar y vender cualquier tipo de inmueble.</p></div>
-        <div class="panel p-6 md:p-7">
-          <div class="flex items-center gap-2.5 mb-3"><span style="width:24px;height:2px;background:var(--accent);display:inline-block;flex-shrink:0;"></span><span class="text-[11px] md:text-xs font-black uppercase tracking-[0.22em]" style="color:var(--accent);">¿Qué es SINKOMI?</span></div>
-          <h4 class="text-2xl md:text-3xl font-black leading-tight mb-6">La primera plataforma inmobiliaria sin comisiones de Baleares.</h4>
-
-          <div class="space-y-6 text-zinc-600 leading-relaxed">
-
-            <div class="border-l-2 border-[var(--accent)] pl-5">
-              <div class="font-black text-black mb-1">Cómo funciona</div>
-              <p>Sencillo. El propietario publica su inmueble. El comprador lo encuentra, abre un chat directo y habla con quien tiene las llaves. Sin llamar a ninguna oficina. Sin esperar a que nadie te devuelva la llamada. Tú con el propietario. Directo.</p>
-            </div>
-
-            <div class="border-l-2 border-[var(--accent)] pl-5">
-              <div class="font-black text-black mb-1">Para quién es</div>
-              <p>Para el propietario que quiere vender su inmueble sin regalar una comisión que puede suponer decenas de miles de euros. Y para el comprador que quiere hablar con quien realmente sabe todo sobre el inmueble — su dueño.</p>
-            </div>
-
-            <div class="border-l-2 border-[var(--accent)] pl-5">
-              <div class="font-black text-black mb-1">Por qué Baleares</div>
-              <p>Porque las Islas Baleares tienen uno de los mercados inmobiliarios más activos de Europa y las comisiones aquí duelen más que en cualquier otro sitio. Era el momento y el lugar para cambiar las cosas.</p>
-            </div>
-
-            <div class="border-l-2 border-[var(--orange)] pl-5">
-              <div class="font-black text-black mb-1">En qué se diferencia de otras plataformas</div>
-              <p>En otras plataformas publican agencias. Aquí publican personas. En otras plataformas hablas con un intermediario. Aquí hablas directamente con el propietario. En otras plataformas pagas comisión. Aquí decides tú.</p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      <div class="space-y-5">
-        <div class="panel p-6 md:p-7"><div class="section-label mb-3" style="color:var(--accent);">Dónde está el ahorro</div><h4 class="text-2xl md:text-4xl font-black leading-tight mb-4">El ahorro real está en evitar la comisión cuando no es necesaria</h4><p class="text-zinc-600 leading-relaxed">La comisión inmobiliaria habitualmente es entre un 3% y un 7% del precio de venta, más un 21% de IVA. En Baleares son decenas de miles de euros.</p></div>
-        <div class="panel p-6 md:p-7"><div class="section-label mb-3">Ejemplos orientativos</div><div class="space-y-4">
-          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 300.000 €</div><div class="text-sm text-zinc-700 mt-1">Comisión 3%–7% + IVA</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">10.890€ – 25.410€</div></div></div>
-          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 500.000 €</div><div class="text-sm text-zinc-700 mt-1">Ahorro potencial</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">18.150€ – 42.350€</div></div></div>
-          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 800.000 €</div><div class="text-sm text-zinc-700 mt-1">Ahorro potencial</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">29.040€ – 67.760€</div></div></div>
-        </div></div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- SECCIÓN MAPA VISIBLE -->
-<section class="w-full px-6 pb-12 pt-4">
-  <div class="panel overflow-hidden">
-    <!-- Cabecera -->
-    <div class="px-8 py-7 border-b border-black/6" style="background:linear-gradient(135deg,#0A0F1E 0%,#0d1a2e 100%);">
-      <div class="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <div class="section-label mb-2" style="color:var(--accent);">Baleares · 67 municipios</div>
-          <h2 class="text-2xl md:text-3xl font-black text-white leading-tight mb-2">Explora dónde quieres vivir</h2>
-          <p class="text-sm" style="color:rgba(255,255,255,0.45);max-width:480px;">Toca cualquier municipio del mapa para ver los inmuebles disponibles. Directo al propietario, sin intermediarios.</p>
-        </div>
-        <div class="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.14em]">
-          <span class="flex items-center gap-1.5" style="color:rgba(255,255,255,0.5);"><span style="width:10px;height:10px;background:var(--accent);border-radius:999px;display:inline-block;"></span>Con inmuebles</span>
-          <button onclick="openMunicipiosTab()" class="px-4 py-2 font-black text-[10px] uppercase tracking-[0.14em] transition-all" style="background:var(--accent);color:white;">Ver todos →</button>
-        </div>
-      </div>
-    </div>
-    <!-- Mapa -->
-    <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
-      <button id="map-draw-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona</button>
-      <button id="map-clear-btn" onclick="clearDrawArea()"><i class="fa-solid fa-xmark"></i> Limpiar área</button>
-      <div id="map-area-results">
-        <span id="map-area-count"></span>
-        <button onclick="goToAreaResults()">Ver inmuebles <i class="fa-solid fa-arrow-right"></i></button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TABS -->
 <section id="tabs" class="w-full px-6 pb-20">
   <div class="flex flex-wrap gap-3 mb-8">
     <button class="tab-btn active px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-comprar">Comprar</button>
@@ -1846,14 +1613,242 @@
   </div>
 </section>
 
-<!-- PRECIOS -->
-<div id="precios-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+
+<!-- ESTADÍSTICAS -->
+<div id="datos-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
   <div class="bg-white w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl">
-    <div class="sticky top-0 bg-white z-10 px-6 py-4 border-b border-black/6 flex items-center justify-between">
-      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Precios · SINKOMI</span>
-      <button onclick="closePreciosModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    <div class="sticky top-0 bg-[#0d1a14] z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
+      <span class="font-black text-[11px] uppercase tracking-[0.16em] text-white/50">Datos · SINKOMI</span>
+      <button onclick="closeDatosModal()" class="text-3xl text-white/50 hover:text-white leading-none">×</button>
     </div>
-    <div class="w-full px-6 py-14 bg-white/45">
+    <div class="w-full px-6 pb-10 pt-0">
+  <div class="dark-panel p-8 md:p-12 overflow-hidden relative" style="border-top:none;">
+    <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-[0.04]" style="background:var(--accent);transform:translate(30%,-30%);"></div>
+    <div class="section-label text-white/40 mb-4">Datos del mercado</div>
+    <h2 class="serif text-4xl md:text-6xl text-white leading-[0.92] mb-10">Baleares en <em class="text-[var(--accent)]">números</em></h2>
+    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+      <div><div class="stat-number text-white mb-2">6</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:82%;"></div></div><div class="text-sm text-white/60 font-medium">Idiomas con traducción</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Chat multilingüe automático</div></div>
+      <div><div class="stat-number text-[var(--orange)] mb-2">67</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:100%;background:var(--orange);"></div></div><div class="text-sm text-white/60 font-medium">Municipios</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">4 islas · Baleares</div></div>
+      <div><div class="stat-number text-[var(--accent)] mb-2">100<span class="text-2xl">%</span></div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:95%;"></div></div><div class="text-sm text-white/60 font-medium">Contacto directo</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Propietario – comprador</div></div>
+      <div><div class="stat-number text-[var(--orange)] mb-2">0€</div><div class="stat-bar mb-3"><div class="stat-bar-fill" style="--bar-w:100%;background:var(--orange);"></div></div><div class="text-sm text-white/60 font-medium">Coste para publicar</div><div class="text-[10px] text-white/35 uppercase tracking-widest mt-1 font-black">Publicación básica</div></div>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4 items-stretch">
+      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Ahorro promedio</div><div class="text-3xl font-black text-white mb-2">Decenas de miles de €</div><div class="text-sm text-white/50">Por operación de venta en Mallorca (orientativo)</div></div>
+      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Precio medio isla</div><div class="text-3xl font-black text-white mb-2">5.160 €/m²</div><div class="text-sm text-white/50">Media orientativa 2025</div></div>
+      <div class="border border-white/10 p-5 bg-white/5 flex flex-col justify-center" style="min-height:130px;"><div class="section-label text-white/40 mb-2">Compradores extranjeros</div><div class="text-3xl font-black text-white mb-2">33%</div><div class="text-sm text-white/50">En Baleares. La mayor tasa de España.</div></div>
+    </div>
+
+    <!-- GRÁFICO EVOLUCIÓN PRECIOS -->
+    <div class="mt-8 border border-white/10 p-6 bg-white/5">
+      <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <div class="section-label text-white/40 mb-1">Evolución histórica</div>
+          <h3 class="text-xl font-black text-white leading-tight">Precio del m² en Mallorca <span style="color:var(--accent)">2014 – 2025</span></h3>
+          <p class="text-xs text-white/40 mt-1">Venta (€/m²) · Alquiler (€/m²/mes)</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2"><span style="width:12px;height:3px;background:var(--accent);display:inline-block;border-radius:2px;"></span><span class="text-xs text-white/50 font-bold uppercase tracking-wider">Venta</span></div>
+          <div class="flex items-center gap-2"><span style="width:12px;height:3px;background:var(--orange);display:inline-block;border-radius:2px;"></span><span class="text-xs text-white/50 font-bold uppercase tracking-wider">Alquiler</span></div>
+        </div>
+      </div>
+      <div style="position:relative;height:260px;">
+        <canvas id="preciosChart"></canvas>
+      </div>
+      <div class="flex items-center gap-6 mt-4 flex-wrap">
+        <div class="flex items-center gap-2">
+          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
+          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2020 · Impacto COVID</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
+          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2022 · Boom post-COVID +10,5%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span style="width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.15);display:inline-block;"></span>
+          <span class="text-[10px] text-white/30 font-bold uppercase tracking-wider">2024 · Máximo histórico +13,1%</span>
+        </div>
+      </div>
+      <p class="text-[10px] text-white/30 font-semibold mt-5">Fuente: elaboración propia a partir de datos públicos del mercado inmobiliario de Mallorca. Cifras orientativas; no constituyen tasación oficial.</p>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVOLUCIÓN -->
+<!-- SECCIÓN ALQUILER -->
+<section id="alquiler" class="w-full px-6 pb-10">
+  <div class="panel p-8 md:p-12 overflow-hidden relative">
+    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.03]" style="background:var(--accent);"></div>
+
+    <!-- Cabecera -->
+    <div class="mb-10">
+      <div class="section-label mb-3" style="color:var(--accent);">Alquiler en Baleares</div>
+      <h2 class="serif text-4xl md:text-6xl leading-[0.92] text-black mb-5">Alquilar en Baleares<br><em class="text-[var(--accent)]">no debería ser tan difícil.</em></h2>
+      <p class="text-zinc-600 text-base md:text-lg leading-relaxed max-w-3xl">Sabemos que en las islas encontrar un alquiler es una de las gestiones más complicadas. En SINKOMI apostamos por la honestidad, la transparencia y el contacto directo entre propietario e inquilino desde el primer momento.</p>
+    </div>
+
+    <!-- Dos columnas -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+      <!-- Para el propietario -->
+      <div class="dark-panel p-7 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-0.5 bg-[var(--accent)]"></div>
+        <div class="section-label text-white/40 mb-3">Para el propietario</div>
+        <h3 class="text-2xl font-black text-white leading-tight mb-4">Tú decides quién entra en tu inmueble</h3>
+        <div class="space-y-4 text-white/70 text-sm leading-relaxed">
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Hablas directamente con los inquilinos interesados desde el primer mensaje, sin intermediarios que filtren o distorsionen la información.</p>
+          </div>
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Solicita las garantías y la documentación que consideres oportuna (contrato, nóminas) de forma directa a través del chat privado para tu total tranquilidad.</p>
+          </div>
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Publicas tu inmueble gratis y gestionas las visitas a tu ritmo. Tu piso, tus reglas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Para el inquilino -->
+      <div class="dark-panel p-7 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-0.5" style="background:var(--orange);"></div>
+        <div class="section-label text-white/40 mb-3" style="color:var(--orange);">Para el inquilino</div>
+        <h3 class="text-2xl font-black text-white leading-tight mb-4">Genera confianza desde el primer mensaje</h3>
+        <div class="space-y-4 text-white/70 text-sm leading-relaxed">
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Preséntate explicando tu situación laboral y personal directamente al dueño del inmueble. Sin agencias, sin esperas y sin comisiones de gestión.</p>
+          </div>
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Comparte tus documentos de forma segura adjuntándolos directamente en el chat privado cuando el propietario te los solicite para avanzar con el alquiler.</p>
+          </div>
+          <div class="flex gap-3">
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <p>Trato directo de persona a persona. Todo claro, legal y gestionado directamente entre vosotros.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloque diferencial — Filosofía P2P -->
+    <div class="relative overflow-hidden" style="background:linear-gradient(135deg,#0a1f14 0%,#0d2e1a 100%);padding:2.5rem;border:1px solid rgba(255,255,255,0.06);">
+      <div class="absolute top-0 left-0 right-0 h-px" style="background:linear-gradient(90deg,transparent,var(--accent),transparent);"></div>
+      <div class="grid md:grid-cols-[1fr_auto] gap-6 items-center">
+        <div>
+          <div class="section-label text-white/40 mb-3" style="color:var(--accent);">Filosofía SINKOMI</div>
+          <h3 class="text-2xl md:text-3xl font-black text-white leading-tight mb-3">Gestión de documentos en un clic</h3>
+          <p class="text-white/60 text-sm leading-relaxed max-w-2xl">En SINKOMI defendemos la sencillez. Olvídate de correos que se pierden o mensajes de WhatsApp desordenados. Utiliza el clip de adjuntos de nuestro chat privado para enviar o recibir contratos de trabajo, nóminas o el DNI de forma limpia, directa y segura. Vosotros os ponéis de acuerdo, vosotros gestionáis los papeles.</p>
+          <div class="flex flex-wrap gap-3 mt-5">
+            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,168,120,0.12);border:1px solid rgba(0,168,120,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);">💬 Chat directo</span>
+            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,168,120,0.12);border:1px solid rgba(0,168,120,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);">📎 Adjuntos seguros</span>
+            <span style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.25);padding:.4rem .9rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--orange);">⚡ De persona a persona</span>
+          </div>
+
+          <!-- Sutil CTA contratos -->
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+            <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:360px;">¿Todo acordado? SINKOMI te permite redactar y firmar el contrato de alquiler con validez legal completa, sin salir de aquí.</p>
+            <button onclick="openContratosTab()" style="display:inline-flex;align-items:center;gap:.5rem;background:white;color:#0d1a14;padding:.6rem 1.2rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;border:none;cursor:pointer;transition:all .2s ease;" onmouseover="this.style.background='var(--accent)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#0d1a14'">
+              📄 Ver contratos SINKOMI
+            </button>
+          </div>
+        </div>
+        <div class="text-center" style="flex-shrink:0;">
+          <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);padding:1rem 0;">100% P2P · Sin intermediarios</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="flex flex-col sm:flex-row gap-4 mt-8">
+      <button onclick="openPublishModal()" class="publish-gate px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2"><i class="fa-solid fa-house"></i> Publicar mi alquiler</button>
+      <button onclick="openRegisterModal('inquilino')" class="px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50 transition-colors flex items-center gap-2"><i class="fa-solid fa-user"></i> Crear perfil de inquilino</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="revolucion" class="w-full px-6 pb-10">
+  <div class="panel p-6 md:p-10 overflow-hidden">
+    <div class="grid xl:grid-cols-[1.02fr_0.98fr] gap-8 xl:gap-10 items-start">
+      <div class="space-y-5">
+        <div class="blue-panel p-7 md:p-9"><div class="flex items-center gap-2.5 mb-4"><span style="width:24px;height:2px;background:var(--accent);display:inline-block;flex-shrink:0;"></span><span class="text-[11px] md:text-xs font-black uppercase tracking-[0.22em]" style="color:var(--accent);">Modelo SINKOMI</span></div><h3 class="text-2xl md:text-4xl font-black leading-[1.1] mb-5">Vender una vivienda no debería obligarte a pagar decenas de miles de euros en honorarios de inmobiliaria</h3><p class="text-white/75 text-[15px] md:text-lg leading-relaxed">En SINKOMI eso se acabó. Hemos venido a cambiar la forma de comprar y vender cualquier tipo de inmueble.</p></div>
+        <div class="panel p-6 md:p-7">
+          <div class="flex items-center gap-2.5 mb-3"><span style="width:24px;height:2px;background:var(--accent);display:inline-block;flex-shrink:0;"></span><span class="text-[11px] md:text-xs font-black uppercase tracking-[0.22em]" style="color:var(--accent);">¿Qué es SINKOMI?</span></div>
+          <h4 class="text-2xl md:text-3xl font-black leading-tight mb-6">La primera plataforma inmobiliaria sin comisiones de Baleares.</h4>
+
+          <div class="space-y-6 text-zinc-600 leading-relaxed">
+
+            <div class="border-l-2 border-[var(--accent)] pl-5">
+              <div class="font-black text-black mb-1">Cómo funciona</div>
+              <p>Sencillo. El propietario publica su inmueble. El comprador lo encuentra, abre un chat directo y habla con quien tiene las llaves. Sin llamar a ninguna oficina. Sin esperar a que nadie te devuelva la llamada. Tú con el propietario. Directo.</p>
+            </div>
+
+            <div class="border-l-2 border-[var(--accent)] pl-5">
+              <div class="font-black text-black mb-1">Para quién es</div>
+              <p>Para el propietario que quiere vender su inmueble sin regalar una comisión que puede suponer decenas de miles de euros. Y para el comprador que quiere hablar con quien realmente sabe todo sobre el inmueble — su dueño.</p>
+            </div>
+
+            <div class="border-l-2 border-[var(--accent)] pl-5">
+              <div class="font-black text-black mb-1">Por qué Baleares</div>
+              <p>Porque las Islas Baleares tienen uno de los mercados inmobiliarios más activos de Europa y las comisiones aquí duelen más que en cualquier otro sitio. Era el momento y el lugar para cambiar las cosas.</p>
+            </div>
+
+            <div class="border-l-2 border-[var(--orange)] pl-5">
+              <div class="font-black text-black mb-1">En qué se diferencia de otras plataformas</div>
+              <p>En otras plataformas publican agencias. Aquí publican personas. En otras plataformas hablas con un intermediario. Aquí hablas directamente con el propietario. En otras plataformas pagas comisión. Aquí decides tú.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="space-y-5">
+        <div class="panel p-6 md:p-7"><div class="section-label mb-3" style="color:var(--accent);">Dónde está el ahorro</div><h4 class="text-2xl md:text-4xl font-black leading-tight mb-4">El ahorro real está en evitar la comisión cuando no es necesaria</h4><p class="text-zinc-600 leading-relaxed">La comisión inmobiliaria habitualmente es entre un 3% y un 7% del precio de venta, más un 21% de IVA. En Baleares son decenas de miles de euros.</p></div>
+        <div class="panel p-6 md:p-7"><div class="section-label mb-3">Ejemplos orientativos</div><div class="space-y-4">
+          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 300.000 €</div><div class="text-sm text-zinc-700 mt-1">Comisión 3%–7% + IVA</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">10.890€ – 25.410€</div></div></div>
+          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 500.000 €</div><div class="text-sm text-zinc-700 mt-1">Ahorro potencial</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">18.150€ – 42.350€</div></div></div>
+          <div class="saving-metric-card flex items-center justify-between gap-5"><div><div class="font-black text-lg">Vivienda de 800.000 €</div><div class="text-sm text-zinc-700 mt-1">Ahorro potencial</div></div><div class="text-right"><div class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.14em] mb-1">Ahorro aprox.</div><div class="comparison-value">29.040€ – 67.760€</div></div></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- SECCIÓN MAPA VISIBLE -->
+<section class="w-full px-6 pb-12 pt-4">
+  <div class="panel overflow-hidden">
+    <!-- Cabecera -->
+    <div class="px-8 py-7 border-b border-black/6" style="background:linear-gradient(135deg,#0A0F1E 0%,#0d1a2e 100%);">
+      <div class="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <div class="section-label mb-2" style="color:var(--accent);">Baleares · 67 municipios</div>
+          <h2 class="text-2xl md:text-3xl font-black text-white leading-tight mb-2">Explora dónde quieres vivir</h2>
+          <p class="text-sm" style="color:rgba(255,255,255,0.45);max-width:480px;">Toca cualquier municipio del mapa para ver los inmuebles disponibles. Directo al propietario, sin intermediarios.</p>
+        </div>
+        <div class="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.14em]">
+          <span class="flex items-center gap-1.5" style="color:rgba(255,255,255,0.5);"><span style="width:10px;height:10px;background:var(--accent);border-radius:999px;display:inline-block;"></span>Con inmuebles</span>
+          <button onclick="openMunicipiosTab()" class="px-4 py-2 font-black text-[10px] uppercase tracking-[0.14em] transition-all" style="background:var(--accent);color:white;">Ver todos →</button>
+        </div>
+      </div>
+    </div>
+    <!-- Mapa -->
+    <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
+      <button id="map-draw-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona</button>
+      <button id="map-clear-btn" onclick="clearDrawArea()"><i class="fa-solid fa-xmark"></i> Limpiar área</button>
+      <div id="map-area-results">
+        <span id="map-area-count"></span>
+        <button onclick="goToAreaResults()">Ver inmuebles <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABS -->
+
+<!-- PRECIOS -->
+<section id="precios" class="w-full px-6 py-20 bg-white/45 border-y border-black/5">
   <div class="w-full panel p-8 md:p-14 relative overflow-hidden">
 
     <!-- Cabecera -->
@@ -1957,9 +1952,7 @@
     <p class="text-center text-xs text-zinc-400 mt-8 font-semibold">Básico activo 90 días · renovable gratis. Verificado válido 1 año · renovación a 4,99€. Hasta 5 inmuebles verificados por propietario. Sin contratos de permanencia.</p>
 
   </div>
-    </div>
-  </div>
-</div>
+</section>
 
 <!-- CONTRATOS -->
 <section class="w-full px-6 py-16 bg-zinc-50 border-y border-black/5">
@@ -2564,8 +2557,6 @@
 const fallbackImg='data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f4f2ef"/><stop offset="1" stop-color="#d8d0c7"/></linearGradient></defs><rect width="900" height="650" fill="url(#g)"/><path d="M260 385 L450 235 L640 385 V520 H310 V385 Z" fill="#fff" stroke="#111" stroke-opacity=".12" stroke-width="10"/><rect x="390" y="420" width="120" height="100" fill="#13a7ff" opacity=".18"/><text x="450" y="590" text-anchor="middle" font-family="Arial" font-size="38" font-weight="700" fill="#222">SINKOMI</text></svg>`);
 const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpolicy="no-referrer"`;
 
-function openPreciosModal(){ document.getElementById('precios-modal').classList.remove('hidden'); }
-function closePreciosModal(){ document.getElementById('precios-modal').classList.add('hidden'); }
 function openDatosModal(){ document.getElementById('datos-modal').classList.remove('hidden'); setTimeout(initPreciosChart,80); }
 function closeDatosModal(){ document.getElementById('datos-modal').classList.add('hidden'); }
 function openContactoModal(){ document.getElementById('contacto-modal').classList.remove('hidden'); }
