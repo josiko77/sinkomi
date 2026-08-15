@@ -4842,6 +4842,7 @@ function openPublishModal(){
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
   document.getElementById('publish-modal').classList.remove('hidden');
+  renderPublishPhotoPreviews();
   updatePublishTotal();
   togglePublishSeasonality();
 }
