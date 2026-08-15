@@ -3331,11 +3331,21 @@ function reportProperty(id){
 // ═══════════════════════════════════════════════════════════════
 // CHAT P2P REAL — persistente en Supabase, en vivo con Realtime.
 // ═══════════════════════════════════════════════════════════════
-let chatMyLang = 'Español';   // idioma en el que quiero leer los mensajes que me llegan
-let chatTheirLang = '';        // idioma al que se traduce lo que YO escribo (vacío = sin traducir)
+let chatMyLang = localStorage.getItem('chatMyLang') || 'Español';   // idioma en el que quiero leer los mensajes que me llegan
+let chatTheirLang = localStorage.getItem('chatTheirLang') || '';    // idioma al que se traduce lo que YO escribo (vacío = sin traducir)
 function onChatLangChange(){
   chatMyLang = document.getElementById('chat-my-lang')?.value || 'Español';
   chatTheirLang = document.getElementById('chat-their-lang')?.value || '';
+  // Recordamos la elección para que no haya que repetirla cada vez que se abre el chat.
+  localStorage.setItem('chatMyLang', chatMyLang);
+  localStorage.setItem('chatTheirLang', chatTheirLang);
+}
+// Aplica la preferencia guardada a los selectores del chat (se llama al abrir el chat).
+function restoreChatLangSelectors(){
+  const myEl = document.getElementById('chat-my-lang');
+  const theirEl = document.getElementById('chat-their-lang');
+  if(myEl) myEl.value = chatMyLang;
+  if(theirEl) theirEl.value = chatTheirLang;
 }
 let currentChatPropertyId = null;
 let currentChatOtherUserId = null;
@@ -3348,6 +3358,7 @@ async function openChatsList(){
   if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
   currentChatPropertyId = null;
   document.getElementById('chat-modal').classList.remove('hidden');
+  restoreChatLangSelectors();
   document.getElementById('chat-property-img').src='';
   document.getElementById('chat-property-title').textContent='Selecciona una conversación';
   document.getElementById('chat-property-price').textContent='';
@@ -3383,6 +3394,7 @@ async function openChat(id){
   chatRenderedIds = new Set();
 
   document.getElementById('chat-modal').classList.remove('hidden');
+  restoreChatLangSelectors();
   document.getElementById('chat-property-img').src=currentProperty.img;
   document.getElementById('chat-property-title').textContent=currentProperty.title;
   document.getElementById('chat-property-price').textContent=`${formatPrice(currentProperty)} • ${currentProperty.location} • ${currentProperty.category}`;
