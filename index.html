@@ -2301,7 +2301,7 @@
 
 <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
-<div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><select id="publish-location" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800"><option value="">Selecciona un municipio...</option></select></div></div>
+<div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
 <div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
 <div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p></div>
 <div class="panel p-5"><div class="section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
@@ -4838,6 +4838,8 @@ function openPublishModal(){
   editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false;
   publishedPhotos = [];
   publishedVideo = null;
+  const locInput = document.getElementById('publish-location-search'); if(locInput) locInput.value = '';
+  const locHidden = document.getElementById('publish-location'); if(locHidden) locHidden.value = '';
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
@@ -5714,8 +5716,9 @@ async function editPropertyListing(id){
   if(submitBtn) submitBtn.textContent = 'Guardar cambios';
 
   document.getElementById('publish-title').value = p.title || '';
-  const locSelect = document.getElementById('publish-location');
-  if(locSelect){ const wanted = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||''); if([...locSelect.options].some(o=>o.value===wanted)) locSelect.value = wanted; }
+  const wantedLocation = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||'');
+  document.getElementById('publish-location').value = wantedLocation;
+  document.getElementById('publish-location-search').value = p.nucleo ? `${p.nucleo} (${p.municipality})` : (p.municipality||'');
   document.getElementById('publish-type').value = p.type || 'Venta';
   populatePublishCategory();
   if(p.category) document.getElementById('publish-category').value = p.category;
@@ -5970,26 +5973,43 @@ async function deleteSavedSearch(searchId){
   loadSavedSearches();
 }
 
-function populatePublishLocations(){
-  var select = document.getElementById('publish-location');
-  if(!select) return;
-  var sorted = municipalityList.slice().sort(function(a,b){
-    return a.localeCompare(b, 'es', {sensitivity:'base'});
+// Lista combinada de municipios + núcleos para el autocompletado del formulario de publicar.
+// Cada entrada: {label: texto a mostrar, value: lo que se guarda (municipio o "municipio|nucleo")}
+let publishLocationOptions = [];
+function buildPublishLocationOptions(){
+  publishLocationOptions = [];
+  const sorted = municipalityList.slice().sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  sorted.forEach(m=>{
+    const nuc = nucleosByMunicipio[m] || [];
+    publishLocationOptions.push({ label: m, value: m });
+    nuc.forEach(n=>{ publishLocationOptions.push({ label: `${n} (${m})`, value: `${m}|${n}` }); });
   });
-  var html = '<option value="">Selecciona ubicación...</option>';
-  sorted.forEach(function(m){
-    var nuc = nucleosByMunicipio[m] || [];
-    if(nuc.length){
-      html += '<optgroup label="'+m+'">';
-      html += '<option value="'+m+'">'+m+' (todo el municipio)</option>';
-      nuc.forEach(function(n){ html += '<option value="'+m+'|'+n+'">— '+n+'</option>'; });
-      html += '</optgroup>';
-    } else {
-      html += '<option value="'+m+'">'+m+'</option>';
-    }
-  });
-  select.innerHTML = html;
 }
+function populatePublishLocations(){ buildPublishLocationOptions(); } // se mantiene el nombre por compatibilidad con la llamada en window.onload
+
+function filterPublishLocationSuggestions(){
+  const box = document.getElementById('publish-location-suggestions');
+  const input = document.getElementById('publish-location-search');
+  if(!box || !input) return;
+  const q = normalizeSearchText(input.value);
+  if(!publishLocationOptions.length) buildPublishLocationOptions();
+  const matches = q
+    ? publishLocationOptions.filter(o=>normalizeSearchText(o.label).startsWith(q) || normalizeSearchText(o.value).startsWith(q)).slice(0,8)
+    : publishLocationOptions.slice(0,8); // sin escribir nada, se ven los primeros como sugerencia
+  if(!matches.length){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  box.innerHTML = matches.map(o=>`<button type="button" onmousedown="event.preventDefault();selectPublishLocation('${o.value.replace(/'/g,"\\'")}','${o.label.replace(/'/g,"\\'")}')" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${o.label}</button>`).join('');
+  box.classList.remove('hidden');
+}
+function selectPublishLocation(value, label){
+  document.getElementById('publish-location-search').value = label;
+  document.getElementById('publish-location').value = value;
+  hidePublishLocationSuggestions();
+}
+function hidePublishLocationSuggestions(){
+  const box = document.getElementById('publish-location-suggestions');
+  if(box){ box.classList.add('hidden'); box.innerHTML=''; }
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
 
 window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();
   initHearts();
