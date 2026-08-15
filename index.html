@@ -232,6 +232,13 @@
     .photo-add-tile:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);transform:translateY(-2px);}
     .photo-add-tile.empty-cta{flex:0 0 100%;width:100%;aspect-ratio:auto;height:126px;background:linear-gradient(155deg,var(--accent) 0%,var(--accent-dark) 100%);color:#fff;border:none;border-radius:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;font-size:12px;box-shadow:0 10px 26px -6px rgba(0,168,120,0.45);}
     .photo-add-tile.empty-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px -6px rgba(0,168,120,0.55);}
+    /* Caja uniforme para TODAS las banderas del selector de idioma (mismo tamaño exacto siempre) */
+    .flag-box{display:inline-flex;align-items:center;justify-content:center;width:20px;height:14px;overflow:hidden;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,0.1);flex:0 0 auto;vertical-align:middle;}
+    .flag-box img{width:100%;height:100%;object-fit:cover;display:block;}
+    /* Bandera oficial de Baleares: 4 franjas rojas sobre fondo amarillo (senyera) +
+       cuadro morado en la esquina superior izquierda con castillo blanco de 5 torres,
+       según el Art. 6 del Estatuto de Autonomía de las Illes Balears. */
+    .flag-balears-svg{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect width='30' height='20' fill='%23fcdd09'/%3E%3Crect y='2.2' width='30' height='2.2' fill='%23da121a'/%3E%3Crect y='6.6' width='30' height='2.2' fill='%23da121a'/%3E%3Crect y='11' width='30' height='2.2' fill='%23da121a'/%3E%3Crect y='15.4' width='30' height='2.2' fill='%23da121a'/%3E%3Crect width='13' height='10' fill='%236a1b6a'/%3E%3Cg fill='%23fff'%3E%3Crect x='4.2' y='4.3' width='4.6' height='4.2'/%3E%3Crect x='3.2' y='3' width='1.1' height='1.4'/%3E%3Crect x='5' y='3' width='1.1' height='1.4'/%3E%3Crect x='6.8' y='3' width='1.1' height='1.4'/%3E%3Crect x='8.6' y='3' width='1.1' height='1.4'/%3E%3Crect x='5.6' y='6' width='1.8' height='2.5'/%3E%3C/g%3E%3C/svg%3E");background-size:cover;}
     @keyframes typingBounce{0%,80%,100%{transform:translateY(0);opacity:.45;}40%{transform:translateY(-4px);opacity:1;}}
     @keyframes messageIn{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
     @keyframes calcPop{from{transform:scale(0.96);opacity:0;}to{transform:scale(1);opacity:1;}}
@@ -578,6 +585,21 @@
       <a href="javascript:void(0)" onclick="openContactoModal()" id="nav-contact" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contacto</a>
     </nav>
     <div class="flex items-center gap-2.5 shrink-0">
+      <div class="relative h-10 inline-flex items-center" id="lang-wrapper">
+        <button onclick="toggleDropdown('lang')" class="h-10 px-3 inline-flex items-center gap-1.5 border border-black/10 text-sm font-semibold hover:bg-zinc-50 transition-colors">
+          <span id="current-lang-visual" class="flag-box"><img src="https://flagcdn.com/es.svg" alt="España"></span>
+          <span id="current-lang-code" class="text-[10px] font-black uppercase tracking-[0.08em] text-zinc-500">ES</span>
+          <i class="fa-solid fa-chevron-down text-[9px] text-zinc-400"></i>
+        </button>
+        <div id="lang-panel" class="precios-panel" style="width:210px;">
+          <div class="ph-mini">Idioma</div>
+          <a onclick="selectLang('es','es','ES')"><span class="flag-box"><img src="https://flagcdn.com/es.svg" alt="España"></span> Español</a>
+          <a onclick="selectLang('ca','balears','CA')"><span class="flag-box flag-balears-svg"></span> Català</a>
+          <a onclick="selectLang('de','de','DE')"><span class="flag-box"><img src="https://flagcdn.com/de.svg" alt="Alemania"></span> Deutsch</a>
+          <a onclick="selectLang('en','gb','EN')"><span class="flag-box"><img src="https://flagcdn.com/gb.svg" alt="Inglaterra"></span> English</a>
+          <a onclick="selectLang('sv','se','SV')"><span class="flag-box"><img src="https://flagcdn.com/se.svg" alt="Suecia"></span> Svenska</a>
+        </div>
+      </div>
       <button onclick="openLoginModal()" id="login-btn" class="h-10 px-4 border border-black/10 text-sm font-semibold hover:bg-zinc-50 transition-colors inline-flex items-center">Iniciar sesión</button>
       <button onclick="openRegisterModal()" id="register-btn" class="h-10 px-4 dark-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-1.5"><i class="fa-solid fa-user-plus text-[10px]"></i> Registrarse</button>
       <button onclick="openPublishModal()" id="publish-free-btn" class="publish-gate h-10 px-4 accent-btn text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center">Publicar gratis</button>
@@ -2715,6 +2737,10 @@ function mapDbRowToProperty(row){
     featured: !!row.featured,
     verified: !!row.verified,
     description: row.description || '',
+    title_ca: row.title_ca || null,
+    description_ca: row.description_ca || null,
+    title_de: row.title_de || null,
+    description_de: row.description_de || null,
     surface, bedrooms, bathrooms,
     extras: extrasParts.join(' · '),
     daysAgo, priceDrop: 0, savingPct: 0,
@@ -2835,8 +2861,8 @@ function calcSaving(){
 const translations={es:{home:'Inicio',help:'Ayuda',contact:'Contacto',explore:'Explorar',login:'Iniciar sesión',publish:'Publicar gratis'},ca:{home:'Inici',help:'Ajuda',contact:'Contacte',explore:'Explorar',login:'Iniciar sessió',publish:'Publicar gratis'},en:{home:'Home',help:'Help',contact:'Contact',explore:'Explore',login:'Log in',publish:'Publish free'},de:{home:'Start',help:'Hilfe',contact:'Kontakt',explore:'Entdecken',login:'Anmelden',publish:'Kostenlos inserieren'},sv:{home:'Hem',help:'Hjälp',contact:'Kontakt',explore:'Utforska',login:'Logga in',publish:'Publicera gratis'}};
 
 /* DROPDOWNS */
-function closeAllDropdowns(except){['municipios','types'].forEach(k=>{if(k!==except){const p=document.getElementById(`${k}-panel`);if(p)p.classList.remove('show');}});if(except!=='precios'){const pp=document.getElementById('precios-panel');if(pp)pp.classList.remove('show');}const um=document.getElementById('user-menu-panel');if(um&&except!=='userMenu')um.classList.remove('show');}
-function toggleDropdown(key){if(key==='precios'){const p=document.getElementById('precios-panel');if(!p)return;const open=p.classList.contains('show');closeAllDropdowns('precios');p.classList.toggle('show',!open);return;}const id=`${key}-panel`;const p=document.getElementById(id);if(!p)return;const open=p.classList.contains('show');closeAllDropdowns(key);p.classList.toggle('show',!open);}
+function closeAllDropdowns(except){['municipios','types'].forEach(k=>{if(k!==except){const p=document.getElementById(`${k}-panel`);if(p)p.classList.remove('show');}});if(except!=='precios'){const pp=document.getElementById('precios-panel');if(pp)pp.classList.remove('show');}if(except!=='lang'){const lp=document.getElementById('lang-panel');if(lp)lp.classList.remove('show');}const um=document.getElementById('user-menu-panel');if(um&&except!=='userMenu')um.classList.remove('show');}
+function toggleDropdown(key){if(key==='precios'||key==='lang'){const p=document.getElementById(key+'-panel');if(!p)return;const open=p.classList.contains('show');closeAllDropdowns(key);p.classList.toggle('show',!open);return;}const id=`${key}-panel`;const p=document.getElementById(id);if(!p)return;const open=p.classList.contains('show');closeAllDropdowns(key);p.classList.toggle('show',!open);}
 function filterDropdown(key){
   const input=document.getElementById(key+'-search');
   const q=(input?.value||'').toLowerCase().trim();
@@ -2876,7 +2902,41 @@ function renderMunicipiosDropdown(){
 }
 function renderTypesDropdown(){const list=document.getElementById('types-list');if(!list)return;list.innerHTML='';propertyTypeGroups.forEach(group=>{const title=document.createElement('div');title.className='group-title';title.textContent=group.group;list.appendChild(title);group.items.forEach(type=>{const btn=document.createElement('button');btn.innerHTML=`<strong>${type}</strong><span>${group.group}</span>`;btn.onclick=()=>{setTypeFilterFromDropdown(type);closeAllDropdowns();};list.appendChild(btn);});});}
 function setTypeFilterFromDropdown(type){buyTypeFilter=type;rentTypeFilter=type;zoneTypeFilter=type;renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderZoneMiniCatalog();document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
-function selectLang(lang,flag,code){setLang(lang);const visual=document.getElementById('current-lang-visual');if(flag==='senyera'){visual.innerHTML='<span class="flag-senyera"></span>';}else{visual.textContent=flag;}document.getElementById('current-lang-code').textContent=code;localStorage.setItem('langFlag',flag);localStorage.setItem('langCode',code);closeAllDropdowns();}
+const FLAG_IMG_SRC = { es:'https://flagcdn.com/es.svg', de:'https://flagcdn.com/de.svg', gb:'https://flagcdn.com/gb.svg', se:'https://flagcdn.com/se.svg' };
+function selectLang(lang,flagKey,code){
+  setLang(lang);
+  const visual=document.getElementById('current-lang-visual');
+  if(flagKey==='balears'){ visual.className='flag-box flag-balears-svg'; visual.innerHTML=''; }
+  else { visual.className='flag-box'; visual.innerHTML=`<img src="${FLAG_IMG_SRC[flagKey]}" alt="">`; }
+  document.getElementById('current-lang-code').textContent=code;
+  localStorage.setItem('langFlagKey',flagKey);
+  localStorage.setItem('langCode',code);
+  closeAllDropdowns();
+  // Si hay una ficha de inmueble abierta, la actualizamos al instante al idioma nuevo.
+  if(typeof refreshPropertyModalLanguage==='function') refreshPropertyModalLanguage();
+}
+// Pinta el título y la descripción de la ficha abierta en el idioma que esté activo en la
+// web (bandera de la cabecera). Si no hay traducción guardada para ese idioma, se queda en
+// español sin más — igual que hace Idealista cuando el propietario no ha traducido nada.
+function renderPropertyTitleAndDescription(){
+  if(!currentProperty) return;
+  const lang = localStorage.getItem('lang') || 'es';
+  const titleEl = document.getElementById('property-modal-title');
+  const descEl = document.getElementById('property-description');
+  let title = currentProperty.title;
+  let description = currentProperty.description;
+  if(lang === 'ca' && currentProperty.title_ca){ title = currentProperty.title_ca; description = currentProperty.description_ca || description; }
+  else if(lang === 'de' && currentProperty.title_de){ title = currentProperty.title_de; description = currentProperty.description_de || description; }
+  if(titleEl) titleEl.textContent = title;
+  if(descEl) descEl.textContent = description;
+}
+// Se llama al cambiar de idioma desde el desplegable de la cabecera: si hay una ficha
+// de inmueble abierta en ese momento, la actualiza al instante sin recargar nada.
+function refreshPropertyModalLanguage(){
+  const modal = document.getElementById('property-modal');
+  if(modal && !modal.classList.contains('hidden')) renderPropertyTitleAndDescription();
+}
+
 function toggleUserMenu(){
   const p=document.getElementById('user-menu-panel');if(!p)return;
   const open=p.classList.contains('show');
@@ -2933,7 +2993,15 @@ document.addEventListener('click', e=>{
   switchChatLang(btn.dataset.lang);
   startLangCycle();
 });
-function restoreLangVisual(){const flag=localStorage.getItem('langFlag')||'🇪🇸';const code=localStorage.getItem('langCode')||'ES';const visual=document.getElementById('current-lang-visual');if(flag==='senyera'){visual.innerHTML='<span class="flag-senyera"></span>';}else{visual.textContent=flag;}document.getElementById('current-lang-code').textContent=code;}
+function restoreLangVisual(){
+  const flagKey=localStorage.getItem('langFlagKey')||'es';
+  const code=localStorage.getItem('langCode')||'ES';
+  const visual=document.getElementById('current-lang-visual');
+  if(!visual) return;
+  if(flagKey==='balears'){ visual.className='flag-box flag-balears-svg'; visual.innerHTML=''; }
+  else { visual.className='flag-box'; visual.innerHTML=`<img src="${FLAG_IMG_SRC[flagKey]||FLAG_IMG_SRC.es}" alt="">`; }
+  document.getElementById('current-lang-code').textContent=code;
+}
 
 /* PROPIEDADES */
 function formatPrice(prop){
@@ -3267,7 +3335,7 @@ function openPropertyModal(id){
   }
 
   // ── Datos del inmueble ──
-  document.getElementById('property-modal-title').textContent=currentProperty.title;
+  renderPropertyTitleAndDescription();
   document.getElementById('property-modal-location').textContent=(currentProperty.nucleo?`${currentProperty.nucleo} · ${currentProperty.municipality}`:currentProperty.location)+` · ${currentProperty.category}`;
   document.getElementById('property-main-image').src=currentProperty.images[0];
   const _fr=document.getElementById('property-image-frame'); if(_fr) _fr.style.borderColor=(tier===3?'#e8a020':tier===2?'#00a878':'#a8a8a8');
@@ -3279,7 +3347,6 @@ function openPropertyModal(id){
   if(warn) warn.classList.toggle('hidden',!!currentProperty.verified);
   const _pubEl=document.getElementById('property-published');
   if(_pubEl){ const _d=new Date(Date.now()-(Number(currentProperty.daysAgo)||0)*86400000); _pubEl.textContent=_d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}); }
-  document.getElementById('property-description').textContent = currentProperty.description;
   document.getElementById('property-surface').textContent = currentProperty.surface || 'No especificado';
   document.getElementById('property-bedrooms').textContent = currentProperty.bedrooms || 'No especificado';
   document.getElementById('property-bathrooms').textContent = currentProperty.bathrooms || 'No especificado';
@@ -6096,7 +6163,7 @@ function hidePublishLocationSuggestions(){
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
 
-window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();
+window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();restoreLangVisual();applyLang(localStorage.getItem('lang')||'es');
   initHearts();
 
   syncUI();
