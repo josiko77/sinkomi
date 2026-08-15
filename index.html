@@ -208,6 +208,25 @@
     @keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
     @keyframes barFill{from{width:0;}to{width:var(--bar-w);}}
     @keyframes borderGlow{0%,100%{border-color:rgba(255,90,44,.3);}50%{border-color:rgba(255,90,44,.85);}}
+    /* Cuadrícula de fotos: deslizable horizontal + arrastrar para reordenar */
+    .photo-strip{display:flex;gap:.7rem;overflow-x:auto;padding:.35rem .15rem 1.1rem;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+    .photo-strip::-webkit-scrollbar{height:6px;}
+    .photo-strip::-webkit-scrollbar-track{background:transparent;}
+    .photo-strip::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px;}
+    .photo-tile{position:relative;flex:0 0 112px;width:112px;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid rgba(0,0,0,0.08);scroll-snap-align:start;background:#fafafa;transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease;touch-action:pan-y;cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+    .photo-tile:active{cursor:grabbing;}
+    .photo-tile.dragging{z-index:30;box-shadow:0 18px 34px -6px rgba(0,0,0,0.32);transition:none;}
+    .photo-tile img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+    .photo-tile .principal-badge{position:absolute;top:0;left:0;background:var(--accent);color:#fff;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:3px 7px 3px 6px;border-bottom-right-radius:9px;pointer-events:none;}
+    .photo-tile .remove-tile-btn{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:999px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;backdrop-filter:blur(2px);}
+    .photo-tile .drag-dots{position:absolute;bottom:4px;right:4px;width:20px;height:20px;background:rgba(255,255,255,0.88);border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#777;pointer-events:none;}
+    .photo-tile .tile-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.22);}
+    .photo-tile .tile-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
+    .photo-tile .tile-error{position:absolute;bottom:0;left:0;right:0;background:rgba(200,40,40,0.9);color:white;font-size:8px;font-weight:800;text-align:center;padding:3px;letter-spacing:.04em;}
+    .photo-add-tile{flex:0 0 112px;width:112px;aspect-ratio:1;border:2px dashed rgba(0,0,0,0.14);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;cursor:pointer;color:#9a9a9a;transition:border-color .18s,background .18s,color .18s,transform .18s;scroll-snap-align:start;}
+    .photo-add-tile:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);transform:translateY(-2px);}
+    .photo-add-tile.empty-cta{flex:0 0 100%;width:100%;aspect-ratio:auto;height:126px;background:linear-gradient(155deg,var(--accent) 0%,var(--accent-dark) 100%);color:#fff;border:none;border-radius:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;font-size:12px;box-shadow:0 10px 26px -6px rgba(0,168,120,0.45);}
+    .photo-add-tile.empty-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px -6px rgba(0,168,120,0.55);}
     @keyframes typingBounce{0%,80%,100%{transform:translateY(0);opacity:.45;}40%{transform:translateY(-4px);opacity:1;}}
     @keyframes messageIn{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
     @keyframes calcPop{from{transform:scale(0.96);opacity:0;}to{transform:scale(1);opacity:1;}}
@@ -2294,15 +2313,9 @@
 
   <!-- FOTOS -->
   <div class="mb-5">
-    <label class="text-sm font-medium mb-2 block">Fotos del inmueble <span class="text-zinc-400 font-normal">(máx. 10 fotos · 15 con Verificado + Destacado · JPG, PNG, WEBP)</span></label>
-    <div class="border-2 border-dashed border-black/12 bg-zinc-50 p-5 text-center cursor-pointer hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all" onclick="document.getElementById('publish-photos-input').click()">
-      <input id="publish-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePublishPhotos(this)">
-      <i class="fa-solid fa-images text-2xl text-zinc-400 mb-2 block"></i>
-      <div class="text-sm font-bold text-zinc-600">Pulsa para añadir fotos</div>
-      <div class="text-xs text-zinc-400 mt-1">o arrastra las imágenes aquí</div>
-    </div>
-    <!-- Previews fotos -->
-    <div id="publish-photos-preview" class="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3"></div>
+    <label class="text-sm font-medium mb-2 block">Fotos del inmueble <span class="text-zinc-400 font-normal">(máx. 10 fotos · 15 con Verificado + Destacado · JPG, PNG, WEBP · arrastra para reordenar)</span></label>
+    <input id="publish-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePublishPhotos(this)">
+    <div id="publish-photos-preview" class="photo-strip"></div>
   </div>
 
   <!-- VÍDEO -->
@@ -4316,6 +4329,8 @@ var editingPropertyOriginalVerified = false; // si el anuncio que se edita ya te
 var publishedVideo  = null;
 var publishedVideoUploading = false;
 
+function genPhotoId(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
 function handlePublishPhotos(input){
   const files = Array.from(input.files);
   if(!files.length) return;
@@ -4327,7 +4342,7 @@ function handlePublishPhotos(input){
   if(total > max) alert(`Máximo ${max} fotos. Solo se han añadido ${allowed.length}.`);
 
   allowed.forEach(file => {
-    const photoObj = { url: URL.createObjectURL(file), uploading: true, error: false };
+    const photoObj = { _id: genPhotoId(), url: URL.createObjectURL(file), uploading: true, error: false };
     publishedPhotos.push(photoObj);
     uploadPropertyPhoto(file, user.supabase_id, photoObj);
   });
@@ -4355,22 +4370,105 @@ async function uploadPropertyPhoto(file, ownerId, photoObj){
   renderPublishPhotoPreviews();
 }
 
+// ── Cuadrícula deslizable con arrastrar-para-reordenar (estilo Wallapop) ──
+// La primera foto del array siempre es la "Principal". Arrastrar cualquier
+// foto a otra posición reordena publishedPhotos en vivo.
+let photoDrag = null; // { id, pointerId, tileEl, startX, startLeft, stripRect }
+
 function renderPublishPhotoPreviews(){
   const container = document.getElementById('publish-photos-preview');
   if(!container) return;
-  container.innerHTML = publishedPhotos.map((p, i) => `
-    <div style="position:relative;aspect-ratio:1;overflow:hidden;border:1px solid rgba(0,0,0,0.08);">
-      <img src="${p.url}" style="width:100%;height:100%;object-fit:cover;display:block;${p.uploading?'opacity:.45;':''}">
-      ${i===0 && !p.uploading && !p.error ? '<div style="position:absolute;top:0;left:0;background:var(--accent);color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;">Principal</div>' : ''}
-      ${p.uploading ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);"><div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>' : ''}
-      ${p.error ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(200,40,40,0.88);color:white;font-size:8px;font-weight:800;text-align:center;padding:2px;letter-spacing:.05em;">Error al subir</div>' : ''}
-      <button onclick="removePublishPhoto(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:999px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+
+  const tilesHtml = publishedPhotos.map((p, i) => `
+    <div class="photo-tile" data-pid="${p._id}">
+      <img src="${p.url}" draggable="false" style="${p.uploading?'opacity:.45;':''}">
+      ${i===0 && !p.uploading && !p.error ? '<div class="principal-badge">Principal</div>' : ''}
+      ${p.uploading ? '<div class="tile-overlay"><div class="tile-spinner"></div></div>' : ''}
+      ${p.error ? '<div class="tile-error">Error al subir</div>' : ''}
+      <button class="remove-tile-btn" data-remove="${p._id}">×</button>
+      ${publishedPhotos.length > 1 ? '<div class="drag-dots">⠿</div>' : ''}
     </div>
   `).join('');
+
+  const addTileClass = publishedPhotos.length === 0 ? 'photo-add-tile empty-cta' : 'photo-add-tile';
+  const addTileHtml = `<div class="${addTileClass}" data-add-photo="1">
+      ${publishedPhotos.length === 0
+        ? '<i class="fa-solid fa-images"></i><span>Subir fotos</span>'
+        : '<i class="fa-solid fa-plus"></i>'}
+    </div>`;
+
+  container.innerHTML = tilesHtml + addTileHtml;
+  bindPhotoStripEvents(container);
 }
 
-function removePublishPhoto(index){
-  publishedPhotos.splice(index, 1);
+function bindPhotoStripEvents(container){
+  // Delegación: un único listener por tipo de evento, no uno por foto.
+  container.onclick = (e) => {
+    if(e.target.closest('[data-add-photo]')){ document.getElementById('publish-photos-input').click(); return; }
+    const removeBtn = e.target.closest('[data-remove]');
+    if(removeBtn){
+      const id = removeBtn.getAttribute('data-remove');
+      publishedPhotos = publishedPhotos.filter(p => p._id !== id);
+      renderPublishPhotoPreviews();
+    }
+  };
+
+  container.querySelectorAll('.photo-tile').forEach(tile => {
+    tile.addEventListener('pointerdown', (e) => {
+      if(e.target.closest('.remove-tile-btn')) return;
+      if(publishedPhotos.length < 2) return; // nada que reordenar con 0-1 fotos
+      const pid = tile.getAttribute('data-pid');
+      photoDrag = {
+        id: pid,
+        pointerId: e.pointerId,
+        tileEl: tile,
+        startX: e.clientX,
+        startLeft: tile.offsetLeft,
+      };
+      tile.classList.add('dragging');
+      tile.setPointerCapture(e.pointerId);
+    });
+
+    tile.addEventListener('pointermove', (e) => {
+      if(!photoDrag || photoDrag.tileEl !== tile) return;
+      const dx = e.clientX - photoDrag.startX;
+      tile.style.transform = `translateX(${dx}px) scale(1.05)`;
+
+      // ¿Hemos cruzado el centro de alguna foto vecina? Si es así, reordenamos ya.
+      const strip = tile.parentElement;
+      const siblings = Array.from(strip.querySelectorAll('.photo-tile')).filter(t => t !== tile);
+      for(const sib of siblings){
+        const r = sib.getBoundingClientRect();
+        const mid = r.left + r.width / 2;
+        if(e.clientX > r.left && e.clientX < r.right && Math.abs(e.clientX - mid) < r.width * 0.4){
+          const fromIdx = publishedPhotos.findIndex(p => p._id === photoDrag.id);
+          const toIdx = publishedPhotos.findIndex(p => p._id === sib.getAttribute('data-pid'));
+          if(fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx){
+            const [moved] = publishedPhotos.splice(fromIdx, 1);
+            publishedPhotos.splice(toIdx, 0, moved);
+            // Reordenamos el DOM real (sin reconstruirlo) para no perder el arrastre en curso.
+            if(fromIdx < toIdx) strip.insertBefore(tile, sib.nextSibling);
+            else strip.insertBefore(tile, sib);
+          }
+          break;
+        }
+      }
+    });
+
+    const endDrag = () => {
+      if(!photoDrag || photoDrag.tileEl !== tile) return;
+      tile.classList.remove('dragging');
+      tile.style.transform = '';
+      photoDrag = null;
+      renderPublishPhotoPreviews(); // reconstruye ya con el orden final y la insignia "Principal" correcta
+    };
+    tile.addEventListener('pointerup', endDrag);
+    tile.addEventListener('pointercancel', endDrag);
+  });
+}
+
+function removePublishPhoto(id){
+  publishedPhotos = publishedPhotos.filter(p => p._id !== id);
   renderPublishPhotoPreviews();
 }
 
@@ -5603,7 +5701,9 @@ async function editPropertyListing(id){
 
   editingPropertyId = p.id;
   editingPropertyOriginalImages = Array.isArray(p.images) ? [...p.images] : [];
-  publishedPhotos = [];
+  // Las imágenes ya guardadas entran directamente en publishedPhotos: así el propietario
+  // puede reordenarlas o quitarlas igual que las nuevas, en la misma cuadrícula.
+  publishedPhotos = editingPropertyOriginalImages.map(url => ({ _id: genPhotoId(), url, uploading: false, error: false }));
   publishedVideo = null;
 
   closeUserPanel();
@@ -5637,20 +5737,8 @@ async function editPropertyListing(id){
   togglePublishSeasonality();
   if(p.seasonality) { const sEl=document.getElementById('publish-seasonality'); if(sEl) sEl.value = p.seasonality; }
 
-  renderPublishPhotoPreviews_External(editingPropertyOriginalImages);
+  renderPublishPhotoPreviews();
   updatePublishTotal();
-}
-
-// Muestra en el bloque de fotos las imágenes ya guardadas de un anuncio al entrar en modo edición
-function renderPublishPhotoPreviews_External(urls){
-  const container = document.getElementById('publish-photos-preview');
-  if(!container) return;
-  container.innerHTML = urls.map((url, i) => `
-    <div style="position:relative;aspect-ratio:1;overflow:hidden;border:1px solid rgba(0,0,0,0.08);">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      ${i===0 ? '<div style="position:absolute;top:0;left:0;background:var(--accent);color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;">Principal</div>' : ''}
-    </div>
-  `).join('') + `<div class="text-[10px] text-zinc-500 col-span-full mt-1">Estas son las fotos actuales del anuncio. Si subes fotos nuevas, sustituirán a estas.</div>`;
 }
 function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');}
