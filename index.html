@@ -2321,11 +2321,11 @@
   <!-- VÍDEO -->
   <div>
     <label class="text-sm font-medium mb-2 block">Vídeo del inmueble <span class="text-zinc-400 font-normal">(plan Verificado + Destacado · máx. 200MB · MP4, MOV, AVI)</span></label>
-    <div class="border-2 border-dashed border-black/12 bg-zinc-50 p-5 text-center cursor-pointer hover:border-[var(--orange)] hover:bg-[var(--orange-soft)] transition-all" onclick="document.getElementById('publish-video-input').click()">
+    <div id="publish-video-dropzone" class="orange-btn text-center cursor-pointer" style="padding:1.6rem 1rem;border-radius:12px;" onclick="document.getElementById('publish-video-input').click()">
       <input id="publish-video-input" type="file" accept="video/*" style="display:none;" onchange="handlePublishVideo(this)">
-      <i class="fa-solid fa-clapperboard text-2xl text-zinc-400 mb-2 block"></i>
-      <div class="text-sm font-bold text-zinc-600">Pulsa para añadir un vídeo</div>
-      <div class="text-xs text-zinc-400 mt-1">Tour virtual, paseo por el inmueble...</div>
+      <i class="fa-solid fa-clapperboard text-2xl mb-2 block" style="color:white;"></i>
+      <div class="text-sm font-black uppercase tracking-[0.08em]" style="color:white;">Pulsa para añadir un vídeo</div>
+      <div class="text-xs mt-1" style="color:rgba(255,255,255,0.85);">Tour virtual, paseo por el inmueble...</div>
     </div>
     <!-- Preview vídeo -->
     <div id="publish-video-preview" class="mt-3"></div>
