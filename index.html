@@ -2943,7 +2943,7 @@ function toggleUserMenu(){
   closeAllDropdowns();
   p.classList.toggle('show',!open);
 }
-document.addEventListener('click',e=>{if(!e.target.closest('.vh-dropdown')&&!e.target.closest('#precios-wrapper')&&!e.target.closest('#user-menu-wrapper'))closeAllDropdowns();});
+document.addEventListener('click',e=>{if(!e.target.closest('.vh-dropdown')&&!e.target.closest('#precios-wrapper')&&!e.target.closest('#user-menu-wrapper')&&!e.target.closest('#lang-wrapper'))closeAllDropdowns();});
 function setLang(lang){localStorage.setItem('lang',lang);applyLang(lang);}
 function applyLang(lang){const t=translations[lang]||translations.es;['nav-home','nav-help','nav-contact','nav-explore','login-btn','publish-free-btn'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[t.home,t.help,t.contact,t.explore,t.login,t.publish][i];});}
 
