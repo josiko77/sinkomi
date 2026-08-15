@@ -125,6 +125,11 @@
         syncUI();
         if(typeof favIdsCache!=='undefined'){ favIdsCache = []; if(typeof initHearts==='function') initHearts(); }
       }
+      // El usuario ha pulsado el enlace de recuperación de su email y ha vuelto a la web:
+      // le mostramos el formulario para elegir su nueva contraseña.
+      if(event === 'PASSWORD_RECOVERY'){
+        if(typeof openSetNewPasswordModal === 'function') openSetNewPasswordModal();
+      }
     });
 
     console.log('✅ SINKOMI conectado a Supabase');
@@ -3468,6 +3473,70 @@ function closeChat(){
 }
 
 // Pinta un mensaje real (mío o del propietario) en la conversación, con traducción si toca.
+// ── TRADUCCIÓN AUTOMÁTICA (DeepL) ─────────────────────────────────
+const SINKOMI_TRANSLATE_ENDPOINT = 'https://utrkwpepgviadaygjfyr.supabase.co/functions/v1/sinkomi-translate';
+
+// Traduce nuestros nombres de idioma en español (los que usa el selector del chat)
+// a los códigos que espera la API de DeepL.
+const DEEPL_LANG_CODES = {
+  'Catalán': 'CA', 'Alemán': 'DE', 'Inglés': 'EN-US', 'Francés': 'FR',
+  'Sueco': 'SV', 'Italiano': 'IT', 'Árabe': 'AR', 'Ruso': 'RU', 'Español': 'ES',
+};
+
+// Caché sencilla en memoria: mismo texto + mismo idioma no se vuelve a pedir dos veces
+// mientras dure la sesión (ahorra caracteres del plan gratuito de DeepL).
+const translationCache = {};
+
+async function translateText(text, langName){
+  if(!text) return '';
+  const targetCode = DEEPL_LANG_CODES[langName];
+  if(!targetCode) return null; // idioma no reconocido, no forzamos una traducción incorrecta
+  const cacheKey = targetCode + '::' + text;
+  if(translationCache[cacheKey]) return translationCache[cacheKey];
+  try{
+    const resp = await fetch(SINKOMI_TRANSLATE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, target_lang: targetCode }),
+    });
+    const data = await resp.json();
+    if(data && data.translated_text){
+      translationCache[cacheKey] = data.translated_text;
+      return data.translated_text;
+    }
+    console.error('Respuesta inesperada de sinkomi-translate:', data);
+    return null;
+  }catch(e){
+    console.error('Error traduciendo texto:', e);
+    return null;
+  }
+}
+
+// Traduce el título y la descripción de un anuncio a catalán y alemán (los dos idiomas
+// prioritarios en Baleares) y los guarda en la ficha del inmueble. Se ejecuta en segundo
+// plano tras publicar/editar: si falla, el anuncio sigue publicado normalmente en español.
+async function translateAndSaveListing(propertyId, title, description){
+  try{
+    const [titleCa, descCa, titleDe, descDe] = await Promise.all([
+      translateText(title, 'Catalán'),
+      translateText(description, 'Catalán'),
+      translateText(title, 'Alemán'),
+      translateText(description, 'Alemán'),
+    ]);
+    const update = {};
+    if(titleCa) update.title_ca = titleCa;
+    if(descCa)  update.description_ca = descCa;
+    if(titleDe) update.title_de = titleDe;
+    if(descDe)  update.description_de = descDe;
+    if(Object.keys(update).length){
+      const { error } = await supabase.from('properties').update(update).eq('id', propertyId);
+      if(error) console.error('Error guardando traducciones del anuncio:', error);
+    }
+  }catch(e){
+    console.error('Error traduciendo el anuncio:', e);
+  }
+}
+
 async function renderMessageBubble(msg){
   try{
     await renderMessageBubbleInner(msg);
@@ -5294,6 +5363,10 @@ async function submitPublishForm(){
       if(btn){ btn.disabled = false; btn.textContent = originalBtnText; }
       return;
     }
+    // Traducimos el anuncio a catalán y alemán en segundo plano, sin hacer esperar al
+    // propietario — si falla, el anuncio se queda igualmente publicado en español.
+    const savedPropertyId = editingPropertyId || insertedRow?.id;
+    if(savedPropertyId) translateAndSaveListing(savedPropertyId, title, description);
     // Si venían de un botón de "Verificar" sin tener aún ningún inmueble publicado,
     // seguimos automáticamente con el pago de verificación de éste que acaban de crear.
     if(!editingPropertyId && insertedRow && pendingVerificationAfterPublish){
@@ -6392,9 +6465,52 @@ async function sendAIMessage(){
           </button>
         </div>
       </div>
-      <div class="flex justify-end"><button class="text-xs text-[var(--accent)] font-bold hover:underline">¿Olvidaste tu contraseña?</button></div>
+      <div class="flex justify-end"><button type="button" onclick="openForgotPassword()" class="text-xs text-[var(--accent)] font-bold hover:underline">¿Olvidaste tu contraseña?</button></div>
       <button onclick="submitLogin()" class="w-full py-4 accent-btn font-black uppercase tracking-[0.14em] text-[11px]">Entrar en SINKOMI</button>
       <p class="text-center text-xs text-zinc-600">¿No tienes cuenta? <button onclick="closeLoginModal();openRegisterModal();" class="font-bold text-[var(--accent)] underline">Regístrate gratis</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- Recuperar contraseña: paso 1, pedir el email -->
+<div id="forgot-password-modal" style="display:none;" class="fixed inset-0 bg-black/75 z-[170] flex items-center justify-center px-4 py-4">
+  <div class="bg-white max-w-md w-full" style="border-radius:2px;">
+    <div class="flex items-start justify-between p-7 pb-0">
+      <div>
+        <h3 class="text-xl font-black tracking-tight">Recuperar contraseña</h3>
+        <p class="text-xs text-zinc-600 mt-0.5 uppercase tracking-[0.14em] font-bold">Te mandamos un enlace por email</p>
+      </div>
+      <button onclick="closeForgotPasswordModal()" class="text-2xl text-zinc-300 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div class="p-7 space-y-5">
+      <p class="text-sm text-zinc-600">Escribe el email con el que te registraste en SINKOMI y te enviaremos un enlace para elegir una contraseña nueva.</p>
+      <div>
+        <label class="text-xs font-black uppercase tracking-[0.16em] text-zinc-600 block mb-2">Email</label>
+        <input id="forgot-password-email" type="email" placeholder="tu@email.com" class="w-full border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)]" onkeydown="if(event.key==='Enter'){event.preventDefault();submitForgotPassword();}">
+      </div>
+      <button id="forgot-password-submit-btn" onclick="submitForgotPassword()" class="w-full py-4 accent-btn font-black uppercase tracking-[0.14em] text-[11px]">Enviar enlace</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recuperar contraseña: paso 2, elegir la nueva (se abre solo al volver del enlace del email) -->
+<div id="set-new-password-modal" style="display:none;" class="fixed inset-0 bg-black/75 z-[170] flex items-center justify-center px-4 py-4">
+  <div class="bg-white max-w-md w-full" style="border-radius:2px;">
+    <div class="p-7 pb-0">
+      <h3 class="text-xl font-black tracking-tight">Elige tu nueva contraseña</h3>
+      <p class="text-xs text-zinc-600 mt-0.5 uppercase tracking-[0.14em] font-bold">Último paso para recuperar tu cuenta</p>
+    </div>
+    <div class="p-7 space-y-5">
+      <div>
+        <label class="text-xs font-black uppercase tracking-[0.16em] text-zinc-600 block mb-2">Nueva contraseña</label>
+        <div class="relative">
+          <input id="new-password-input" type="password" placeholder="Mínimo 6 caracteres" class="w-full border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)] pr-12">
+          <button type="button" onclick="togglePassword('new-password-input','eye-new-pw')" class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700">
+            <i id="eye-new-pw" class="fa-regular fa-eye text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <button id="set-new-password-btn" onclick="submitNewPassword()" class="w-full py-4 accent-btn font-black uppercase tracking-[0.14em] text-[11px]">Guardar nueva contraseña</button>
     </div>
   </div>
 </div>
@@ -7130,6 +7246,72 @@ async function submitLogin(){
     alert('Error al iniciar sesión. Inténtalo de nuevo.');
     console.error(e);
   }
+}
+
+// ── RECUPERAR CONTRASEÑA ──────────────────────────────────────────
+function openForgotPassword(){
+  // Si ya había escrito su email en el login, lo reutilizamos para no hacerle escribir dos veces.
+  const loginEmail = document.querySelector('#login-modal input[type="email"]')?.value?.trim() || '';
+  document.getElementById('forgot-password-email').value = loginEmail;
+  closeLoginModal();
+  document.getElementById('forgot-password-modal').style.display = 'flex';
+}
+function closeForgotPasswordModal(){
+  document.getElementById('forgot-password-modal').style.display = 'none';
+}
+async function submitForgotPassword(){
+  const email = document.getElementById('forgot-password-email').value.trim();
+  if(!email){ alert('Por favor, introduce tu email.'); return; }
+  const btn = document.getElementById('forgot-password-submit-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try{
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if(error){
+      console.error('Error solicitando recuperación de contraseña:', error);
+      alert('No se ha podido enviar el email. Comprueba que la dirección sea correcta e inténtalo de nuevo.');
+    } else {
+      alert('Te hemos enviado un email a ' + email + ' con un enlace para elegir una nueva contraseña. Revisa también la carpeta de spam.');
+      closeForgotPasswordModal();
+    }
+  }catch(e){
+    console.error('Error inesperado recuperando contraseña:', e);
+    alert('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+  }
+  btn.disabled = false; btn.textContent = originalText;
+}
+
+// Se abre automáticamente (evento PASSWORD_RECOVERY de Supabase) cuando el usuario
+// vuelve a la web desde el enlace que le hemos mandado por email.
+function openSetNewPasswordModal(){
+  closeLoginModal();
+  closeForgotPasswordModal();
+  document.getElementById('set-new-password-modal').style.display = 'flex';
+}
+async function submitNewPassword(){
+  const newPassword = document.getElementById('new-password-input').value;
+  if(!newPassword || newPassword.length < 6){ alert('La contraseña debe tener al menos 6 caracteres.'); return; }
+  const btn = document.getElementById('set-new-password-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if(error){
+      console.error('Error guardando la nueva contraseña:', error);
+      alert('No se ha podido guardar la nueva contraseña. Puede que el enlace haya caducado — solicita uno nuevo desde "¿Olvidaste tu contraseña?".');
+    } else {
+      document.getElementById('set-new-password-modal').style.display = 'none';
+      alert('Contraseña actualizada correctamente. Ya puedes usarla para entrar en SINKOMI.');
+      // Limpiamos el token de recuperación de la URL para que no quede visible ni se reutilice.
+      history.replaceState(null, '', window.location.origin + window.location.pathname);
+    }
+  }catch(e){
+    console.error('Error inesperado guardando la nueva contraseña:', e);
+    alert('Ha ocurrido un error inesperado. Inténtalo de nuevo.');
+  }
+  btn.disabled = false; btn.textContent = originalText;
 }
 </script>
 
