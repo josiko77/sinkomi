@@ -2945,7 +2945,17 @@ function toggleUserMenu(){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.vh-dropdown')&&!e.target.closest('#precios-wrapper')&&!e.target.closest('#user-menu-wrapper')&&!e.target.closest('#lang-wrapper'))closeAllDropdowns();});
 function setLang(lang){localStorage.setItem('lang',lang);applyLang(lang);}
-function applyLang(lang){const t=translations[lang]||translations.es;['nav-home','nav-help','nav-contact','nav-explore','login-btn','publish-free-btn'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[t.home,t.help,t.contact,t.explore,t.login,t.publish][i];});translatePageContent(lang);}
+function applyLang(lang){const t=translations[lang]||translations.es;['nav-home','nav-help','nav-contact','nav-explore','login-btn','publish-free-btn'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[t.home,t.help,t.contact,t.explore,t.login,t.publish][i];});translatePageContent(lang);refreshDynamicFilterLabels();}
+
+// Vuelve a pintar los botones de filtro que genera JS (tipo de inmueble, zona) para que
+// también cambien de idioma al momento, no solo la próxima vez que se abran.
+function refreshDynamicFilterLabels(){
+  if(typeof renderTypeFilters !== 'function') return;
+  if(document.getElementById('buy-type-filters')) renderTypeFilters('buy-type-filters', buyTypeFilter, 'buy', 'buy');
+  if(document.getElementById('rent-type-filters')) renderTypeFilters('rent-type-filters', rentTypeFilter, 'rent', 'rent');
+  if(document.getElementById('zone-type-filters')) renderTypeFilters('zone-type-filters', zoneTypeFilter, 'zone', 'zone');
+  if(document.getElementById('zone-operation-filters')) renderZoneOperationFilters();
+}
 
 // ── TRADUCCIÓN AUTOMÁTICA DE LA PORTADA (Capa 2) ────────────────────
 // Cualquier elemento marcado con class="i18n-auto" se traduce solo al cambiar de idioma,
@@ -3070,15 +3080,32 @@ function formatPrice(prop){
 function formatSaving(prop){const price=Number(prop.price||0);if(prop.type==='Venta'&&price>0){const high=price*(prop.savingPct||0.07)*1.21;return `Ahorra hasta ${high.toLocaleString('es-ES',{maximumFractionDigits:0})}€ en comisiones`;}return 'Chat directo · sin comisiones';}
 function matchesMunicipality(prop){return (selectedMunicipality==='all'||prop.municipality===selectedMunicipality)&&(selectedNucleo===''||prop.nucleo===selectedNucleo);}
 function matchesCategory(prop,filterValue){if(!filterValue||filterValue==='Todos')return true;return prop.category===filterValue;}
+// Traduce etiquetas generadas dinámicamente por JS (botones de tipo de inmueble, filtros de
+// zona...) usando la misma caché que translatePageContent. Si aún no está traducida, muestra
+// el texto en español un instante y lo actualiza en cuanto llega la traducción.
+function applyTranslatedLabel(el, originalText, lang){
+  if(lang === 'es' || !originalText){ el.textContent = originalText; return; }
+  const targetCode = LANG_CODE_TO_DEEPL[lang];
+  if(!targetCode){ el.textContent = originalText; return; }
+  const cacheKey = 'sinkomiPageT::' + targetCode + '::' + originalText;
+  const cached = localStorage.getItem(cacheKey);
+  if(cached){ el.textContent = cached; return; }
+  el.textContent = originalText;
+  translateRawText(originalText, targetCode).then(translated=>{
+    if(translated){ localStorage.setItem(cacheKey, translated); el.textContent = translated; }
+  });
+}
+
 function renderTypeFilters(containerId,activeValue,setterName,operation){
   const c=document.getElementById(containerId);
   if(!c)return;
   c.innerHTML='';
   const types = (operation==='rent') ? rentPropertyTypes : propertyTypes;
+  const lang = localStorage.getItem('lang') || 'es';
   types.forEach(type=>{
     const b=document.createElement('button');
     b.className=`filter-chip px-4 py-3 border text-[11px] font-black uppercase tracking-[0.12em] ${activeValue===type?'active':'bg-white border-black/10 hover:bg-zinc-50'}`;
-    b.textContent=type;
+    applyTranslatedLabel(b, type, lang);
     b.onclick=()=>{
       if(setterName==='buy'){buyTypeFilter=type;buyPage=1;}
       if(setterName==='rent'){rentTypeFilter=type;rentPage=1;}
@@ -3091,7 +3118,7 @@ function renderTypeFilters(containerId,activeValue,setterName,operation){
     c.appendChild(b);
   });
 }
-function renderZoneOperationFilters(){const c=document.getElementById('zone-operation-filters');if(!c)return;c.innerHTML='';['Todas','Venta','Alquiler'].forEach(value=>{const b=document.createElement('button');b.className=`filter-chip px-4 py-3 border text-[11px] font-black uppercase tracking-[0.12em] ${zoneOperationFilter===value?'active':'bg-white border-black/10 hover:bg-zinc-50'}`;b.textContent=value;b.onclick=()=>{zoneOperationFilter=value;renderZoneOperationFilters();renderZoneMiniCatalog();};c.appendChild(b);});}
+function renderZoneOperationFilters(){const c=document.getElementById('zone-operation-filters');if(!c)return;c.innerHTML='';const lang=localStorage.getItem('lang')||'es';['Todas','Venta','Alquiler'].forEach(value=>{const b=document.createElement('button');b.className=`filter-chip px-4 py-3 border text-[11px] font-black uppercase tracking-[0.12em] ${zoneOperationFilter===value?'active':'bg-white border-black/10 hover:bg-zinc-50'}`;applyTranslatedLabel(b,value,lang);b.onclick=()=>{zoneOperationFilter=value;renderZoneOperationFilters();renderZoneMiniCatalog();};c.appendChild(b);});}
 function buildPropertyCardEl(prop){
     const isFeat = prop.featured && prop.verified; // destacado SOLO si verificado
     const isVerified = prop.verified;
