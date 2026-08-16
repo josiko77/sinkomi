@@ -3004,14 +3004,19 @@ async function translatePageContent(lang){
   const targetCode = LANG_CODE_TO_DEEPL[lang];
   if(!targetCode) return;
 
-  for(const el of elements){
+  // Primero aplicamos al instante todo lo que ya está en caché (no tarda nada, no hay
+  // que esperar a la red). Lo que falte se traduce todo A LA VEZ, no uno detrás de otro,
+  // para que no se quede la página a medio traducir durante varios segundos.
+  const pending = [];
+  elements.forEach(el=>{
     const original = el.dataset.i18nOrig;
     const cacheKey = 'sinkomiPageT::' + targetCode + '::' + original;
     const cached = localStorage.getItem(cacheKey);
-    if(cached){ el.innerHTML = cached; continue; }
+    if(cached){ el.innerHTML = cached; }
+    else { pending.push({ el, original, cacheKey }); }
+  });
 
-    // Traducimos cada línea por separado (el original puede tener <br> entre líneas)
-    // y las volvemos a unir, así no hace falta manejar HTML dentro de la traducción.
+  await Promise.all(pending.map(async ({el, original, cacheKey})=>{
     const lines = original.split(/<br\s*\/?>/i);
     try{
       const translatedLines = await Promise.all(lines.map(line => translateRawText(line.trim(), targetCode)));
@@ -3021,7 +3026,7 @@ async function translatePageContent(lang){
     }catch(e){
       console.error('Error traduciendo bloque de la portada:', e);
     }
-  }
+  }));
 }
 
 // Igual que translateText, pero recibe directamente el código de DeepL (CA/DE/EN-US/SV)
@@ -6293,7 +6298,7 @@ function hidePublishLocationSuggestions(){
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
 
-window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();restoreLangVisual();applyLang(localStorage.getItem('lang')||'es');
+window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
   initHearts();
 
   syncUI();
