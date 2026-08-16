@@ -7680,10 +7680,20 @@ function openLegal(type) {
   document.getElementById('legal-modal-title').textContent = content.title;
   document.getElementById('legal-modal-body').innerHTML = content.body;
   document.getElementById('legal-modal').classList.remove('hidden');
+  // Le damos una URL propia a cada texto legal (útil para compartir el enlace directo,
+  // por ejemplo en la configuración de "Iniciar sesión con Google").
+  history.replaceState(null, '', '#legal-' + type);
 }
 function closeLegal() {
   document.getElementById('legal-modal').classList.add('hidden');
+  history.replaceState(null, '', window.location.pathname + window.location.search);
 }
+// Si alguien entra directamente con un enlace tipo sinkomi.es/#legal-privacidad,
+// abrimos ese texto legal automáticamente.
+(function(){
+  const hash = window.location.hash.replace('#legal-', '');
+  if(hash && legalContent[hash]) window.addEventListener('load', () => openLegal(hash));
+})();
 </script>
 
 <!-- PÁGINA DE ERROR 404 -->
