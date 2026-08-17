@@ -2250,6 +2250,7 @@
             <div class="i18n-auto section-label mb-3">Extras y equipamiento</div>
             <div id="property-extras-pills" class="flex flex-wrap gap-2"></div>
           </div>
+          <div id="property-etv-notice" class="hidden panel p-5" style="background:var(--orange-soft);border-color:rgba(255,159,10,0.3);"></div>
         </div>
 
         <div class="space-y-4">
@@ -2379,8 +2380,14 @@
 <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="i18n-auto text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="i18n-auto text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
-<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
-<div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="i18n-auto text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p></div>
+<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
+<div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="i18n-auto text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p>
+  <div id="publish-etv-wrap" class="hidden mt-4 p-4" style="background:var(--orange-soft);border:1px solid rgba(255,159,10,0.3);border-radius:var(--r-md);">
+    <label class="text-sm font-bold mb-2 block" style="color:#b9791a;"><i class="fa-solid fa-triangle-exclamation"></i> Número de registro turístico (ETV) *</label>
+    <input id="publish-etv" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. ETV/1234 o ETV-1234-E">
+    <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En Baleares, todo alquiler turístico de menos de 30 días requiere por ley un número de registro (ETV) visible en el anuncio. Publicar sin él puede conllevar multas de hasta 50.000€. Si tu inmueble no tiene licencia ETV, elige "Todo el año" en lugar de "Temporada".</p>
+  </div>
+</div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Precio y gastos</div><div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Comunidad €/mes</label><input id="publish-community" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="85"></div><div><label class="text-sm font-medium mb-2 block">IBI anual</label><input id="publish-ibi" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div><div><label class="text-sm font-medium mb-2 block">Precio negociable</label><select id="publish-negotiable" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificado</option><option>Sí</option><option>No</option></select></div></div></div>
@@ -2796,6 +2803,7 @@ function mapDbRowToProperty(row){
     daysAgo, priceDrop: 0, savingPct: 0,
     createdAt: row.created_at || null,
     seasonality: row.seasonality || '',
+    etv_number: row.etv_number || '',
     phone: row.phone || '',
     owner_id: row.owner_id,
     status: row.status || 'Disponible'
@@ -3294,7 +3302,7 @@ function buildPropertyCardEl(prop){
         <div class="prop-card-overlay"></div>
         ${tier===3 ? topBadge : ''}
         <div class="prop-card-price-overlay" style="z-index:11;">
-          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}</div>`:''}
+          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}${prop.etv_number?` · ${escapeHtml(prop.etv_number)}`:''}</div>`:''}
           <div class="prop-card-price">${formatPrice(prop)}</div>
           <div class="prop-card-location">${prop.location}</div>
         </div>
@@ -3542,6 +3550,22 @@ function openPropertyModal(id){
   document.getElementById('property-negotiable').textContent = currentProperty.negotiable || tr('No especificado');
   document.getElementById('property-community').textContent = currentProperty.community ? `${currentProperty.community}€/${tr('mes')}` : tr('No especificado');
   document.getElementById('property-ibi').textContent = currentProperty.ibi ? `${currentProperty.ibi}€/${tr('año')}` : tr('No especificado');
+
+  // Aviso legal ETV (alquiler vacacional/temporada en Baleares)
+  const etvNotice = document.getElementById('property-etv-notice');
+  if(etvNotice){
+    if(currentProperty.seasonality==='Temporada' || currentProperty.category==='Alquiler vacacional'){
+      if(currentProperty.etv_number){
+        etvNotice.classList.remove('hidden');
+        etvNotice.innerHTML = `<div style="color:#8a5f10;font-size:13px;font-weight:700;display:flex;align-items:center;gap:.5rem;"><i class="fa-solid fa-circle-check"></i> ${tr('Número de registro turístico (ETV)')}: ${escapeHtml(currentProperty.etv_number)}</div>`;
+      } else {
+        etvNotice.classList.remove('hidden');
+        etvNotice.innerHTML = `<div style="color:#8a5f10;font-size:13px;font-weight:700;display:flex;align-items:center;gap:.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> ${tr('Este anuncio no muestra número de registro turístico (ETV). Consulta con el anunciante antes de contactar.')}</div>`;
+      }
+    } else {
+      etvNotice.classList.add('hidden');
+    }
+  }
 
   // Extras como pills
   const extrasContainer = document.getElementById('property-extras-pills');
@@ -5645,6 +5669,15 @@ async function submitPublishForm(){
   const ibi=document.getElementById('publish-ibi').value||'No especificado';
   const negotiable=document.getElementById('publish-negotiable').value;
   const seasonality=(type==='Alquiler')?(document.getElementById('publish-seasonality').value||'Todo el año'):null;
+  let etvNumber = null;
+  const requiresEtv = (type==='Alquiler' && (seasonality==='Temporada' || category==='Alquiler vacacional'));
+  if(requiresEtv){
+    etvNumber = (document.getElementById('publish-etv').value||'').trim();
+    if(!etvNumber){
+      alert('Para publicar un alquiler de Temporada (vacacional) en Baleares es obligatorio indicar el número de registro turístico (ETV). Si tu inmueble no tiene licencia ETV, cambia la duración a "Todo el año" y el tipo de inmueble a una categoría que no sea "Alquiler vacacional".');
+      return;
+    }
+  }
   const phone=document.getElementById('publish-phone').value.trim();
   const extras=getCheckedExtras();
   const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
@@ -5659,8 +5692,7 @@ async function submitPublishForm(){
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
     extras, images, video_url: publishedVideo || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
-    seasonality
-  };
+    seasonality, etv_number: etvNumber
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   const originalBtnText = btn ? btn.textContent : '';
@@ -6130,12 +6162,19 @@ async function editPropertyListing(id){
   document.getElementById('declare-particular').checked = true;
   togglePublishSeasonality();
   if(p.seasonality) { const sEl=document.getElementById('publish-seasonality'); if(sEl) sEl.value = p.seasonality; }
+  if(p.etv_number) { const eEl=document.getElementById('publish-etv'); if(eEl) eEl.value = p.etv_number; }
+  toggleEtvField();
 
   renderPublishPhotoPreviews();
   updatePublishTotal();
 }
 function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
-function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');}
+function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');toggleEtvField();}
+function toggleEtvField(){const type=document.getElementById('publish-type').value;const seasonalityEl=document.getElementById('publish-seasonality');const seasonality=seasonalityEl?seasonalityEl.value:'Todo el año';const categoryEl=document.getElementById('publish-category');const category=categoryEl?categoryEl.value:'';const isVacacional = category==='Alquiler vacacional';
+  if(isVacacional && seasonalityEl && seasonality!=='Temporada'){ seasonalityEl.value='Temporada'; }
+  const etvWrap=document.getElementById('publish-etv-wrap');
+  if(etvWrap) etvWrap.classList.toggle('hidden', !(type==='Alquiler' && (seasonalityEl?seasonalityEl.value:'Todo el año')==='Temporada'));
+}
 let selectedDestacadoDays = 30;
 let currentVerificationPlan = 'verificado';
 function selectDestacadoDuration(days,btn){
@@ -6597,7 +6636,7 @@ async function sendAIMessage(){
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI fue fundada por José Ramírez Felipe, residente en Mallorca, con el objetivo de ofrecer una alternativa igual de válida pero infinitamente más económica al modelo tradicional de agencias inmobiliarias. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, activo 90 días renovable gratis), Verificado (8,99€ pago único por inmueble, válido 1 año, renovación a 4,99€, máximo 5 inmuebles por propietario) y Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, siempre sobre un inmueble verificado). Además, los contratos legales se generan en la propia plataforma: el contrato de alquiler es gratis y el contrato de arras cuesta 49,99€ pago único. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P con traducción automática en tiempo real. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
+        system: 'Eres el asistente de SINKOMI, la primera plataforma inmobiliaria sin comisiones de Baleares. Respondes en el idioma del usuario. Eres amable, conciso y profesional. IMPORTANTE: responde SIEMPRE en texto plano, sin ningún símbolo de formato Markdown (nunca uses **, ##, guiones para listas, barras verticales | ni líneas de guiones ---). No hagas tablas. Si necesitas listar varias cosas, sepáralas con saltos de línea simples o con un emoji delante, nunca con símbolos de formato. SINKOMI fue fundada por José Ramírez Felipe, residente en Mallorca, con el objetivo de ofrecer una alternativa igual de válida pero infinitamente más económica al modelo tradicional de agencias inmobiliarias. SINKOMI permite que comprador y propietario contacten directamente sin intermediación obligatoria. Los planes son: Básico (publicar gratis, activo 90 días renovable gratis), Verificado (8,99€ pago único por inmueble, válido 1 año, renovación a 4,99€, máximo 5 inmuebles por propietario) y Destacado (pago único por duración: 12,99€ por 7 días, 19,99€ por 15 días o 29,99€ por 30 días, siempre sobre un inmueble verificado). Además, los contratos legales se generan en la propia plataforma: el contrato de alquiler es gratis y el contrato de arras cuesta 49,99€ pago único. Hay 67 municipios en las Islas Baleares (Mallorca, Menorca, Ibiza y Formentera). El chat es directo P2P con traducción automática en tiempo real. IMPORTANTE SOBRE ALQUILER VACACIONAL: en las Islas Baleares, cualquier alquiler turístico de menos de 30 días (Estancia Turística en Vivienda, ETV) requiere por ley un número de registro turístico oficial visible en el anuncio; publicar sin él es ilegal y conlleva multas de 5.000€ a más de 50.000€. Desde 2022 hay una moratoria que impide tramitar nuevas licencias ETV en la mayoría de zonas, así que muchos propietarios no pueden obtenerla aunque quieran. Si un usuario pregunta sobre publicar o buscar un alquiler vacacional/de temporada corta, infórmale amablemente de este requisito legal y recomiéndale consultar con un gestor o con el Registro de Turismo de las Islas Baleares antes de publicar sin ese número. No animes nunca a publicar un alquiler turístico sin registro. Si te preguntan algo que no sabes, diles que contacten en info@sinkomi.es',
         messages: aiHistory
       })
     });
