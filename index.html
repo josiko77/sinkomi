@@ -158,7 +158,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Special+Elite&family=Bebas+Neue&display=swap');
-    :root{--bg:#f4f2ef;--paper:#ffffff;--ink:#101010;--muted:#6b6b6b;--line:rgba(0,0,0,0.08);--accent:#00d98f;--accent-dark:#00b377;--accent-soft:rgba(0,217,143,0.12);--dark:#0d1a14;--orange:#ff9f0a;--orange-soft:rgba(255,159,10,0.11);--gold:#ff9f0a;}
+    :root{--bg:#f4f2ef;--paper:#ffffff;--ink:#101010;--muted:#6b6b6b;--line:rgba(0,0,0,0.08);--accent:#00d98f;--accent-dark:#00b377;--accent-soft:rgba(0,217,143,0.12);--dark:#0d1a14;--orange:#ff9f0a;--orange-soft:rgba(255,159,10,0.11);--gold:#ff9f0a;
+      --r-lg:22px;--r-md:14px;--r-sm:10px;
+      --shadow-sm:0 1px 2px rgba(16,20,18,0.04),0 2px 8px rgba(16,20,18,0.03);
+      --shadow-md:0 4px 16px rgba(16,20,18,0.05),0 12px 32px rgba(16,20,18,0.04);
+      --shadow-lg:0 8px 24px rgba(16,20,18,0.06),0 24px 56px rgba(16,20,18,0.07);
+    }
     /* ── AVISO CON MARCA SINKOMI (sustituye al alert() nativo) ── */
     #sk-alert-overlay{
       position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;
@@ -194,16 +199,16 @@
     .brand-title{font-family:'Helvetica Neue','Helvetica',Arial,sans-serif;font-weight:900;letter-spacing:-0.09em;line-height:0.88;text-transform:uppercase;}
     .serif{font-family:'Cormorant Garamond',serif;letter-spacing:-0.03em;font-weight:600;} p.serif,.slogan-text{font-weight:700;}
     .section-label{font-size:0.62rem;font-weight:800;letter-spacing:0.25em;text-transform:uppercase;color:#8a8a8a;}
-    .panel{background:var(--paper);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,0.05);}
-    .soft-panel{background:#fbfaf8;border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,0.035);}
+    .panel{background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow-lg);border-radius:var(--r-lg);}
+    .soft-panel{background:#fbfaf8;border:1px solid var(--line);box-shadow:var(--shadow-sm);border-radius:var(--r-md);}
     .dark-panel{background:#0d1a14;color:white;border:1px solid rgba(255,255,255,0.06);}
     .blue-panel{background:linear-gradient(135deg,#0a2018 0%,#0d3527 100%);color:white;border:1px solid rgba(255,255,255,0.06);box-shadow:0 20px 60px rgba(8,31,20,0.24);}
-    .accent-btn{background:linear-gradient(155deg,#00c98c 0%,var(--accent) 55%,var(--accent-dark) 100%);color:white;transition:all .25s ease;box-shadow:0 6px 18px -4px rgba(0,168,120,0.45),inset 0 1px 0 rgba(255,255,255,0.25);position:relative;overflow:hidden;}
+    .accent-btn{background:linear-gradient(155deg,#00c98c 0%,var(--accent) 55%,var(--accent-dark) 100%);color:white;transition:all .25s ease;box-shadow:0 8px 20px -6px rgba(0,168,120,0.4);position:relative;overflow:hidden;border-radius:999px;}
     .accent-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.22),transparent);pointer-events:none;}
     .accent-btn:hover{background:linear-gradient(155deg,#00e09c 0%,#00c48a 55%,var(--accent-dark) 100%);transform:translateY(-1px);box-shadow:0 10px 28px -4px rgba(0,168,120,0.55),inset 0 1px 0 rgba(255,255,255,0.3);}
     .dark-btn{background:var(--dark);color:white;transition:all .25s ease;}
     .dark-btn:hover{background:#1a1a1f;}
-    .orange-btn{background:linear-gradient(155deg,#f5b83d 0%,var(--orange) 55%,#c9820f 100%);color:white;transition:all .25s ease;box-shadow:0 6px 18px -4px rgba(232,160,32,0.45),inset 0 1px 0 rgba(255,255,255,0.25);position:relative;overflow:hidden;}
+    .orange-btn{background:linear-gradient(155deg,#f5b83d 0%,var(--orange) 55%,#c9820f 100%);color:white;transition:all .25s ease;box-shadow:0 8px 20px -6px rgba(232,160,32,0.4);position:relative;overflow:hidden;border-radius:999px;}
     .orange-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.22),transparent);pointer-events:none;}
     .orange-btn:hover{background:linear-gradient(155deg,#ffc652 0%,#f0a828 55%,#c9820f 100%);transform:translateY(-1px);box-shadow:0 10px 28px -4px rgba(232,160,32,0.55),inset 0 1px 0 rgba(255,255,255,0.3);}
     .hover-lift{transition:all 0.38s cubic-bezier(0.23,1,0.32,1);}
@@ -260,7 +265,10 @@
     .img-block img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.9s cubic-bezier(0.23,1,0.32,1),filter .5s ease;filter:saturate(0.96) contrast(1.02);}
     .hover-lift:hover .img-block img{transform:scale(1.07);filter:saturate(1.05) contrast(1.04);}
     .data-overlay{position:absolute;left:0;right:0;bottom:0;padding:1.25rem;background:linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);color:white;}
-    .saving-pill{display:inline-flex;align-items:center;gap:.5rem;background:var(--accent);color:white;padding:.42rem .8rem;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;}
+    .saving-pill{display:inline-flex;align-items:center;gap:.5rem;background:var(--accent);color:white;padding:.42rem .9rem;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;border-radius:999px;}
+    .sk-horizon{position:relative;height:1px;background:linear-gradient(90deg,transparent,var(--line) 15%,var(--line) 85%,transparent);margin:56px 0 40px;}
+    .sk-horizon-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);padding:0 18px;display:flex;align-items:center;}
+    .sk-horizon-mark svg{width:26px;height:14px;display:block;}
     .saving-badge-floating{position:absolute;top:.9rem;left:.9rem;z-index:4;max-width:calc(100% - 1.8rem);background:rgba(13,13,13,.88);color:white;padding:.55rem .75rem;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;line-height:1.35;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);}
     .demand-badge{display:inline-flex;align-items:center;gap:.45rem;background:var(--orange-soft);color:var(--orange);border:1px solid rgba(255,90,44,.22);padding:.45rem .7rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;}
     .featured-badge{display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.4rem .75rem;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;box-shadow:0 4px 16px rgba(255,90,44,.35);animation:glowOrange 2.6s infinite ease-in-out;}
@@ -653,22 +661,22 @@
 <section id="inicio" class="w-full px-6 pt-10 md:pt-14 pb-8">
 
   <!-- BUSCADOR PRINCIPAL — bloque vivo -->
-  <div class="mb-7 relative overflow-hidden" style="background:var(--accent);box-shadow:0 20px 50px -10px rgba(0,217,143,0.35);">
+  <div class="mb-7 relative overflow-hidden" style="background:linear-gradient(135deg,#00e39a 0%,var(--accent) 55%,var(--accent-dark) 100%);border-radius:var(--r-lg);box-shadow:0 20px 44px -14px rgba(0,180,120,0.35);">
     <div class="absolute -top-10 -right-10 w-52 h-52 rounded-full opacity-10" style="background:#fff;"></div>
     <div class="absolute -bottom-16 left-1/3 w-64 h-64 rounded-full opacity-[0.07]" style="background:#0d1a14;"></div>
-    <div class="relative p-6 md:p-9">
-      <h1 class="i18n-auto text-2xl md:text-4xl font-black text-[#0d1a14] mb-5 leading-tight">Encuentra tu próxima casa en Baleares</h1>
-      <div class="flex flex-col md:flex-row gap-3">
-        <div class="inline-flex bg-[#0d1a14]/10 p-1 shrink-0" role="tablist" aria-label="Tipo de operación">
-          <button type="button" id="hero-search-buy" onclick="setHeroSearchType('Venta')" class="i18n-auto hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all">Comprar</button>
-          <button type="button" id="hero-search-rent" onclick="setHeroSearchType('Alquiler')" class="i18n-auto hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all">Alquilar</button>
+    <div class="relative p-6 md:p-10">
+      <h1 class="i18n-auto text-2xl md:text-4xl font-black text-[#0d1a14] mb-6 leading-tight">Encuentra tu próxima casa en Baleares</h1>
+      <div class="flex flex-col md:flex-row gap-2.5">
+        <div class="inline-flex bg-[#0d1a14]/10 p-1 shrink-0 rounded-full" role="tablist" aria-label="Tipo de operación">
+          <button type="button" id="hero-search-buy" onclick="setHeroSearchType('Venta')" class="i18n-auto hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all rounded-full">Comprar</button>
+          <button type="button" id="hero-search-rent" onclick="setHeroSearchType('Alquiler')" class="i18n-auto hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all rounded-full">Alquilar</button>
         </div>
-        <div class="flex-1 relative flex items-center bg-white px-4 gap-2" id="hero-search-wrap">
+        <div class="flex-1 relative flex items-center bg-white px-5 gap-2 rounded-full shadow-sm" id="hero-search-wrap">
           <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
           <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="if(event.key==='Enter'){event.preventDefault();runHeroSearch();}">
-          <div id="hero-search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left"></div>
+          <div id="hero-search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left rounded-2xl"></div>
         </div>
-        <button type="button" onclick="runHeroSearch()" class="i18n-auto px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-colors" style="background:#0d1a14;color:var(--accent);">Buscar</button>
+        <button type="button" onclick="runHeroSearch()" class="i18n-auto px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-all rounded-full hover:-translate-y-0.5" style="background:#0d1a14;color:var(--accent);">Buscar</button>
       </div>
     </div>
   </div>
@@ -678,11 +686,11 @@
       <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-[0.04]" style="background:var(--accent);"></div>
       <div class="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-[0.03]" style="background:var(--orange);"></div>
       <div class="relative">
-        <div class="inline-flex items-center gap-2 bg-[var(--accent-soft)] border border-[var(--accent)]/20 px-3 py-1.5 mb-5">
+        <div class="inline-flex items-center gap-2 bg-[var(--accent-soft)] border border-[var(--accent)]/20 px-3.5 py-1.5 mb-5 rounded-full">
           <span class="w-2 h-2 rounded-full bg-[var(--accent)] pulse-soft"></span>
           <span class="i18n-auto text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">Lanzamiento Baleares · 2026</span>
         </div>
-        <div class="inline-flex items-center gap-2 mb-5 ml-2" style="background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.3);padding:.4rem .9rem;">
+        <div class="inline-flex items-center gap-2 mb-5 ml-2 rounded-full" style="background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.3);padding:.45rem 1rem;">
           <i class="fa-solid fa-shield-halved" style="color:var(--orange);font-size:12px;"></i>
           <span class="i18n-auto text-[10px] font-black uppercase tracking-[0.18em]" style="color:var(--orange);">Nuevo · Detectamos DNIs y fotos generados con IA</span>
         </div>
@@ -699,9 +707,9 @@
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 mb-8">
-          <button onclick="showSearch()" class="px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2"><i class="fa-solid fa-key"></i> <span class="i18n-auto">Ver inmuebles</span></button>
-          <button onclick="openPublishModal()" class="publish-gate px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50 transition-colors flex items-center gap-2"><i class="fa-solid fa-key text-[var(--accent)]"></i> <span class="i18n-auto">Publicar gratis</span></button>
-          <a href="#calculadora" class="px-6 py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2"><i class="fa-solid fa-calculator"></i> <span class="i18n-auto">Calcular ahorro</span></a>
+          <button onclick="showSearch()" class="px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2 hover:-translate-y-0.5 transition-transform"><i class="fa-solid fa-key"></i> <span class="i18n-auto">Ver inmuebles</span></button>
+          <button onclick="openPublishModal()" class="publish-gate px-6 py-4 border border-black/10 bg-white font-bold uppercase tracking-[0.12em] text-[11px] hover:bg-zinc-50 hover:-translate-y-0.5 transition-all flex items-center gap-2 rounded-full shadow-sm"><i class="fa-solid fa-key text-[var(--accent)]"></i> <span class="i18n-auto">Publicar gratis</span></button>
+          <a href="#calculadora" class="px-6 py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px] flex items-center gap-2 hover:-translate-y-0.5 transition-transform"><i class="fa-solid fa-calculator"></i> <span class="i18n-auto">Calcular ahorro</span></a>
         </div>
       </div>
     </div>
@@ -718,11 +726,11 @@
         </div>
         <div class="p-4 flex flex-col gap-3">
           <div class="flex gap-2.5 items-start">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto text-xs text-zinc-500 leading-relaxed">Habla directamente con el propietario. Sin agencias que filtren ni encarezcan la operación.</p>
           </div>
           <div class="flex gap-2.5 items-start">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto text-xs text-zinc-500 leading-relaxed">Contrato de arras incluido. Firma digital con validez legal completa sin salir de SINKOMI.</p>
           </div>
           <div class="grid grid-cols-3 gap-2">
@@ -747,11 +755,11 @@
         </div>
         <div class="p-4 flex flex-col gap-3">
           <div class="flex gap-2.5 items-start">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto text-xs text-zinc-500 leading-relaxed">Propietario e inquilino se comunican desde el primer mensaje. Sin filtros ni intermediarios.</p>
           </div>
           <div class="flex gap-2.5 items-start">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto text-xs text-zinc-500 leading-relaxed">Comparte nóminas y documentos por el chat privado. Contrato de alquiler incluido.</p>
           </div>
           <div class="grid grid-cols-3 gap-2">
@@ -766,6 +774,13 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- FIRMA VISUAL — línea de horizonte, separador reutilizable SINKOMI -->
+  <div class="sk-horizon" aria-hidden="true">
+    <span class="sk-horizon-mark">
+      <svg viewBox="0 0 26 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 10 C4 4, 8 4, 13 8 C18 12, 22 4, 26 6" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </span>
   </div>
 
   <!-- FRASE EXPANSIÓN -->
@@ -920,19 +935,19 @@
         <!-- Beneficios -->
         <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem;">
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Verificación</span> <strong class="i18n-auto" style="color:white;">gratuita 6 meses</strong> — <span class="i18n-auto">valor</span> 53,94€</span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Badge de</span> <strong class="i18n-auto" style="color:white;">propietario verificado</strong> <span class="i18n-auto">visible en tu anuncio</span></span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Prioridad absoluta de</span> <strong class="i18n-auto" style="color:white;">visibilidad</strong> <span class="i18n-auto">en toda la isla</span></span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Chat directo con compradores</span> <strong class="i18n-auto" style="color:white;">desde el primer día</strong></span>
           </div>
         </div>
@@ -1751,15 +1766,15 @@
         <h3 class="i18n-auto text-2xl font-black text-white leading-tight mb-4">Tú decides quién entra en tu inmueble</h3>
         <div class="space-y-4 text-white/70 text-sm leading-relaxed">
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Hablas directamente con los inquilinos interesados desde el primer mensaje, sin intermediarios que filtren o distorsionen la información.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Solicita las garantías y la documentación que consideres oportuna (contrato, nóminas) de forma directa a través del chat privado para tu total tranquilidad.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Publicas tu inmueble gratis y gestionas las visitas a tu ritmo. Tu inmueble, tus reglas.</p>
           </div>
         </div>
@@ -1772,15 +1787,15 @@
         <h3 class="i18n-auto text-2xl font-black text-white leading-tight mb-4">Genera confianza desde el primer mensaje</h3>
         <div class="space-y-4 text-white/70 text-sm leading-relaxed">
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Preséntate explicando tu situación laboral y personal directamente al dueño del inmueble. Sin agencias, sin esperas y sin comisiones de gestión.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Comparte tus documentos de forma segura adjuntándolos directamente en el chat privado cuando el propietario te los solicite para avanzar con el alquiler.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Trato directo de persona a persona. Todo claro, legal y gestionado directamente entre vosotros.</p>
           </div>
         </div>
