@@ -5693,6 +5693,7 @@ async function submitPublishForm(){
     extras, images, video_url: publishedVideo || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
     seasonality, etv_number: etvNumber
+  };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   const originalBtnText = btn ? btn.textContent : '';
