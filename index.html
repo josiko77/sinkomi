@@ -620,7 +620,7 @@
         <button onclick="openChatsList()" class="hidden md:flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-600 hover:text-[var(--accent)] transition-colors" style="position:relative;">
           <span style="position:relative;display:inline-block;">
             <i class="fa-regular fa-comment-dots text-lg"></i>
-            <span id="chat-unread-badge" class="hidden" style="position:absolute;top:-6px;right:-9px;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px white;"></span>
+            <span id="chat-unread-badge" style="display:none;position:absolute;top:-6px;right:-9px;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px white;"></span>
           </span>
           <span class="i18n-auto text-[9.5px] font-black uppercase tracking-[0.08em]">Chat</span>
         </button>
@@ -638,7 +638,7 @@
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-house-laptop w-4 text-[var(--accent)]"></i> Tus anuncios</button>
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-bookmark w-4 text-[var(--accent)]"></i> Búsquedas guardadas</button>
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('favs');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-heart w-4 text-[var(--accent)]"></i> Favoritos</button>
-              <button onclick="closeAllDropdowns();openChatsList();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-comment-dots w-4 text-[var(--accent)]"></i> Chat <span id="chat-unread-badge-menu" class="hidden" style="min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;line-height:1;"></span></button>
+              <button onclick="closeAllDropdowns();openChatsList();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-comment-dots w-4 text-[var(--accent)]"></i> Chat <span id="chat-unread-badge-menu" style="display:none;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;align-items:center;justify-content:center;line-height:1;"></span></button>
               <div class="border-t border-black/6 mt-2 pt-2">
                 <button onclick="closeAllDropdowns();logoutSinkomi();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-right-from-bracket w-4"></i> Cerrar sesión</button>
               </div>
@@ -3705,8 +3705,8 @@ async function updateChatUnreadBadge(){
   const badgeDesktop = document.getElementById('chat-unread-badge');
   const badgeMenu = document.getElementById('chat-unread-badge-menu');
   if(!user || !user.supabase_id){
-    if(badgeDesktop) badgeDesktop.classList.add('hidden');
-    if(badgeMenu) badgeMenu.classList.add('hidden');
+    if(badgeDesktop) badgeDesktop.style.display = 'none';
+    if(badgeMenu) badgeMenu.style.display = 'none';
     return;
   }
   try{
@@ -3716,11 +3716,8 @@ async function updateChatUnreadBadge(){
       .is('read_at', null);
     if(error){ console.error('Error contando mensajes sin leer:', error); return; }
     const label = count > 0 ? (count > 99 ? '99+' : String(count)) : '';
-    [badgeDesktop, badgeMenu].forEach(el=>{
-      if(!el) return;
-      if(count > 0){ el.textContent = label; el.classList.remove('hidden'); }
-      else { el.classList.add('hidden'); }
-    });
+    if(badgeDesktop){ badgeDesktop.textContent = label; badgeDesktop.style.display = count > 0 ? 'flex' : 'none'; }
+    if(badgeMenu){ badgeMenu.textContent = label; badgeMenu.style.display = count > 0 ? 'inline-flex' : 'none'; }
   }catch(e){
     console.error('Error inesperado actualizando el aviso de chat:', e);
   }
