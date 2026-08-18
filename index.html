@@ -2401,6 +2401,12 @@
     <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En Baleares, todo alquiler turístico de menos de 30 días requiere por ley un número de registro (ETV) visible en el anuncio. Publicar sin él puede conllevar multas de hasta 50.000€. Si tu inmueble no tiene licencia ETV, elige "Larga duración" en lugar de "Vacacional".</p>
   </div>
 </div>
+<div id="publish-traspaso-wrap" class="hidden panel p-5" style="background:#f5f8ff;border:2px solid #4f6bed;">
+  <label class="text-sm font-black mb-1 block" style="color:#3548b8;"><i class="fa-solid fa-store"></i> Datos del traspaso</label>
+  <p class="i18n-auto text-xs text-zinc-500 mb-3">En "Precio" pon el importe del traspaso. Aquí indica el alquiler mensual que seguirá pagando quien compre el traspaso.</p>
+  <label class="text-sm font-medium mb-2 block">Alquiler mensual del local (€/mes) *</label>
+  <input id="publish-rent-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="1.200">
+</div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Precio y gastos</div><div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Comunidad €/mes</label><input id="publish-community" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="85"></div><div><label class="text-sm font-medium mb-2 block">IBI anual</label><input id="publish-ibi" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div><div><label class="text-sm font-medium mb-2 block">Precio negociable</label><select id="publish-negotiable" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificado</option><option>Sí</option><option>No</option></select></div></div></div>
@@ -2817,6 +2823,7 @@ function mapDbRowToProperty(row){
     createdAt: row.created_at || null,
     seasonality: row.seasonality || '',
     etv_number: row.etv_number || '',
+    rentPrice: row.rent_price || null,
     phone: row.phone || '',
     owner_id: row.owner_id,
     status: row.status || 'Disponible'
@@ -3196,8 +3203,11 @@ function tr(text){
 function formatPrice(prop){
   if(prop.category === 'Traspaso' || prop.category === 'Bar / Cafetería' || prop.category === 'Restaurante' || prop.category === 'Tienda / Comercio' || prop.category === 'Peluquería / Estética' || prop.category === 'Oficina' || prop.category === 'Nave industrial'){
     const traspaso = Number(prop.price).toLocaleString('es-ES');
-    const alquiler = prop.rentPrice ? Number(prop.rentPrice).toLocaleString('es-ES') : '1.200';
-    return `${tr('Traspaso')}: ${traspaso} € · ${tr('Alquiler')}: ${alquiler} €/${tr('mes')}`;
+    if(prop.rentPrice){
+      const alquiler = Number(prop.rentPrice).toLocaleString('es-ES');
+      return `${tr('Traspaso')}: ${traspaso} € · ${tr('Alquiler')}: ${alquiler} €/${tr('mes')}`;
+    }
+    return `${tr('Traspaso')}: ${traspaso} €`;
   }
   const base = Number(prop.price).toLocaleString('es-ES');
   return prop.type === 'Alquiler' ? `${base} €/${tr('mes')}` : `${base} €`;
@@ -5287,6 +5297,7 @@ function openPublishModal(){
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
   const seasonalitySel = document.getElementById('publish-seasonality'); if(seasonalitySel) seasonalitySel.value = 'Todo el año';
   const etvInput = document.getElementById('publish-etv'); if(etvInput) etvInput.value = '';
+  const rentInput = document.getElementById('publish-rent-price'); if(rentInput) rentInput.value = '';
   document.getElementById('publish-modal').classList.remove('hidden');
   renderPublishPhotoPreviews();
   updatePublishTotal();
@@ -5712,6 +5723,15 @@ async function submitPublishForm(){
       return;
     }
   }
+  const traspasoCats=['Traspaso','Bar / Cafetería','Restaurante','Tienda / Comercio','Peluquería / Estética','Oficina','Nave industrial'];
+  let rentPrice = null;
+  if(traspasoCats.includes(category)){
+    rentPrice = Number((document.getElementById('publish-rent-price').value||'').replace(/[^\d]/g,''));
+    if(!rentPrice){
+      alert('Para este tipo de local, indica el alquiler mensual además del precio del traspaso.');
+      return;
+    }
+  }
   const phone=document.getElementById('publish-phone').value.trim();
   const extras=getCheckedExtras();
   const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
@@ -5726,7 +5746,7 @@ async function submitPublishForm(){
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
     extras, images, video_url: publishedVideo || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
-    seasonality, etv_number: etvNumber
+    seasonality, etv_number: etvNumber, rent_price: rentPrice
   };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
@@ -6198,6 +6218,7 @@ async function editPropertyListing(id){
   togglePublishSeasonality();
   setPublishSeasonality(p.seasonality || 'Todo el año');
   if(p.etv_number) { const eEl=document.getElementById('publish-etv'); if(eEl) eEl.value = p.etv_number; }
+  if(p.rentPrice) { const rEl=document.getElementById('publish-rent-price'); if(rEl) rEl.value = Number(p.rentPrice).toLocaleString('es-ES'); }
   toggleEtvField();
 
   renderPublishPhotoPreviews();
@@ -6227,6 +6248,9 @@ function toggleEtvField(){const type=document.getElementById('publish-type').val
   }
   const etvWrap=document.getElementById('publish-etv-wrap');
   if(etvWrap) etvWrap.classList.toggle('hidden', !(type==='Alquiler' && (seasonalityEl?seasonalityEl.value:'Todo el año')==='Temporada'));
+  const traspasoCats=['Traspaso','Bar / Cafetería','Restaurante','Tienda / Comercio','Peluquería / Estética','Oficina','Nave industrial'];
+  const traspasoWrap=document.getElementById('publish-traspaso-wrap');
+  if(traspasoWrap) traspasoWrap.classList.toggle('hidden', !traspasoCats.includes(category));
 }
 let selectedDestacadoDays = 30;
 let currentVerificationPlan = 'verificado';
