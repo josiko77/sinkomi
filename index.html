@@ -3648,7 +3648,7 @@ async function openChatsList(){
   document.getElementById('chat-messages').innerHTML = `<div class="text-center text-xs text-zinc-400 py-10">Elige una conversación de la lista para verla aquí.</div>`;
   await loadChatThreads(null);
 }
-async function openChat(id){
+async function openChat(id, otherUserId, otherUserName){
   if(!SinKomiAuth.isLoggedIn()){
     openLoginModal();
     return;
@@ -3660,13 +3660,17 @@ async function openChat(id){
     alert('Este anuncio no tiene un propietario identificado todavía.');
     return;
   }
-  if(currentProperty.owner_id === user.supabase_id){
+  // Si venimos de la bandeja de mensajes (otherUserId ya viene dado), significa que ya existe
+  // una conversación real con esa persona — nunca hay que bloquearla, aunque tú seas el propietario
+  // del anuncio: lo normal es que el propietario esté viendo los mensajes que le han escrito.
+  const viewingExistingThread = !!otherUserId;
+  if(!viewingExistingThread && currentProperty.owner_id === user.supabase_id){
     alert('Este es tu propio anuncio — no puedes chatear contigo mismo.');
     return;
   }
 
   currentChatPropertyId = id;
-  currentChatOtherUserId = currentProperty.owner_id;
+  currentChatOtherUserId = viewingExistingThread ? otherUserId : currentProperty.owner_id;
   chatRenderedIds = new Set();
 
   document.getElementById('chat-modal').classList.remove('hidden');
@@ -3678,8 +3682,13 @@ async function openChat(id){
   document.getElementById('chat-property-m2').textContent=currentProperty.surface||'m²';
   document.getElementById('chat-property-rooms').textContent=currentProperty.bedrooms||'Hab.';
   document.getElementById('chat-property-baths').textContent=currentProperty.bathrooms||'Baños';
-  document.getElementById('seller-name').textContent=currentProperty.sellerName;
-  document.getElementById('seller-avatar').textContent=currentProperty.initials;
+  // Si tú eres el propietario y estás viendo un hilo, la cabecera debe mostrar a quien te escribió,
+  // no tu propio nombre.
+  const headerName = (viewingExistingThread && currentProperty.owner_id === user.supabase_id)
+    ? (otherUserName || 'Usuario')
+    : currentProperty.sellerName;
+  document.getElementById('seller-name').textContent = headerName;
+  document.getElementById('seller-avatar').textContent = (headerName||'?').trim().charAt(0).toUpperCase();
   document.getElementById('seller-status').textContent=currentProperty.verified?'Propietario verificado':'Propietario particular';
   document.getElementById('chat-input').value='';
 
@@ -4036,16 +4045,26 @@ async function loadChatThreads(activePropertyId){
     (props||[]).forEach(p => { propMap[p.id] = p; });
   }
 
+  // Nombre real de la OTRA persona de cada hilo (no siempre es el propietario: si tú eres el
+  // propietario, la otra persona es quien te ha escrito, y hay que mostrar SU nombre, no el tuyo).
+  const otherIds = [...new Set(threads.map(t=>t.otherId))];
+  let otherProfileMap = {};
+  if(otherIds.length){
+    const { data: profs } = await supabase.from('profiles').select('id,nombre').in('id', otherIds);
+    (profs||[]).forEach(p => { otherProfileMap[p.id] = p.nombre; });
+  }
+
   list.innerHTML = threads.map(t => {
     const prop = propMap[t.propertyId];
     if(!prop) return '';
+    const otherName = otherProfileMap[t.otherId] || prop.owner_name || 'Usuario';
     const img = (prop.images && prop.images[0]) || fallbackImg;
     const preview = t.lastMessage.content ? escapeHtml(t.lastMessage.content) : '📎 Archivo adjunto';
-    return `<div class="chat-thread-item ${t.propertyId===activePropertyId?'active':''}" onclick="openChat('${t.propertyId}')">
+    return `<div class="chat-thread-item ${t.propertyId===activePropertyId?'active':''}" onclick="openChat('${t.propertyId}','${t.otherId}','${escapeHtml(otherName).replace(/'/g,"\\'")}')">
       <img src="${img}" class="chat-thread-img">
       <div class="min-w-0 flex-1">
         <div class="flex items-center justify-between gap-2">
-          <div class="font-bold text-sm truncate">${escapeHtml(prop.owner_name||'Propietario')}</div>
+          <div class="font-bold text-sm truncate">${escapeHtml(otherName)}</div>
           ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
         </div>
         <div class="text-xs text-zinc-700 truncate mt-1">${preview}</div>
