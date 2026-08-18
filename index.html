@@ -675,7 +675,7 @@
         </div>
         <div class="flex-1 relative flex items-center bg-white px-5 gap-2 rounded-full shadow-sm" id="hero-search-wrap">
           <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
-          <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="if(event.key==='Enter'){event.preventDefault();runHeroSearch();}">
+          <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="handleHeroSearchKeydown(event)">
           <div id="hero-search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left rounded-2xl"></div>
         </div>
         <button type="button" onclick="runHeroSearch()" class="i18n-auto px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-all rounded-full hover:-translate-y-0.5" style="background:#0d1a14;color:var(--accent);">Buscar</button>
@@ -2713,24 +2713,63 @@ function runHeroSearch(){
   if(typeof renderMunicipalities==='function') renderMunicipalities();
   if(typeof updateMunicipalityLabels==='function') updateMunicipalityLabels();
 }
-function selectHeroMunicipality(name){
-  document.getElementById('hero-search-input').value=name;
+function selectHeroMunicipality(name,nucleo){
+  document.getElementById('hero-search-input').value=nucleo?`${nucleo}, ${name}`:name;
   hideHeroSuggestions();
+  selectedMunicipality=name;
+  selectedNucleo=nucleo||'';
   runHeroSearch();
 }
 function hideHeroSuggestions(){
   const box=document.getElementById('hero-search-suggestions');
-  if(box){ box.classList.add('hidden'); box.innerHTML=''; }
+  if(box){ box.classList.add('hidden'); box.innerHTML=''; heroSuggestionIndex=-1; }
+}
+let heroSuggestionIndex=-1;
+function buildHeroSuggestionPool(){
+  const pool=municipalityList.map(m=>({label:m,municipio:m,nucleo:''}));
+  Object.entries(nucleosByMunicipio).forEach(([mun,nucs])=>{
+    nucs.forEach(n=>pool.push({label:`${n}, ${mun}`,municipio:mun,nucleo:n}));
+  });
+  return pool;
 }
 function filterHeroSuggestions(){
   const box=document.getElementById('hero-search-suggestions');
   if(!box) return;
   const q=normalizeSearchText(document.getElementById('hero-search-input').value);
+  heroSuggestionIndex=-1;
   if(!q){ hideHeroSuggestions(); return; }
-  const matches=municipalityList.filter(m=>normalizeSearchText(m).startsWith(q)).slice(0,8);
+  const starts=heroSuggestionPool.filter(item=>normalizeSearchText(item.label).startsWith(q)||normalizeSearchText(item.nucleo).startsWith(q));
+  const contains=heroSuggestionPool.filter(item=>!starts.includes(item)&&(normalizeSearchText(item.label).includes(q)||normalizeSearchText(item.nucleo).includes(q)));
+  const matches=[...starts,...contains].slice(0,8);
   if(!matches.length){ hideHeroSuggestions(); return; }
-  box.innerHTML=matches.map(m=>`<button type="button" onmousedown="event.preventDefault();selectHeroMunicipality('${m.replace(/'/g,"\\'")}')" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${m}</button>`).join('');
+  box.innerHTML=matches.map((item,i)=>`<button type="button" data-idx="${i}" onmousedown="event.preventDefault();selectHeroMunicipality('${item.municipio.replace(/'/g,"\\'")}','${item.nucleo.replace(/'/g,"\\'")}')" class="hero-suggestion-item w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${item.label}</button>`).join('');
   box.classList.remove('hidden');
+}
+function moveHeroSuggestionSelection(dir){
+  const box=document.getElementById('hero-search-suggestions');
+  if(!box||box.classList.contains('hidden')) return;
+  const items=box.querySelectorAll('.hero-suggestion-item');
+  if(!items.length) return;
+  heroSuggestionIndex=(heroSuggestionIndex+dir+items.length)%items.length;
+  items.forEach((el,i)=>{
+    if(i===heroSuggestionIndex){ el.classList.add('bg-[var(--accent-soft)]','text-[var(--accent-dark)]'); el.scrollIntoView({block:'nearest'}); }
+    else { el.classList.remove('bg-[var(--accent-soft)]','text-[var(--accent-dark)]'); }
+  });
+}
+function handleHeroSearchKeydown(event){
+  const box=document.getElementById('hero-search-suggestions');
+  const hasSuggestions=box&&!box.classList.contains('hidden');
+  if(event.key==='ArrowDown'){ if(hasSuggestions){ event.preventDefault(); moveHeroSuggestionSelection(1); } return; }
+  if(event.key==='ArrowUp'){ if(hasSuggestions){ event.preventDefault(); moveHeroSuggestionSelection(-1); } return; }
+  if(event.key==='Enter'){
+    event.preventDefault();
+    if(hasSuggestions && heroSuggestionIndex>=0){
+      const items=box.querySelectorAll('.hero-suggestion-item');
+      if(items[heroSuggestionIndex]) items[heroSuggestionIndex].dispatchEvent(new MouseEvent('mousedown'));
+      return;
+    }
+    runHeroSearch();
+  }
 }
 document.addEventListener('click',e=>{ if(!e.target.closest('#hero-search-wrap')) hideHeroSuggestions(); });
 document.addEventListener('DOMContentLoaded',()=>{
@@ -2739,6 +2778,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 const municipalityList=["Palma","Calvià","Llucmajor","Marratxí","Inca","Manacor","Alcúdia","Pollença","Sóller","Andratx","Artà","Capdepera","Son Servera","Santanyí","Campos","Felanitx","Montuïri","Algaida","Santa Eugènia","Sencelles","Binissalem","Santa Maria del Camí","Consell","Bunyola","Valldemossa","Deià","Escorca","Selva","Campanet","Sa Pobla","Muro","Santa Margalida","Petra","Vilafranca de Bonany","Ariany","Maria de la Salut","Costitx","Lloret de Vistalegre","Lloseta","Alaró","Fornalutx","Banyalbufar","Búger","Esporles","Estellencs","Llubí","Mancor de la Vall","Porreres","Puigpunyent","Sant Joan","Sant Llorenç des Cardassar","Sineu","Ses Salines","Maó","Ciutadella","Alaior","Es Mercadal","Ferreries","Es Castell","Sant Lluís","Es Migjorn Gran","Eivissa","Santa Eulària des Riu","Sant Antoni de Portmany","Sant Josep de sa Talaia","Sant Joan de Labritja","Formentera"];
 const islandByMunicipio={"Palma":"Mallorca","Calvià":"Mallorca","Llucmajor":"Mallorca","Marratxí":"Mallorca","Inca":"Mallorca","Manacor":"Mallorca","Alcúdia":"Mallorca","Pollença":"Mallorca","Sóller":"Mallorca","Andratx":"Mallorca","Artà":"Mallorca","Capdepera":"Mallorca","Son Servera":"Mallorca","Santanyí":"Mallorca","Campos":"Mallorca","Felanitx":"Mallorca","Montuïri":"Mallorca","Algaida":"Mallorca","Santa Eugènia":"Mallorca","Sencelles":"Mallorca","Binissalem":"Mallorca","Santa Maria del Camí":"Mallorca","Consell":"Mallorca","Bunyola":"Mallorca","Valldemossa":"Mallorca","Deià":"Mallorca","Escorca":"Mallorca","Selva":"Mallorca","Campanet":"Mallorca","Sa Pobla":"Mallorca","Muro":"Mallorca","Santa Margalida":"Mallorca","Petra":"Mallorca","Vilafranca de Bonany":"Mallorca","Ariany":"Mallorca","Maria de la Salut":"Mallorca","Costitx":"Mallorca","Lloret de Vistalegre":"Mallorca","Lloseta":"Mallorca","Alaró":"Mallorca","Fornalutx":"Mallorca","Banyalbufar":"Mallorca","Búger":"Mallorca","Esporles":"Mallorca","Estellencs":"Mallorca","Llubí":"Mallorca","Mancor de la Vall":"Mallorca","Porreres":"Mallorca","Puigpunyent":"Mallorca","Sant Joan":"Mallorca","Sant Llorenç des Cardassar":"Mallorca","Sineu":"Mallorca","Ses Salines":"Mallorca","Maó":"Menorca","Ciutadella":"Menorca","Alaior":"Menorca","Es Mercadal":"Menorca","Ferreries":"Menorca","Es Castell":"Menorca","Sant Lluís":"Menorca","Es Migjorn Gran":"Menorca","Eivissa":"Ibiza","Santa Eulària des Riu":"Ibiza","Sant Antoni de Portmany":"Ibiza","Sant Josep de sa Talaia":"Ibiza","Sant Joan de Labritja":"Ibiza","Formentera":"Formentera"};
 const nucleosByMunicipio={"Palma":["Santa Catalina","Portixol","El Molinar","Génova","Son Vida","Es Coll d'en Rabassa","Sant Jordi","Son Ferriol"],"Calvià":["Santa Ponça","Magaluf","Palmanova","Peguera","Portals Nous","Son Ferrer","El Toro","Costa d'en Blanes","Illetes","Cas Català"],"Llucmajor":["s'Arenal","Badia Gran","Badia Blava","Cala Pi","Vallgornera"],"Andratx":["Port d'Andratx","Camp de Mar","Sant Elm","s'Arracó"],"Pollença":["Port de Pollença","Cala Sant Vicenç"],"Alcúdia":["Port d'Alcúdia","Mal Pas","Bonaire"],"Manacor":["Porto Cristo","s'Illot","Cala Murada","Cales de Mallorca","Son Macià"],"Santanyí":["Cala d'Or","Cala Figuera","Portopetro","s'Alqueria Blanca","Calonge","es Llombards","Cala Santanyí"],"Felanitx":["Portocolom","Cas Concos","s'Horta"],"Capdepera":["Cala Rajada","Canyamel","Font de sa Cala"],"Son Servera":["Cala Millor","Cala Bona","Costa dels Pins"],"Sant Llorenç des Cardassar":["Sa Coma","s'Illot","Cala Millor"],"Campos":["Sa Ràpita","Ses Covetes"],"Muro":["Platja de Muro"],"Santa Margalida":["Can Picafort","Son Serra de Marina"],"Artà":["Colònia de Sant Pere"],"Sóller":["Port de Sóller"],"Ses Salines":["Colònia de Sant Jordi"],"Maó":["Cales Fonts","S'Algar","Sant Climent","Llucmaçanes"],"Ciutadella":["Cala Morell","Cala en Blanes","Sa Caleta","Son Xoriguer","Cala en Bosc"],"Es Mercadal":["Fornells","Arenal d'en Castell","Son Parc"],"Es Castell":["Cales Fonts","Sol del Este"],"Sant Lluís":["Binibeca Vell","Binissafúller","Punta Prima","Alcaufar","Cala Torret"],"Ferreries":["Cala Galdana","Santa Galdana"],"Alaior":["Son Bou","Cala en Porter","Torre Soli Nou"],"Es Migjorn Gran":["Sant Tomàs","Binigaus"],"Eivissa":["Dalt Vila","Marina Botafoch","Talamanca","Platja d'en Bossa","Ses Figueretes"],"Santa Eulària des Riu":["Santa Eulària","Jesús","Santa Gertrudis","Sant Carles de Peralta","Es Puig d'en Valls","Cala Llonga","Siesta"],"Sant Antoni de Portmany":["Sant Antoni","Sant Rafel","Santa Agnès","Sant Mateu d'Albarca","Cala de Bou","Port des Torrent"],"Sant Josep de sa Talaia":["Sant Josep","Sant Jordi de ses Salines","Es Cubells","Cala Vedella","Cala Tarida","Cala d'Hort","Platges de Comte"],"Sant Joan de Labritja":["Sant Joan","Sant Miquel de Balansat","Sant Llorenç de Balàfia","Sant Vicent de sa Cala","Portinatx"],"Formentera":["Sant Francesc Xavier","Sant Ferran de ses Roques","Es Pujols","La Savina","Es Caló de Sant Agustí","El Pilar de la Mola"]};
+const heroSuggestionPool=buildHeroSuggestionPool();
 const propertyTypeGroups = [
   {
     group: "Viviendas, Terrenos y Otros",
