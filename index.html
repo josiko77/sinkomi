@@ -2381,11 +2381,24 @@
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
 <div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
-<div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="i18n-auto text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p>
+<div id="publish-seasonality-wrap" class="hidden panel p-5" style="background:#f0fdf9;border:2px solid var(--accent);">
+  <label class="text-sm font-black mb-1 block" style="color:var(--accent-dark);"><i class="fa-solid fa-calendar-days"></i> ¿Qué tipo de alquiler es?</label>
+  <p class="i18n-auto text-xs text-zinc-500 mb-3">Elige bien esta opción — es obligatoria y cambia lo que se pide más abajo.</p>
+  <div class="flex gap-2 flex-wrap">
+    <button type="button" id="seasonality-btn-anual" onclick="setPublishSeasonality('Todo el año')" class="flex-1 min-w-[180px] px-5 py-4 border-2 text-left transition-all" style="border-radius:var(--r-md);">
+      <div class="font-bold text-sm">🏠 Larga duración</div>
+      <div class="text-xs text-zinc-500 mt-0.5">Todo el año, alquiler habitual</div>
+    </button>
+    <button type="button" id="seasonality-btn-temporada" onclick="setPublishSeasonality('Temporada')" class="flex-1 min-w-[180px] px-5 py-4 border-2 text-left transition-all" style="border-radius:var(--r-md);">
+      <div class="font-bold text-sm">☀️ Vacacional (Temporada)</div>
+      <div class="text-xs text-zinc-500 mt-0.5">Estancias cortas, requiere ETV</div>
+    </button>
+  </div>
+  <select id="publish-seasonality" class="hidden"><option>Todo el año</option><option>Temporada</option></select>
   <div id="publish-etv-wrap" class="hidden mt-4 p-4" style="background:var(--orange-soft);border:1px solid rgba(255,159,10,0.3);border-radius:var(--r-md);">
     <label class="text-sm font-bold mb-2 block" style="color:#b9791a;"><i class="fa-solid fa-triangle-exclamation"></i> Número de registro turístico (ETV) *</label>
     <input id="publish-etv" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. ETV/1234 o ETV-1234-E">
-    <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En Baleares, todo alquiler turístico de menos de 30 días requiere por ley un número de registro (ETV) visible en el anuncio. Publicar sin él puede conllevar multas de hasta 50.000€. Si tu inmueble no tiene licencia ETV, elige "Todo el año" en lugar de "Temporada".</p>
+    <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En Baleares, todo alquiler turístico de menos de 30 días requiere por ley un número de registro (ETV) visible en el anuncio. Publicar sin él puede conllevar multas de hasta 50.000€. Si tu inmueble no tiene licencia ETV, elige "Larga duración" en lugar de "Vacacional".</p>
   </div>
 </div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
@@ -5272,6 +5285,8 @@ function openPublishModal(){
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
+  const seasonalitySel = document.getElementById('publish-seasonality'); if(seasonalitySel) seasonalitySel.value = 'Todo el año';
+  const etvInput = document.getElementById('publish-etv'); if(etvInput) etvInput.value = '';
   document.getElementById('publish-modal').classList.remove('hidden');
   renderPublishPhotoPreviews();
   updatePublishTotal();
@@ -6181,7 +6196,7 @@ async function editPropertyListing(id){
   editingPropertyOriginalVerified = !!p.verified;
   document.getElementById('declare-particular').checked = true;
   togglePublishSeasonality();
-  if(p.seasonality) { const sEl=document.getElementById('publish-seasonality'); if(sEl) sEl.value = p.seasonality; }
+  setPublishSeasonality(p.seasonality || 'Todo el año');
   if(p.etv_number) { const eEl=document.getElementById('publish-etv'); if(eEl) eEl.value = p.etv_number; }
   toggleEtvField();
 
@@ -6189,9 +6204,27 @@ async function editPropertyListing(id){
   updatePublishTotal();
 }
 function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
-function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');toggleEtvField();}
+function setPublishSeasonality(value){
+  const sel=document.getElementById('publish-seasonality');
+  if(sel) sel.value=value;
+  const btnAnual=document.getElementById('seasonality-btn-anual');
+  const btnTemp=document.getElementById('seasonality-btn-temporada');
+  if(btnAnual && btnTemp){
+    const activeStyle='border-color:var(--accent);background:var(--accent-soft);';
+    const inactiveStyle='border-color:var(--line);background:white;';
+    btnAnual.style.cssText += (value==='Todo el año'?activeStyle:inactiveStyle);
+    btnTemp.style.cssText += (value==='Temporada'?activeStyle:inactiveStyle);
+  }
+  toggleEtvField();
+}
+function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } toggleEtvField();}
 function toggleEtvField(){const type=document.getElementById('publish-type').value;const seasonalityEl=document.getElementById('publish-seasonality');const seasonality=seasonalityEl?seasonalityEl.value:'Todo el año';const categoryEl=document.getElementById('publish-category');const category=categoryEl?categoryEl.value:'';const isVacacional = category==='Alquiler vacacional';
-  if(isVacacional && seasonalityEl && seasonality!=='Temporada'){ seasonalityEl.value='Temporada'; }
+  if(isVacacional && seasonalityEl && seasonality!=='Temporada'){
+    seasonalityEl.value='Temporada';
+    const btnAnual=document.getElementById('seasonality-btn-anual');
+    const btnTemp=document.getElementById('seasonality-btn-temporada');
+    if(btnAnual && btnTemp){ btnAnual.style.cssText += 'border-color:var(--line);background:white;'; btnTemp.style.cssText += 'border-color:var(--accent);background:var(--accent-soft);'; }
+  }
   const etvWrap=document.getElementById('publish-etv-wrap');
   if(etvWrap) etvWrap.classList.toggle('hidden', !(type==='Alquiler' && (seasonalityEl?seasonalityEl.value:'Todo el año')==='Temporada'));
 }
