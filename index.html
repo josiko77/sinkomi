@@ -2994,6 +2994,46 @@ function refreshPropertyModalLanguage(){
   if(modal && !modal.classList.contains('hidden')) renderPropertyTitleAndDescription();
 }
 
+// ── DATOS ESTRUCTURADOS PARA GOOGLE (schema.org) ────────────────────
+// Le explica a Google, en un formato que entiende de forma automática, qué es exactamente
+// esta página: un inmueble concreto, con su precio, ubicación y fotos — no solo texto suelto.
+// Esto puede ayudar a que el resultado en Google salga más completo y mejor posicionado.
+function injectPropertySchema(prop){
+  if(!prop) return;
+  removePropertySchema();
+  const images = Array.isArray(prop.images) && prop.images.length ? prop.images : (prop.img ? [prop.img] : []);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": prop.title,
+    "description": prop.description || prop.title,
+    "url": window.location.origin + window.location.pathname + '?inmueble=' + prop.id,
+    "image": images,
+    "datePosted": prop.createdAt || undefined,
+    "offers": {
+      "@type": "Offer",
+      "price": prop.price,
+      "priceCurrency": "EUR",
+      "availability": (prop.status && prop.status !== 'Disponible') ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": prop.nucleo || prop.municipality || prop.location,
+      "addressRegion": "Illes Balears",
+      "addressCountry": "ES",
+    },
+  };
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'property-schema';
+  script.textContent = JSON.stringify(data);
+  document.head.appendChild(script);
+}
+function removePropertySchema(){
+  const existing = document.getElementById('property-schema');
+  if(existing) existing.remove();
+}
+
 function toggleUserMenu(){
   const p=document.getElementById('user-menu-panel');if(!p)return;
   const open=p.classList.contains('show');
@@ -3479,6 +3519,7 @@ function openPropertyModal(id){
 
   // Le damos a este inmueble una URL propia y real (compartible), sin recargar la página.
   history.pushState({ inmueble: id }, '', '?inmueble=' + id);
+  injectPropertySchema(currentProperty);
 
   // ── Detectar nivel ──
   const isFeatured = currentProperty.verified && currentProperty.featured;
@@ -3608,6 +3649,7 @@ function openPropertyModal(id){
 }
 function closePropertyModal(){
   document.getElementById('property-modal').classList.add('hidden');
+  removePropertySchema();
   // Solo limpiamos la URL si fuimos nosotros quienes la pusimos (evita borrar otros
   // parámetros como los del pago de Stripe si el usuario llegó desde ahí).
   if(new URLSearchParams(window.location.search).get('inmueble')){
