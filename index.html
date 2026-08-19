@@ -674,7 +674,7 @@
         <div class="flex-1 relative flex items-center bg-white px-5 gap-2 rounded-full shadow-sm" id="hero-search-wrap">
           <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
           <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="if(event.key==='Enter'){event.preventDefault();runHeroSearch();}">
-          <div id="hero-search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left rounded-2xl"></div>
+          <div id="hero-search-suggestions" class="hidden bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left rounded-2xl" style="position:fixed;"></div>
         </div>
         <button type="button" onclick="runHeroSearch()" class="i18n-auto px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-all rounded-full hover:-translate-y-0.5" style="background:#0d1a14;color:var(--accent);">Buscar</button>
       </div>
@@ -2720,6 +2720,12 @@ function filterHeroSuggestions(){
   });
   const matches=[...muniMatches, ...nucleoMatches].slice(0,8);
   if(!matches.length){ hideHeroSuggestions(); return; }
+  // Colocamos el cuadro con su posición real en la pantalla, para que no quede
+  // recortado por la caja verde de fondo (que tiene los bordes redondeados recortados).
+  const inputRect = document.getElementById('hero-search-wrap').getBoundingClientRect();
+  box.style.top = (inputRect.bottom + 6) + 'px';
+  box.style.left = inputRect.left + 'px';
+  box.style.width = inputRect.width + 'px';
   box.innerHTML=matches.map(m=>`<button type="button" onmousedown="event.preventDefault();selectHeroMunicipality('${m.municipio.replace(/'/g,"\\'")}'${m.nucleo?`,'${m.nucleo.replace(/'/g,"\\'")}'`:''})" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${m.label}</button>`).join('');
   box.classList.remove('hidden');
 }
