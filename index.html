@@ -2380,9 +2380,10 @@
 </div>
 
 <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="i18n-auto text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="i18n-auto text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-<div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
+<div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y vídeo</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
-<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
+<div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality();populatePublishCategory();toggleTraspasoRent();" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option><option>Traspaso</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block" id="publish-price-label">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
+<div id="publish-traspaso-rent-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Alquiler mensual del local</label><input id="publish-rent-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="1.200"><p class="i18n-auto text-xs text-zinc-500 mt-1">Además del traspaso, indica cuánto se paga de alquiler cada mes por el local.</p></div>
 <div id="publish-seasonality-wrap" class="hidden"><label class="text-sm font-medium mb-2 block">Duración del alquiler</label><select id="publish-seasonality" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Todo el año</option><option>Temporada</option></select><p class="i18n-auto text-xs text-zinc-500 mt-1">Elige "Temporada" si el alquiler es solo para unos meses (por ejemplo, verano). Esto ayuda a que te encuentren los inquilinos adecuados.</p></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label></div></div>
@@ -2780,6 +2781,7 @@ function mapDbRowToProperty(row){
     municipality: row.municipality,
     nucleo: row.nucleo,
     category: row.category,
+    rentPrice: row.rent_price || null,
     img, images,
     type: row.type,
     sellerName: row.owner_name || 'Propietario',
@@ -5320,6 +5322,10 @@ function openPublishModal(){
   publishedVideo = null;
   const locInput = document.getElementById('publish-location-search'); if(locInput) locInput.value = '';
   const locHidden = document.getElementById('publish-location'); if(locHidden) locHidden.value = '';
+  const typeSelect = document.getElementById('publish-type'); if(typeSelect) typeSelect.value = 'Venta';
+  const rentInput = document.getElementById('publish-rent-price'); if(rentInput) rentInput.value = '';
+  populatePublishCategory();
+  toggleTraspasoRent();
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
@@ -5707,6 +5713,11 @@ async function submitPublishForm(){
   const title=escapeHtml(document.getElementById('publish-title').value.trim())||'Nuevo inmueble publicado';
   let _locVal=document.getElementById('publish-location').value||'Mallorca';let _mun=_locVal,_nuc='';if(_locVal.indexOf('|')>-1){const _p=_locVal.split('|');_mun=_p[0];_nuc=_p[1];}const location=_nuc||_mun;
   const type=document.getElementById('publish-type').value;
+  const isTraspaso = type === 'Traspaso';
+  // Un traspaso técnicamente se guarda como "Venta" para que aparezca en el catálogo de
+  // Comprar (igual que hace Idealista) — el tipo de negocio concreto queda en "category".
+  const dbType = isTraspaso ? 'Venta' : type;
+  const rentPriceValue = isTraspaso ? (Number((document.getElementById('publish-rent-price')?.value||'').replace(/\D/g,''))||null) : null;
   const category=document.getElementById('publish-category').value||'Piso';
   const price=getPublishPriceValue();
   if(price <= 0){ alert('Por favor, introduce un precio válido para tu inmueble.'); return; }
@@ -5746,14 +5757,14 @@ async function submitPublishForm(){
   const payload = {
     owner_id: user.supabase_id,
     owner_name: ownerName,
-    title, description, type, category, price,
+    title, description, type: dbType, category, price,
     municipality: _mun, nucleo: _nuc, location,
     built_m2: builtM2, useful_m2: usefulM2,
     bedrooms, bathrooms, floor, condition, energy, orientation,
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
     extras, images, video_url: publishedVideo || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
-    seasonality
+    seasonality, rent_price: rentPriceValue
   };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
@@ -6203,9 +6214,17 @@ async function editPropertyListing(id){
   const wantedLocation = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||'');
   document.getElementById('publish-location').value = wantedLocation;
   document.getElementById('publish-location-search').value = p.nucleo ? `${p.nucleo} (${p.municipality})` : (p.municipality||'');
-  document.getElementById('publish-type').value = p.type || 'Venta';
+  // Si tiene alquiler mensual de local guardado, o su categoría es de negocio, es un
+  // traspaso — aunque por dentro se guarde como "Venta" para aparecer en el catálogo.
+  const isEditingTraspaso = !!p.rentPrice || businessCategoryTypes.includes(p.category);
+  document.getElementById('publish-type').value = isEditingTraspaso ? 'Traspaso' : (p.type || 'Venta');
   populatePublishCategory();
+  toggleTraspasoRent();
   if(p.category) document.getElementById('publish-category').value = p.category;
+  if(isEditingTraspaso){
+    const rentInput = document.getElementById('publish-rent-price');
+    if(rentInput) rentInput.value = p.rentPrice ? Number(p.rentPrice).toLocaleString('es-ES') : '';
+  }
   document.getElementById('publish-price').value = p.price ? Number(p.price).toLocaleString('es-ES') : '';
   document.getElementById('publish-built-m2').value = (p.built_m2 && p.built_m2!=='No especificado') ? p.built_m2 : '';
   document.getElementById('publish-useful-m2').value = p.useful_m2 || '';
@@ -6228,7 +6247,32 @@ async function editPropertyListing(id){
   renderPublishPhotoPreviews();
   updatePublishTotal();
 }
-function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
+// Tipos de negocio (para cuando la operación es "Traspaso" — nunca pisos ni chalets, solo locales)
+const businessCategoryTypes = ["Bar / Cafetería","Restaurante","Tienda / Comercio","Peluquería / Estética","Oficina","Nave industrial","Local comercial"];
+// Todos los tipos "normales" de inmueble, sin incluir "Traspaso" (que ahora es una Operación, no un tipo)
+const residentialCategoryTypes = propertyTypes.filter(t => t !== 'Todos' && t !== 'Traspaso');
+
+function populatePublishCategory(){
+  const select = document.getElementById('publish-category');
+  if(!select) return;
+  const operacion = document.getElementById('publish-type')?.value || 'Venta';
+  const previousValue = select.value;
+  const list = operacion === 'Traspaso' ? businessCategoryTypes : residentialCategoryTypes;
+  select.innerHTML = list.map(t => `<option>${t}</option>`).join('');
+  // Si el tipo que tenía elegido sigue existiendo en la nueva lista, lo mantenemos.
+  if(list.includes(previousValue)) select.value = previousValue;
+}
+
+// Muestra el campo de "alquiler mensual del local" solo cuando la operación es Traspaso,
+// y adapta la etiqueta del precio principal para que quede claro que es el precio del traspaso.
+function toggleTraspasoRent(){
+  const operacion = document.getElementById('publish-type')?.value || 'Venta';
+  const wrap = document.getElementById('publish-traspaso-rent-wrap');
+  const priceLabel = document.getElementById('publish-price-label');
+  const isTraspaso = operacion === 'Traspaso';
+  if(wrap) wrap.classList.toggle('hidden', !isTraspaso);
+  if(priceLabel) priceLabel.textContent = isTraspaso ? 'Precio del traspaso' : 'Precio';
+}
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');}
 let selectedDestacadoDays = 30;
 let currentVerificationPlan = 'verificado';
