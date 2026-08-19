@@ -453,7 +453,7 @@
       pointer-events:none;
     }
     .prop-card-status-reservado{ background:#e8a020; }
-    .prop-card-status-vendido{ background:#c0392b; }
+    .prop-card-status-vendido{ background:rgba(70,70,70,0.85); }
 
     /* ══════════════════════════════════
        NIVEL 1 — VERIFICADO + DESTACADO
@@ -2241,7 +2241,10 @@
     <div id="property-modal-body" class="flex-1 modal-scroll p-6 bg-[#faf8f5]">
       <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6">
         <div class="space-y-4">
-          <div id="property-image-frame" class="overflow-hidden" style="border-radius:22px;border:12px solid var(--accent);transition:border-color .2s ease;box-shadow:0 14px 36px rgba(0,0,0,.08);"><img id="property-main-image" src="" alt="" class="w-full h-[420px] object-cover"></div>
+          <div style="position:relative;">
+            <div id="property-image-frame" class="overflow-hidden" style="border-radius:22px;border:12px solid var(--accent);transition:border-color .2s ease;box-shadow:0 14px 36px rgba(0,0,0,.08);"><img id="property-main-image" src="" alt="" class="w-full h-[420px] object-cover"></div>
+            <div id="property-modal-status-stamp" style="display:none;position:absolute;top:26px;right:-40px;z-index:15;transform:rotate(38deg);color:white;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.5rem 3.5rem;box-shadow:0 4px 14px rgba(0,0,0,0.35);pointer-events:none;"></div>
+          </div>
           <div class="grid grid-cols-4 gap-3" id="property-thumbs"></div>
           <!-- Descripción -->
           <div class="panel p-6">
@@ -3568,6 +3571,18 @@ function openPropertyModal(id){
   const header = document.getElementById('property-modal-header');
   const container = document.getElementById('property-modal-container');
   const badge = document.getElementById('property-modal-badge');
+  const statusStamp = document.getElementById('property-modal-status-stamp');
+  if(statusStamp){
+    if(currentProperty.status && currentProperty.status !== 'Disponible'){
+      const isReservado = currentProperty.status === 'Reservado';
+      const label = isReservado ? tr('Reservado') : (currentProperty.type==='Alquiler' ? tr('Alquilado') : tr('Vendido'));
+      statusStamp.textContent = label;
+      statusStamp.style.background = isReservado ? '#e8a020' : 'rgba(70,70,70,0.85)';
+      statusStamp.style.display = 'block';
+    } else {
+      statusStamp.style.display = 'none';
+    }
+  }
   const contactBtn = document.getElementById('property-modal-contact-btn');
   const closeBtn = document.getElementById('property-modal-close-btn');
   const locationEl = document.getElementById('property-modal-location');
