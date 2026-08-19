@@ -2689,10 +2689,12 @@ function runHeroSearch(){
   if(typeof renderMunicipalities==='function') renderMunicipalities();
   if(typeof updateMunicipalityLabels==='function') updateMunicipalityLabels();
 }
-function selectHeroMunicipality(name){
-  document.getElementById('hero-search-input').value=name;
+function selectHeroMunicipality(name, nucleo){
+  document.getElementById('hero-search-input').value = nucleo ? `${nucleo} (${name})` : name;
   hideHeroSuggestions();
-  runHeroSearch();
+  if(nucleo) selectNucleo(nucleo, name);
+  else selectMunicipality(name);
+  if(heroSearchType==='Alquiler'){ switchToRentTab(); } else { openExplore(); }
 }
 function hideHeroSuggestions(){
   const box=document.getElementById('hero-search-suggestions');
@@ -2703,9 +2705,22 @@ function filterHeroSuggestions(){
   if(!box) return;
   const q=normalizeSearchText(document.getElementById('hero-search-input').value);
   if(!q){ hideHeroSuggestions(); return; }
-  const matches=municipalityList.filter(m=>normalizeSearchText(m).startsWith(q)).slice(0,8);
+  // Buscamos tanto en los municipios grandes como en las localidades pequeñas de dentro
+  // (ej. "Colònia de Sant Jordi" dentro de "Ses Salines"), para que encuentre cualquiera.
+  const muniMatches = municipalityList
+    .filter(m=>normalizeSearchText(m).startsWith(q))
+    .map(m=>({label:m, municipio:m, nucleo:null}));
+  const nucleoMatches = [];
+  Object.entries(nucleosByMunicipio).forEach(([muni, nucs])=>{
+    nucs.forEach(n=>{
+      if(normalizeSearchText(n).startsWith(q)){
+        nucleoMatches.push({label:`${n} (${muni})`, municipio:muni, nucleo:n});
+      }
+    });
+  });
+  const matches=[...muniMatches, ...nucleoMatches].slice(0,8);
   if(!matches.length){ hideHeroSuggestions(); return; }
-  box.innerHTML=matches.map(m=>`<button type="button" onmousedown="event.preventDefault();selectHeroMunicipality('${m.replace(/'/g,"\\'")}')" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${m}</button>`).join('');
+  box.innerHTML=matches.map(m=>`<button type="button" onmousedown="event.preventDefault();selectHeroMunicipality('${m.municipio.replace(/'/g,"\\'")}'${m.nucleo?`,'${m.nucleo.replace(/'/g,"\\'")}'`:''})" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${m.label}</button>`).join('');
   box.classList.remove('hidden');
 }
 document.addEventListener('click',e=>{ if(!e.target.closest('#hero-search-wrap')) hideHeroSuggestions(); });
@@ -2819,8 +2834,19 @@ async function loadRealProperties(){
   refreshAllPropertyViews();
   // Si alguien ha entrado con un enlace directo a un inmueble (ej. compartido por WhatsApp),
   // se lo abrimos automáticamente en cuanto tenemos los datos cargados.
-  const sharedId = new URLSearchParams(window.location.search).get('inmueble');
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedId = urlParams.get('inmueble');
   if(sharedId && findProperty(sharedId)) openPropertyModal(sharedId);
+
+  // Si alguien ha entrado con un enlace de municipio (ej. desde un resultado de Google
+  // tipo "Pisos en venta en Palma"), aplicamos ese filtro automáticamente.
+  const sharedZona = urlParams.get('zona');
+  const sharedOp = urlParams.get('op');
+  if(sharedZona && municipalityList.includes(sharedZona)){
+    selectMunicipality(sharedZona);
+    if(sharedOp === 'alquiler') switchToRentTab();
+    else openExplore();
+  }
 }
 
 // Vuelve a pintar parrillas, mapa y contadores tras cargar/actualizar los datos reales.
