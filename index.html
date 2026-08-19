@@ -3492,7 +3492,11 @@ function findProperty(id){return properties.find(p=>p.id===id);}
 // compartir (WhatsApp, Instagram...); en el ordenador, copia el enlace al portapapeles.
 async function sharePropertyLink(){
   if(!currentProperty) return;
-  const url = window.location.origin + window.location.pathname + '?inmueble=' + currentProperty.id;
+  // Usamos la dirección "/inmueble/ID" (no "?inmueble=ID") porque esa es la que
+  // WhatsApp/Instagram saben leer para mostrar la foto y el precio en la vista previa.
+  // A la persona que reciba el enlace, esa dirección la lleva automáticamente a la web
+  // real de SINKOMI con el inmueble ya abierto.
+  const url = window.location.origin + '/inmueble/' + currentProperty.id;
   const shareData = {
     title: currentProperty.title + ' · SINKOMI',
     text: `Mira este inmueble en SINKOMI: ${currentProperty.title}`,
