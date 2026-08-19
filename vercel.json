@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/comprar/:municipio", "destination": "/api/comprar/:municipio" },
+    { "source": "/alquiler/:municipio", "destination": "/api/alquiler/:municipio" },
+    { "source": "/inmueble/:id", "destination": "/api/inmueble/:id" }
   ]
 }
