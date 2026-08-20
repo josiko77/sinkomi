@@ -2287,6 +2287,28 @@
             <div id="property-extras-pills" class="flex flex-wrap gap-2"></div>
           </div>
           <div id="property-etv-notice" class="hidden panel p-5" style="background:var(--orange-soft);border-color:rgba(255,159,10,0.3);"></div>
+
+          <!-- Simulador de amueblado con IA -->
+          <div class="panel p-6">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div class="i18n-auto section-label">✨ Simulador de amueblado con IA</div>
+              <span id="staging-uses-badge" class="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-1 rounded-full" style="background:var(--accent-soft);color:var(--accent-dark);"></span>
+            </div>
+            <p class="i18n-auto text-sm text-zinc-600 mb-4">Elige un estilo y visualiza esta vivienda amueblada con IA a partir de la primera foto. Tienes 5 usos gratis.</p>
+            <div class="flex flex-wrap gap-2 mb-4" id="staging-style-pills">
+              <button type="button" class="filter-pill active" onclick="setStagingStyle('Modern',this)">Moderno</button>
+              <button type="button" class="filter-pill" onclick="setStagingStyle('Scandinavian',this)">Escandinavo</button>
+              <button type="button" class="filter-pill" onclick="setStagingStyle('Rustic',this)">Rústico</button>
+              <button type="button" class="filter-pill" onclick="setStagingStyle('Urban Industrial',this)">Industrial</button>
+              <button type="button" class="filter-pill" onclick="setStagingStyle('Coastal',this)">Costero</button>
+              <button type="button" class="filter-pill" onclick="setStagingStyle('Traditional',this)">Tradicional</button>
+            </div>
+            <button id="staging-generate-btn" onclick="generateStaging()" class="i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver amueblado</button>
+            <div id="staging-result-wrap" class="hidden mt-5">
+              <img id="staging-result-img" class="w-full rounded-2xl border border-black/8" src="">
+              <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no representa el mobiliario real de la vivienda.</p>
+            </div>
+          </div>
         </div>
 
         <div class="space-y-4">
@@ -3573,6 +3595,11 @@ function findProperty(id){return properties.find(p=>p.id===id);}
 function openPropertyModal(id){
   currentProperty=findProperty(id);
   if(!currentProperty)return;
+
+  // Reinicia el simulador de amueblado con IA para esta ficha
+  const stagingResultWrap = document.getElementById('staging-result-wrap');
+  if(stagingResultWrap) stagingResultWrap.classList.add('hidden');
+  updateStagingUsesBadge();
 
   // ── Detectar nivel ──
   const isFeatured = currentProperty.verified && currentProperty.featured;
@@ -5156,10 +5183,17 @@ const SinKomiAuth = {
       email: profile.email || '',
       plan: profile.plan || 'basico',
       verified: profile.verified || false,
-      supabase_id: profile.id
+      supabase_id: profile.id,
+      staging_uses_remaining: (typeof profile.staging_uses_remaining === 'number') ? profile.staging_uses_remaining : 5
     };
     localStorage.setItem('sinkomi_user', JSON.stringify(userData));
     localStorage.setItem('sinkomi_role', profile.role || 'comprador');
+  },
+  updateUserField(field, value) {
+    const u = this.getUser();
+    if(!u) return;
+    u[field] = value;
+    localStorage.setItem('sinkomi_user', JSON.stringify(u));
   },
   clearLocalSession() {
     localStorage.removeItem('sinkomi_user');
@@ -6380,6 +6414,74 @@ function setPublishSeasonality(value){
   toggleEtvField();
 }
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } toggleEtvField();}
+// ── Simulador de amueblado con IA (Replicate) ──────────────────────────────
+let selectedStagingStyle='Modern';
+function setStagingStyle(style,btn){
+  selectedStagingStyle=style;
+  document.querySelectorAll('#staging-style-pills .filter-pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+async function updateStagingUsesBadge(){
+  const badge=document.getElementById('staging-uses-badge');
+  if(!badge) return;
+  if(!SinKomiAuth.isLoggedIn()){ badge.textContent='Inicia sesión para probarlo'; return; }
+  const user=SinKomiAuth.getUser();
+  badge.textContent='Comprobando usos…';
+  try{
+    const { data, error } = await supabase.from('profiles').select('staging_uses_remaining').eq('id', user.supabase_id).single();
+    if(!error && data){
+      SinKomiAuth.updateUserField('staging_uses_remaining', data.staging_uses_remaining);
+      badge.textContent = data.staging_uses_remaining>0 ? `${data.staging_uses_remaining} usos gratis restantes` : 'Sin usos gratis restantes';
+      return;
+    }
+  }catch(e){}
+  const remaining = (user && typeof user.staging_uses_remaining==='number') ? user.staging_uses_remaining : 5;
+  badge.textContent = remaining>0 ? `${remaining} usos gratis restantes` : 'Sin usos gratis restantes';
+}
+async function generateStaging(){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  if(!currentProperty || !currentProperty.img){ alert('Esta ficha no tiene ninguna foto sobre la que generar el amueblado.'); return; }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if(sessionError || !sessionData?.session){
+    alert('Tu sesión ha caducado. Vuelve a iniciar sesión.');
+    openLoginModal();
+    return;
+  }
+
+  const btn=document.getElementById('staging-generate-btn');
+  const originalText=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Generando… (puede tardar hasta 1 minuto)';
+
+  try{
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/sinkomi-staging`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${sessionData.session.access_token}`
+      },
+      body: JSON.stringify({ image_url: currentProperty.img, style: selectedStagingStyle })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      if(data.out_of_uses){ alert('Ya has usado tus 5 usos gratis del simulador de amueblado con IA.'); }
+      else { alert(data.error || 'No se ha podido generar la imagen. Inténtalo de nuevo en unos minutos.'); }
+      return;
+    }
+    document.getElementById('staging-result-img').src = data.staged_image_url;
+    document.getElementById('staging-result-wrap').classList.remove('hidden');
+    const user=SinKomiAuth.getUser();
+    if(user){ SinKomiAuth.updateUserField('staging_uses_remaining', data.uses_remaining); }
+    updateStagingUsesBadge();
+  }catch(err){
+    alert('Error de conexión al generar la imagen. Inténtalo de nuevo.');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=originalText;
+  }
+}
+
 function toggleEtvField(){const type=document.getElementById('publish-type').value;const seasonalityEl=document.getElementById('publish-seasonality');const seasonality=seasonalityEl?seasonalityEl.value:'Todo el año';const categoryEl=document.getElementById('publish-category');const category=categoryEl?categoryEl.value:'';const isVacacional = category==='Alquiler vacacional';
   if(isVacacional && seasonalityEl && seasonality!=='Temporada'){
     seasonalityEl.value='Temporada';
