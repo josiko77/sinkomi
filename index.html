@@ -278,6 +278,10 @@
     .activity-high,.activity-conversion{color:var(--orange);text-shadow:0 0 8px rgba(255,90,44,.22);}
     .tab-btn{transition:all .22s ease;cursor:pointer;}
     .tab-btn.active{background:var(--dark);color:white;border-color:var(--dark);}
+    .publish-step-tab{background:white;border:1px solid rgba(0,0,0,0.08);padding:.75rem;cursor:pointer;transition:all .18s;text-align:center;font:inherit;}
+    .publish-step-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+    .publish-step-tab.completed{color:var(--accent-dark);}
+    .publish-step-tab:hover:not(.active){background:#fafafa;}
     .tab-btn:not(.active){background:white;color:#555;border:1px solid var(--line);}
     .tab-btn:not(.active):hover{background:#f1efec;color:var(--ink);}
     .hidden-tab{display:none!important;}
@@ -2410,7 +2414,8 @@
 </div>
 
 <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-5xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="publish-modal-title" class="i18n-auto text-2xl font-semibold tracking-tight">Publicar mi inmueble</h3><p class="i18n-auto text-sm text-zinc-700">Alta completa de inmueble para SINKOMI.</p></div><button onclick="closePublishModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-<div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700"><div class="bg-[var(--accent-soft)] border border-[var(--accent)]/20 p-3 text-[var(--accent)]">1 · Datos básicos</div><div class="bg-white border border-black/8 p-3">2 · Características</div><div class="bg-white border border-black/8 p-3">3 · Fotos y extras</div><div class="bg-white border border-black/8 p-3">4 · Contacto</div></div>
+<div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700" id="publish-stepper"><button type="button" class="publish-step-tab active" data-step="1" onclick="goToPublishStep(1)">1 · Datos básicos</button><button type="button" class="publish-step-tab" data-step="2" onclick="goToPublishStep(2)">2 · Características</button><button type="button" class="publish-step-tab" data-step="3" onclick="goToPublishStep(3)">3 · Fotos y vídeo</button><button type="button" class="publish-step-tab" data-step="4" onclick="goToPublishStep(4)">4 · Contacto</button></div>
+<div id="publish-step-1">
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
 <div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
 <div id="publish-seasonality-wrap" class="hidden panel p-5" style="background:#f0fdf9;border:2px solid var(--accent);">
@@ -2439,6 +2444,8 @@
   <label class="text-sm font-medium mb-2 block">Alquiler mensual del local (€/mes) *</label>
   <input id="publish-rent-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="1.200">
 </div>
+</div>
+<div id="publish-step-2" class="hidden">
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-accesible" type="checkbox"> ♿ Vivienda accesible</label></div>
   <div class="grid sm:grid-cols-2 gap-4 mt-4">
@@ -2453,7 +2460,8 @@
   </div>
 </div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Precio y gastos</div><div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Comunidad €/mes</label><input id="publish-community" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="85"></div><div><label class="text-sm font-medium mb-2 block">IBI anual</label><input id="publish-ibi" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div><div><label class="text-sm font-medium mb-2 block">Precio negociable</label><select id="publish-negotiable" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificado</option><option>Sí</option><option>No</option></select></div></div></div>
-<div class="panel p-5"><div class="i18n-auto section-label mb-3">Contacto</div><div><label class="text-sm font-medium mb-2 block">Teléfono (opcional)</label><input id="publish-phone" type="tel" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. 600 123 456"><p class="i18n-auto text-xs text-zinc-500 mt-1">Si lo añades, en tu anuncio aparecerá también un botón para llamarte, además del chat. Si lo dejas en blanco, solo se podrá contactar por chat.</p></div></div>
+</div>
+<div id="publish-step-3" class="hidden">
 <div class="panel p-5">
   <div class="i18n-auto section-label mb-3">📸 Fotos y Vídeo</div>
 
@@ -2478,11 +2486,20 @@
   </div>
 
 </div>
+</div>
+<div id="publish-step-4" class="hidden">
+<div class="panel p-5"><div class="i18n-auto section-label mb-3">Contacto</div><div><label class="text-sm font-medium mb-2 block">Teléfono (opcional)</label><input id="publish-phone" type="tel" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. 600 123 456"><p class="i18n-auto text-xs text-zinc-500 mt-1">Si lo añades, en tu anuncio aparecerá también un botón para llamarte, además del chat. Si lo dejas en blanco, solo se podrá contactar por chat.</p></div></div>
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Contacto del propietario</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">Nombre</label><input id="publish-owner-name" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Nombre"></div><div><label class="text-sm font-medium mb-2 block">Teléfono</label><input id="publish-owner-phone" type="tel" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="600 000 000"></div><div><label class="text-sm font-medium mb-2 block">Email</label><input id="publish-owner-email" type="email" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="email@..."></div><div><label class="text-sm font-medium mb-2 block">Horario contacto</label><input id="publish-contact-hours" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Tardes / mañanas"></div></div></div>
 <div><label class="text-sm font-medium mb-2 block">Descripción</label><textarea id="publish-description" class="w-full border border-black/8 px-4 py-3 min-h-[140px] bg-white" placeholder="Describe tu propiedad con detalle..."></textarea></div>
 <div class="p-5 bg-[var(--accent-soft)] border border-[var(--accent)]/20"><div class="flex items-start gap-3"><i class="fa-solid fa-shield-check mt-1" style="color:var(--accent);"></i><div><div class="font-medium">¿Quieres el sello "Verificado"?</div><p class="i18n-auto text-sm text-zinc-600">Publica primero. Después, desde "Mis inmuebles publicados" en tu cuenta, podrás verificar este inmueble por 8,99 € verificando tu identidad y subiendo la Nota Simple.</p></div></div></div>
 <div class="p-5 border border-black/8 bg-white"><label class="flex items-start gap-3 cursor-pointer"><input id="declare-particular" type="checkbox" class="mt-1"><div><div class="font-medium">Declaro que publico como particular o autorizado por el propietario. No soy intermediario.</div><p class="i18n-auto text-sm text-zinc-700">SINKOMI prioriza anuncios directos entre personas.</p></div></label></div>
-<div class="flex items-center justify-between gap-4 flex-wrap"><div><p class="i18n-auto text-sm text-zinc-700">Coste estimado</p><p id="publish-total" class="text-2xl font-semibold">0 €</p></div><button onclick="submitPublishForm()" class="i18n-auto px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y activar</button></div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-2">
+  <button type="button" id="publish-step-back-btn" onclick="goToPublishStep(currentPublishStep-1)" class="hidden px-5 py-3 border border-black/15 text-[11px] font-black uppercase tracking-[0.12em] hover:bg-zinc-50"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
+  <div class="flex-1"></div>
+  <button type="button" id="publish-step-next-btn" onclick="goToPublishStep(currentPublishStep+1)" class="px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.12em]">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+</div>
+<div id="publish-final-row" class="hidden flex items-center justify-between gap-4 flex-wrap"><div><p class="i18n-auto text-sm text-zinc-700">Coste estimado</p><p id="publish-total" class="text-2xl font-semibold">0 €</p></div><button onclick="submitPublishForm()" class="i18n-auto px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y activar</button></div>
 </div></div></div>
 
 <div id="verification-modal" class="hidden fixed inset-0 bg-black/70 z-[111] flex items-center justify-center px-4 py-4"><div class="bg-white w-full max-w-xl overflow-hidden shadow-2xl"><div class="px-6 py-5 border-b border-black/6 flex items-center justify-between"><div><h3 id="verification-modal-title" class="i18n-auto text-2xl font-semibold tracking-tight">Activar perfil verificado</h3><p id="verification-modal-subtitle" class="i18n-auto text-sm text-zinc-700">Verificación de identidad · Más confianza y visibilidad</p></div><button onclick="closeVerificationModal()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div><div class="p-6">
@@ -5393,6 +5410,7 @@ function openPublishModal(){
   const seasonalitySel = document.getElementById('publish-seasonality'); if(seasonalitySel) seasonalitySel.value = 'Todo el año';
   const etvInput = document.getElementById('publish-etv'); if(etvInput) etvInput.value = '';
   const rentInput = document.getElementById('publish-rent-price'); if(rentInput) rentInput.value = '';
+  goToPublishStep(1);
   document.getElementById('publish-modal').classList.remove('hidden');
   renderPublishPhotoPreviews();
   updatePublishTotal();
@@ -6285,6 +6303,7 @@ async function editPropertyListing(id){
 
   closeUserPanel();
   document.getElementById('publish-modal').classList.remove('hidden');
+  goToPublishStep(1);
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Editar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Guardar cambios';
@@ -6324,6 +6343,29 @@ async function editPropertyListing(id){
   updatePublishTotal();
 }
 function populatePublishCategory(){const select=document.getElementById('publish-category');if(!select)return;select.innerHTML=propertyTypes.filter(t=>t!=='Todos').map(t=>`<option>${t}</option>`).join('');}
+let currentPublishStep = 1;
+function goToPublishStep(step){
+  if(step < 1) step = 1;
+  if(step > 4) step = 4;
+  currentPublishStep = step;
+  for(let i=1;i<=4;i++){
+    const panel = document.getElementById(`publish-step-${i}`);
+    if(panel) panel.classList.toggle('hidden', i!==step);
+  }
+  document.querySelectorAll('.publish-step-tab').forEach(tab=>{
+    const tabStep = Number(tab.dataset.step);
+    tab.classList.toggle('active', tabStep===step);
+    tab.classList.toggle('completed', tabStep<step);
+  });
+  const backBtn = document.getElementById('publish-step-back-btn');
+  const nextBtn = document.getElementById('publish-step-next-btn');
+  const finalRow = document.getElementById('publish-final-row');
+  if(backBtn) backBtn.classList.toggle('hidden', step===1);
+  if(nextBtn) nextBtn.classList.toggle('hidden', step===4);
+  if(finalRow) finalRow.classList.toggle('hidden', step!==4);
+  const body = document.querySelector('#publish-modal .overflow-y-auto');
+  if(body) body.scrollTop = 0;
+}
 function setPublishSeasonality(value){
   const sel=document.getElementById('publish-seasonality');
   if(sel) sel.value=value;
