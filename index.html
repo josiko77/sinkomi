@@ -797,6 +797,42 @@
     </h3>
   </div>
 
+  <!-- FRANJA COMPLETA IA AMUEBLAR/REFORMAR -->
+  <div class="mt-7 relative overflow-hidden panel" style="background:linear-gradient(145deg,#fbfaf8 0%,#f4f2ef 100%);">
+    <div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--orange),var(--accent),transparent);"></div>
+    <div class="p-6 md:p-10 relative z-10">
+      <div class="grid md:grid-cols-[1fr_1fr] gap-8 items-center">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap mb-4">
+            <span style="display:inline-flex;align-items:center;gap:.45rem;background:var(--accent-soft);border:1px solid rgba(0,168,120,0.25);padding:.32rem .8rem;border-radius:999px;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--accent-dark);">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--accent);animation:pulseSoft 1.6s infinite;display:inline-block;"></span>
+              NUEVO · Con IA
+            </span>
+          </div>
+          <h4 style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:900;color:var(--ink);line-height:1.1;letter-spacing:-0.04em;margin-bottom:.75rem;" class="i18n-auto">
+            ¿Vacía o antigua?<br><span style="color:var(--accent);">Míratela ya reformada.</span>
+          </h4>
+          <p style="font-size:14px;color:var(--muted);line-height:1.7;max-width:440px;margin-bottom:1.5rem;" class="i18n-auto">
+            Sube cualquier foto — un piso vacío o una casa de campo por reformar — y visualiza en segundos cómo quedaría amueblada o totalmente renovada. Gratis los primeros usos, sin instalar nada.
+          </p>
+          <button onclick="openAiStagingModal()" class="i18n-auto px-6 py-4 accent-btn text-[11px] font-black uppercase tracking-[0.14em] hover:-translate-y-0.5 transition-transform"><i class="fa-solid fa-wand-magic-sparkles"></i> Probar el simulador con IA</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="panel p-4" style="background:white;">
+            <div class="text-2xl mb-2">🛋️</div>
+            <div class="font-black text-sm mb-1">Amueblar</div>
+            <div class="i18n-auto text-xs text-zinc-500">Habitación vacía → amueblada, en 6 estilos distintos</div>
+          </div>
+          <div class="panel p-4" style="background:white;">
+            <div class="text-2xl mb-2">🏚️</div>
+            <div class="font-black text-sm mb-1">Reformar</div>
+            <div class="i18n-auto text-xs text-zinc-500">Casa antigua o rústica → visualízala ya reformada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- FRANJA COMPLETA CHAT MULTIIDIOMA -->
   <div class="mt-7 relative overflow-hidden" style="background:linear-gradient(145deg,#071210 0%,#0d1a14 55%,#0f2016 100%);border:1px solid rgba(255,255,255,0.07);box-shadow:0 32px 80px rgba(0,0,0,0.28);">
     <!-- Línea acento superior -->
@@ -2384,6 +2420,64 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ai-staging-modal" class="hidden fixed inset-0 bg-black/70 z-[1250] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-2xl overflow-hidden shadow-2xl" style="border-radius:var(--r-lg);max-height:90vh;display:flex;flex-direction:column;">
+    <div class="px-6 py-5 border-b border-black/6 flex items-center justify-between shrink-0">
+      <div>
+        <h3 class="text-xl font-black">✨ Amuebla o reforma tu vivienda con IA</h3>
+        <p class="i18n-auto text-sm text-zinc-600 mt-1">Sube una foto y visualiza el resultado en segundos.</p>
+      </div>
+      <button onclick="closeAiStagingModal()" class="text-2xl text-zinc-500 hover:text-zinc-700">×</button>
+    </div>
+    <div class="p-6 overflow-y-auto space-y-5">
+      <div>
+        <div class="i18n-auto section-label mb-2">1. ¿Qué quieres hacer?</div>
+        <div class="flex gap-2">
+          <button type="button" id="staging-mode-amueblar" class="flex-1 px-4 py-4 border-2 text-left" style="border-radius:var(--r-md);border-color:var(--accent);background:var(--accent-soft);" onclick="setStagingMode('amueblar')">
+            <div class="font-black text-sm">🛋️ Amueblar</div>
+            <div class="text-xs text-zinc-500 mt-0.5">Habitación vacía → amueblada</div>
+          </button>
+          <button type="button" id="staging-mode-reformar" class="flex-1 px-4 py-4 border-2 text-left" style="border-radius:var(--r-md);border-color:var(--line);background:white;" onclick="setStagingMode('reformar')">
+            <div class="font-black text-sm">🏚️ Reformar</div>
+            <div class="text-xs text-zinc-500 mt-0.5">Vivienda antigua → reformada</div>
+          </button>
+        </div>
+      </div>
+      <div>
+        <div class="i18n-auto section-label mb-2">2. Sube tu foto</div>
+        <input id="ai-staging-file-input" type="file" accept="image/*" style="display:none;" onchange="handleAiStagingUpload(this)">
+        <div id="ai-staging-dropzone" onclick="document.getElementById('ai-staging-file-input').click()" class="cursor-pointer text-center p-6 border-2 border-dashed border-black/15 hover:border-[var(--accent)] transition-colors" style="border-radius:var(--r-md);">
+          <img id="ai-staging-preview-img" class="hidden mx-auto mb-3 rounded-xl" style="max-height:180px;">
+          <i class="fa-solid fa-camera text-2xl text-zinc-400 mb-2 block"></i>
+          <div id="ai-staging-upload-label" class="text-sm font-bold text-zinc-600">Pulsa para subir una foto</div>
+        </div>
+      </div>
+      <div>
+        <div class="i18n-auto section-label mb-2">3. Elige un estilo</div>
+        <div class="flex flex-wrap gap-2" id="ai-staging-style-pills">
+          <button type="button" class="filter-pill active" onclick="setStagingStyle('Modern',this)">Moderno</button>
+          <button type="button" class="filter-pill" onclick="setStagingStyle('Scandinavian',this)">Escandinavo</button>
+          <button type="button" class="filter-pill" onclick="setStagingStyle('Rustic',this)">Rústico</button>
+          <button type="button" class="filter-pill" onclick="setStagingStyle('Urban Industrial',this)">Industrial</button>
+          <button type="button" class="filter-pill" onclick="setStagingStyle('Coastal',this)">Costero</button>
+          <button type="button" class="filter-pill" onclick="setStagingStyle('Traditional',this)">Tradicional</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <span id="ai-staging-uses-badge" class="text-[11px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-full" style="background:var(--accent-soft);color:var(--accent-dark);"></span>
+        <button id="ai-staging-generate-btn" onclick="generateStandaloneStaging()" class="i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar</button>
+      </div>
+      <div id="ai-staging-result-wrap" class="hidden">
+        <div class="grid md:grid-cols-2 gap-3">
+          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Antes</div><img id="ai-staging-before-img" class="w-full rounded-2xl border border-black/8"></div>
+          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Después</div><img id="ai-staging-after-img" class="w-full rounded-2xl border border-black/8"></div>
+        </div>
+        <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no es un proyecto de reforma real ni presupuesto vinculante.</p>
       </div>
     </div>
   </div>
@@ -6414,8 +6508,108 @@ function setPublishSeasonality(value){
   toggleEtvField();
 }
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } toggleEtvField();}
-// ── Simulador de amueblado con IA (Replicate) ──────────────────────────────
+// ── Herramienta independiente de amueblado/reforma con IA (accesible desde la home) ──
 let selectedStagingStyle='Modern';
+let selectedStagingMode='amueblar';
+let standaloneStagingImageUrl=null;
+
+function openAiStagingModal(){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  document.getElementById('ai-staging-modal').classList.remove('hidden');
+  updateStandaloneStagingBadge();
+}
+function closeAiStagingModal(){
+  document.getElementById('ai-staging-modal').classList.add('hidden');
+}
+function setStagingMode(mode){
+  selectedStagingMode=mode;
+  const amBtn=document.getElementById('staging-mode-amueblar');
+  const reBtn=document.getElementById('staging-mode-reformar');
+  const activeStyle='border-color:var(--accent);background:var(--accent-soft);';
+  const inactiveStyle='border-color:var(--line);background:white;';
+  amBtn.style.cssText += (mode==='amueblar'?activeStyle:inactiveStyle);
+  reBtn.style.cssText += (mode==='reformar'?activeStyle:inactiveStyle);
+}
+async function handleAiStagingUpload(input){
+  const file=input.files[0];
+  if(!file) return;
+  const label=document.getElementById('ai-staging-upload-label');
+  const previewImg=document.getElementById('ai-staging-preview-img');
+  previewImg.src=URL.createObjectURL(file);
+  previewImg.classList.remove('hidden');
+  label.textContent='Subiendo…';
+
+  const user=SinKomiAuth.getUser();
+  const path=`staging/${user.supabase_id}/${Date.now()}_${file.name}`;
+  const { error: uploadError } = await supabase.storage.from('property-images').upload(path, file, { cacheControl:'3600', upsert:false });
+  if(uploadError){
+    label.textContent='Error al subir. Inténtalo de nuevo.';
+    return;
+  }
+  const { data } = supabase.storage.from('property-images').getPublicUrl(path);
+  standaloneStagingImageUrl=data.publicUrl;
+  label.textContent='Foto lista ✓';
+}
+async function updateStandaloneStagingBadge(){
+  const badge=document.getElementById('ai-staging-uses-badge');
+  if(!badge) return;
+  const user=SinKomiAuth.getUser();
+  if(!user) return;
+  badge.textContent='Comprobando usos…';
+  try{
+    const { data, error } = await supabase.from('profiles').select('staging_uses_remaining').eq('id', user.supabase_id).single();
+    if(!error && data){
+      SinKomiAuth.updateUserField('staging_uses_remaining', data.staging_uses_remaining);
+      badge.textContent = data.staging_uses_remaining>0 ? `${data.staging_uses_remaining} usos gratis restantes` : 'Sin usos gratis restantes';
+      return;
+    }
+  }catch(e){}
+  const remaining = (user && typeof user.staging_uses_remaining==='number') ? user.staging_uses_remaining : 5;
+  badge.textContent = remaining>0 ? `${remaining} usos gratis restantes` : 'Sin usos gratis restantes';
+}
+async function generateStandaloneStaging(){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  if(!standaloneStagingImageUrl){ alert('Sube primero una foto.'); return; }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if(sessionError || !sessionData?.session){
+    alert('Tu sesión ha caducado. Vuelve a iniciar sesión.');
+    openLoginModal();
+    return;
+  }
+
+  const btn=document.getElementById('ai-staging-generate-btn');
+  const originalText=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Generando… (puede tardar hasta 1 minuto)';
+
+  try{
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/sinkomi-staging`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${sessionData.session.access_token}`
+      },
+      body: JSON.stringify({ image_url: standaloneStagingImageUrl, style: selectedStagingStyle, mode: selectedStagingMode })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      if(data.out_of_uses){ alert('Ya has usado tus 5 usos gratis del simulador con IA.'); }
+      else { alert(data.error || 'No se ha podido generar la imagen. Inténtalo de nuevo en unos minutos.'); }
+      return;
+    }
+    document.getElementById('ai-staging-before-img').src = standaloneStagingImageUrl;
+    document.getElementById('ai-staging-after-img').src = data.staged_image_url;
+    document.getElementById('ai-staging-result-wrap').classList.remove('hidden');
+    SinKomiAuth.updateUserField('staging_uses_remaining', data.uses_remaining);
+    updateStandaloneStagingBadge();
+  }catch(err){
+    alert('Error de conexión al generar la imagen. Inténtalo de nuevo.');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=originalText;
+  }
+}
 function setStagingStyle(style,btn){
   selectedStagingStyle=style;
   document.querySelectorAll('#staging-style-pills .filter-pill').forEach(b=>b.classList.remove('active'));
