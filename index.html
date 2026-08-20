@@ -1021,6 +1021,7 @@
   <div class="flex flex-wrap gap-3 mb-8">
     <button class="i18n-auto tab-btn active px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-comprar">Comprar</button>
     <button class="i18n-auto tab-btn px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-alquilar">Alquilar</button>
+    <button class="i18n-auto tab-btn px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-traspasos">Traspasar</button>
     <button class="i18n-auto tab-btn px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-zonas">Municipios</button>
     <button class="i18n-auto tab-btn px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-ayuda">Ayuda</button>
     <button class="i18n-auto tab-btn px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em]" data-tab="tab-herramientas">Herramientas</button>
@@ -1449,6 +1450,29 @@
     </div>
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6" id="rent-grid"></div>
     <button class="load-more-btn" id="rent-load-more" onclick="loadMore('rent')" style="display:none"><i class="fa-solid fa-plus"></i> Ver más alquileres</button>
+  </div>
+
+  <div id="tab-traspasos" class="tab-panel hidden-tab">
+    <div class="panel p-5 mb-6">
+      <div class="i18n-auto section-label mb-3">Tipo de negocio</div>
+      <div class="flex flex-wrap gap-2" id="traspaso-type-filters">
+        <button class="i18n-auto filter-pill active" onclick="setTraspasoTypeFilter('Todos',this)">Todos</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Traspaso',this)">Traspaso</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Bar / Cafetería',this)">Bar / Cafetería</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Restaurante',this)">Restaurante</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Tienda / Comercio',this)">Tienda / Comercio</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Peluquería / Estética',this)">Peluquería / Estética</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Oficina',this)">Oficina</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Nave industrial',this)">Nave industrial</button>
+        <button class="i18n-auto filter-pill" onclick="setTraspasoTypeFilter('Local comercial',this)">Local comercial</button>
+      </div>
+    </div>
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <div class="text-sm text-zinc-500" id="traspasos-results-count"></div>
+      <button onclick="openPublishModal()" class="i18n-auto px-5 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-plus"></i> Publicar traspaso</button>
+    </div>
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6" id="traspasos-grid"></div>
+    <button class="load-more-btn" id="traspasos-load-more" onclick="loadMore('traspasos')" style="display:none"><i class="fa-solid fa-plus"></i> Ver más traspasos</button>
   </div>
 
   <div id="tab-zonas" class="tab-panel hidden-tab">
@@ -2874,6 +2898,7 @@ async function loadRealProperties(){
 function refreshAllPropertyViews(){
   if(document.getElementById('buy-grid')) renderPropertyCards('buy-grid','Venta');
   if(document.getElementById('rent-grid')) renderPropertyCards('rent-grid','Alquiler');
+  if(document.getElementById('traspasos-grid')) renderTraspasosCards();
   if(typeof updateMunicipalityLabels==='function') updateMunicipalityLabels();
   if(typeof renderMunicipiosDropdown==='function') renderMunicipiosDropdown();
   if(typeof renderMapMarkersHero==='function') renderMapMarkersHero();
@@ -2883,7 +2908,8 @@ let properties=[];
 let currentProperty=null,selectedMunicipality='all',selectedNucleo='',buyTypeFilter='Todos',rentTypeFilter='Todos',zoneTypeFilter='Todos',zoneOperationFilter='Todas',currentTool=null,calcPct=4.5;
 let buySortOrder='featured',rentSortOrder='featured';
 const PAGE_SIZE=8;
-let buyPage=1,rentPage=1;
+let buyPage=1,rentPage=1,traspasosPage=1;
+let traspasoTypeFilter='Todos';
 
 
 function setSortOrder(tab,order){
@@ -2898,7 +2924,36 @@ function setSortOrder(tab,order){
 
 function loadMore(tab){
   if(tab==='buy'){buyPage++;renderPropertyCards('buy-grid','Venta',true);}
+  else if(tab==='traspasos'){traspasosPage++;renderTraspasosCards(true);}
   else{rentPage++;renderPropertyCards('rent-grid','Alquiler',true);}
+}
+function setTraspasoTypeFilter(val,btn){
+  traspasoTypeFilter=val;
+  document.querySelectorAll('#traspaso-type-filters .filter-pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  traspasosPage=1;
+  renderTraspasosCards();
+}
+const traspasoCategories=['Traspaso','Bar / Cafetería','Restaurante','Tienda / Comercio','Peluquería / Estética','Oficina','Nave industrial','Local comercial'];
+function renderTraspasosCards(append=false){
+  const grid=document.getElementById('traspasos-grid');
+  if(!grid)return;
+  if(!append) grid.innerHTML='';
+  const allFiltered=properties
+    .filter(p=>traspasoCategories.includes(p.category))
+    .filter(matchesMunicipality)
+    .filter(p=>traspasoTypeFilter==='Todos'||p.category===traspasoTypeFilter);
+  const total=allFiltered.length;
+  const filtered=allFiltered.slice(0,traspasosPage*PAGE_SIZE);
+  const countEl=document.getElementById('traspasos-results-count');
+  if(countEl) countEl.textContent=`${Math.min(filtered.length,total)} de ${total} negocios en traspaso`;
+  const loadBtn=document.getElementById('traspasos-load-more');
+  if(loadBtn) loadBtn.style.display=filtered.length<total?'flex':'none';
+  if(!allFiltered.length){
+    grid.innerHTML=`<div class="panel p-8 md:col-span-3 text-center"><div class="section-label mb-3">Sin resultados</div><h4 class="text-2xl font-black mb-3">No hay traspasos con ese filtro</h4><p class="text-zinc-700 mb-5">Prueba con otro tipo de negocio o municipio.</p><button onclick="selectMunicipality('all')" class="px-5 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">Ver toda la isla</button></div>`;
+    return;
+  }
+  filtered.forEach(prop=>{ grid.appendChild(buildPropertyCardEl(prop)); });
 }
 
 function sortProperties(list,order){
@@ -3443,8 +3498,8 @@ function renderMunicipalities(){
 function getZoneFilteredProperties(){return properties.filter(p=>(selectedMunicipality==='all'||p.municipality===selectedMunicipality)&&(selectedNucleo===''||p.nucleo===selectedNucleo)).filter(p=>zoneOperationFilter==='Todas'||p.type===zoneOperationFilter).filter(p=>matchesCategory(p,zoneTypeFilter));}
 function renderZoneMiniCatalog(){const catalog=document.getElementById('zone-mini-catalog');if(!catalog)return;catalog.innerHTML='';const filtered=getZoneFilteredProperties().slice(0,8);if(!filtered.length){catalog.innerHTML='<div class="soft-panel p-6 md:col-span-2 text-center"><div class="font-bold text-xl mb-2">Sin resultados</div><p class="text-zinc-700">No hay inmuebles para ese filtro.</p></div>';return;}filtered.forEach(prop=>{catalog.appendChild(buildPropertyCardEl(prop));});}
 function updateMunicipalityLabels(){const isAll=(selectedMunicipality==='all'&&!selectedNucleo);const label=selectedNucleo?selectedNucleo:(selectedMunicipality==='all'?'Todas las islas':selectedMunicipality);const ctx=selectedNucleo?`${selectedNucleo} (${selectedMunicipality})`:label;const selected=selectedNucleo?properties.filter(p=>p.nucleo===selectedNucleo&&p.municipality===selectedMunicipality):(selectedMunicipality==='all'?properties:properties.filter(p=>p.municipality===selectedMunicipality));document.getElementById('zones-title').textContent=label;document.getElementById('zones-copy').textContent=isAll?'Selecciona un municipio y verás su mini catálogo.':`${ctx} · mini catálogo con inmuebles y filtros.`;document.getElementById('zones-total').textContent=selected.length;document.getElementById('zones-sale').textContent=selected.filter(p=>p.type==='Venta').length;document.getElementById('zones-rent').textContent=selected.filter(p=>p.type==='Alquiler').length;document.getElementById('buy-status-text').textContent=isAll?'Mostrando propiedades de todas las islas.':`Mostrando propiedades en ${ctx}.`;document.getElementById('rent-status-text').textContent=isAll?'Mostrando alquileres de todas las islas.':`Mostrando alquileres en ${ctx}.`;renderZoneMiniCatalog();}
-function selectMunicipality(name){selectedMunicipality=name;selectedNucleo='';buyPage=1;rentPage=1;renderMunicipalities();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
-function selectNucleo(nuc,municipio){selectedMunicipality=municipio;selectedNucleo=nuc;buyPage=1;rentPage=1;renderMunicipalities();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
+function selectMunicipality(name){selectedMunicipality=name;selectedNucleo='';buyPage=1;rentPage=1;traspasosPage=1;renderMunicipalities();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
+function selectNucleo(nuc,municipio){selectedMunicipality=municipio;selectedNucleo=nuc;buyPage=1;rentPage=1;traspasosPage=1;renderMunicipalities();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
 
 /* TABS */
 function initTabs(){const buttons=document.querySelectorAll('.tab-btn');const panels=document.querySelectorAll('.tab-panel');buttons.forEach(btn=>{btn.addEventListener('click',()=>{buttons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');panels.forEach(panel=>panel.classList.add('hidden-tab'));document.getElementById(btn.dataset.tab).classList.remove('hidden-tab');
@@ -6561,7 +6616,7 @@ function hidePublishLocationSuggestions(){
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
 
-window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
+window.onload=()=>{initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
   initHearts();
 
   syncUI();
