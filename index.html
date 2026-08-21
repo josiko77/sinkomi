@@ -1072,10 +1072,10 @@
 
 <!-- CALCULADORA -->
 <section id="calculadora" class="w-full px-6 pb-10 sk-reveal">
-  <div class="panel overflow-hidden relative">
-    <div class="grid xl:grid-cols-2 gap-0 items-stretch">
-      <div class="p-8 md:p-12 relative">
-        <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.04]" style="background:var(--orange);"></div>
+  <div class="panel p-8 md:p-12 overflow-hidden relative">
+    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.04]" style="background:var(--orange);"></div>
+    <div class="grid xl:grid-cols-2 gap-10 items-center">
+      <div>
         <div class="i18n-auto section-label mb-3">Calculadora</div>
         <h2 class="serif text-4xl md:text-6xl leading-[0.92] text-black mb-5"><span class="i18n-auto">¿Cuánto te ahorras</span> <em class="text-[var(--orange)] i18n-auto">aquí?</em></h2>
         <p class="i18n-auto text-zinc-700 leading-relaxed mb-8">Introduce el precio de tu inmueble y ve en tiempo real cuánto te puedes ahorrar evitando la comisión inmobiliaria.</p>
@@ -1096,18 +1096,6 @@
         <p class="i18n-auto text-[10px] text-zinc-600 font-semibold mb-5">*Publicación básica gratuita. El Verificado es 8,99€ pago único.</p>
         <button onclick="openPublishModal()" class="i18n-auto publish-gate w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y ahorrar ahora</button>
         <p id="calc-dynamic-text" class="text-center text-sm text-zinc-700 mt-3 leading-relaxed" style="display:none;"></p>
-      </div>
-      <!-- Columna fotográfica de la calculadora -->
-      <div class="hidden xl:block relative overflow-hidden" style="min-height:420px;">
-        <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&auto=format&fit=crop&q=80"
-             alt="Casa con jardín en las Islas Baleares"
-             loading="lazy"
-             style="width:100%;height:100%;object-fit:cover;display:block;">
-        <div style="position:absolute;inset:0;background:linear-gradient(270deg,transparent 60%,rgba(255,255,255,0.92) 100%);"></div>
-        <div style="position:absolute;bottom:2rem;right:1.5rem;text-align:right;">
-          <div style="font-size:2.8rem;font-weight:900;color:var(--orange);line-height:1;letter-spacing:-0.04em;" id="calc-saving-photo">–</div>
-          <div class="i18n-auto" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:#8a5f10;margin-top:.25rem;">ahorrados con SINKOMI</div>
-        </div>
       </div>
     </div>
   </div>
@@ -3236,8 +3224,6 @@ function calcSaving(){
     savEl.style.animation = 'none';
     requestAnimationFrame(()=>{ savEl.style.animation = 'calcPop .35s cubic-bezier(0.23,1,0.32,1) both'; });
   }
-  const photoEl = document.getElementById('calc-saving-photo');
-  if(photoEl) photoEl.textContent = `${formatted} €`;
   if(labelEl) labelEl.textContent = `Con comisión del ${calcPct}% + IVA sobre ${price.toLocaleString('es-ES')} €`;
   if(agencyEl) agencyEl.textContent = `${commission.toLocaleString('es-ES', {maximumFractionDigits:0})} €`;
   const dynText = document.getElementById('calc-dynamic-text');
