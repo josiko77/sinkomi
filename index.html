@@ -811,16 +811,33 @@
           <div class="flex items-center gap-2 flex-wrap mb-4">
             <span style="display:inline-flex;align-items:center;gap:.45rem;background:var(--accent-soft);border:1px solid rgba(0,168,120,0.25);padding:.32rem .8rem;border-radius:999px;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--accent-dark);">
               <span style="width:6px;height:6px;border-radius:999px;background:var(--accent);animation:pulseSoft 1.6s infinite;display:inline-block;"></span>
-              NUEVO · Con IA
+              Exclusivo · Propietario Verificado
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:.45rem;background:var(--orange-soft);border:1px solid rgba(255,159,10,0.25);padding:.32rem .8rem;border-radius:999px;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#b9791a;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px;"></i>
+              Con IA · 5 usos gratis
             </span>
           </div>
           <h4 style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:900;color:var(--ink);line-height:1.1;letter-spacing:-0.04em;margin-bottom:.75rem;" class="i18n-auto">
-            ¿Vacía o antigua?<br><span style="color:var(--accent);">Míratela ya reformada.</span>
+            Vende más rápido<br><span style="color:var(--accent);">mostrando el potencial.</span>
           </h4>
-          <p style="font-size:14px;color:var(--muted);line-height:1.7;max-width:440px;margin-bottom:1.5rem;" class="i18n-auto">
-            Sube cualquier foto — un piso vacío o una casa de campo por reformar — y visualiza en segundos cómo quedaría amueblada o totalmente renovada. Gratis los primeros usos, sin instalar nada.
+          <p style="font-size:14px;color:var(--muted);line-height:1.7;max-width:440px;margin-bottom:1rem;" class="i18n-auto">
+            Nadie compra lo que no puede imaginar. Como propietario verificado, tienes 5 usos gratis del simulador con IA: muestra tu inmueble amueblado o reformado antes de que llegue el primer interesado.
           </p>
-          <button onclick="openAiStagingModal()" class="i18n-auto px-6 py-4 accent-btn text-[11px] font-black uppercase tracking-[0.14em] hover:-translate-y-0.5 transition-transform"><i class="fa-solid fa-wand-magic-sparkles"></i> Probar el simulador con IA</button>
+          <div class="flex flex-col gap-2 mb-5">
+            <div class="flex items-start gap-2.5">
+              <span style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
+              <p class="i18n-auto text-sm text-zinc-600">🛋️ <b>Amuebla tu piso</b> — Nadie compra una habitación vacía. Muéstrala habitada en segundos.</p>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span style="width:20px;height:20px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
+              <p class="i18n-auto text-sm text-zinc-600">🏚️ <b>Visualiza la reforma</b> — Tu casa de campo tiene potencial. Enséñalo antes de la visita.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 flex-wrap">
+            <button onclick="openAiStagingModal()" class="i18n-auto px-6 py-3.5 accent-btn text-[11px] font-black uppercase tracking-[0.14em] hover:-translate-y-0.5 transition-transform"><i class="fa-solid fa-wand-magic-sparkles"></i> Probar el simulador</button>
+            <a href="#precios" class="i18n-auto px-6 py-3.5 border border-black/10 bg-white text-[11px] font-black uppercase tracking-[0.14em] hover:-translate-y-0.5 transition-transform rounded-full shadow-sm" style="display:inline-flex;align-items:center;gap:.5rem;">Ver planes <i class="fa-solid fa-arrow-right text-[9px]"></i></a>
+          </div>
         </div>
         <div class="relative overflow-hidden" style="border-radius:var(--r-md);box-shadow:var(--shadow-md);">
           <img src="https://images.unsplash.com/photo-1759238136854-a43787126db7?w=1200&auto=format&fit=crop&q=80"
@@ -830,7 +847,7 @@
           <div style="position:absolute;left:0;right:0;bottom:0;padding:1rem 1.1rem;background:linear-gradient(180deg,transparent,rgba(13,26,20,0.85));display:flex;gap:.5rem;flex-wrap:wrap;">
             <span style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,0.16);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.22);padding:.3rem .75rem;border-radius:999px;font-size:10px;font-weight:800;color:#fff;">🛋️ Amueblar</span>
             <span style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,0.16);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.22);padding:.3rem .75rem;border-radius:999px;font-size:10px;font-weight:800;color:#fff;">🏚️ Reformar</span>
-            <span style="display:inline-flex;align-items:center;gap:.35rem;background:var(--accent);padding:.3rem .75rem;border-radius:999px;font-size:10px;font-weight:800;color:#fff;">6 estilos</span>
+            <span style="display:inline-flex;align-items:center;gap:.35rem;background:var(--accent);padding:.3rem .75rem;border-radius:999px;font-size:10px;font-weight:800;color:#fff;">6 estilos · IA</span>
           </div>
         </div>
       </div>
@@ -1022,21 +1039,43 @@
 </section>
 
 <!-- SLOGANS -->
-<section class="w-full px-6 pb-8">
-  <div class="grid md:grid-cols-2 gap-4">
-    <div class="relative overflow-hidden" style="background:#0d1a14;border-left:4px solid var(--accent);padding:2rem 2rem 2rem 1.75rem;"><div class="section-label i18n-auto mb-3" style="color:var(--accent);letter-spacing:.22em;">Para el comprador</div><p class="serif leading-tight i18n-auto" style="font-size:2rem;font-weight:700;font-style:italic;color:white;margin:0;">Habla con quien<br>tiene las llaves</p></div>
-    <div class="relative overflow-hidden" style="background:#0d1a14;border-left:4px solid #e8a020;padding:2rem 2rem 2rem 1.75rem;"><div class="section-label i18n-auto mb-3" style="color:#e8a020;letter-spacing:.22em;">Para el propietario</div><p class="serif leading-tight i18n-auto" style="font-size:2rem;font-weight:700;font-style:italic;color:white;margin:0;">Tu inmueble.<br>Tu dinero.<br>Tu decisión.</p></div>
-    <div class="relative overflow-hidden" style="background:#0d1a14;border-left:4px solid white;padding:2rem 2rem 2rem 1.75rem;"><div class="section-label i18n-auto mb-3" style="color:rgba(255,255,255,0.4);letter-spacing:.22em;">La plataforma</div><p class="serif leading-tight i18n-auto" style="font-size:2rem;font-weight:700;font-style:italic;color:white;margin:0;">Una web<br>muy particular</p></div>
-    <div class="relative overflow-hidden" style="background:#0d1a14;border-left:4px solid #e84c1e;padding:2rem 2rem 2rem 1.75rem;"><div class="section-label i18n-auto mb-3" style="color:#e84c1e;letter-spacing:.22em;">La revolución</div><p class="serif leading-tight i18n-auto" style="font-size:2rem;font-weight:700;font-style:italic;color:white;margin:0;">Hemos venido a cambiar<br>las reglas<br>del juego.</p></div>
+<section class="w-full px-6 pb-8 sk-reveal">
+  <div class="relative overflow-hidden" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);">
+    <!-- Foto de fondo -->
+    <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1800&auto=format&fit=crop&q=80"
+         alt="Terraza mediterránea con vistas al mar en Baleares"
+         loading="lazy"
+         style="width:100%;height:clamp(340px,44vw,480px);object-fit:cover;display:block;">
+    <!-- Overlay oscuro para legibilidad -->
+    <div style="position:absolute;inset:0;background:rgba(13,26,20,0.82);"></div>
+    <!-- Grid de slogans sobre la foto -->
+    <div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;">
+      <div style="padding:1.75rem 1.75rem 1.75rem 1.5rem;border-right:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div class="section-label i18n-auto mb-2" style="color:var(--accent);letter-spacing:.22em;font-size:8px;">Para el comprador</div>
+        <p class="serif i18n-auto" style="font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:700;font-style:italic;color:white;margin:0;line-height:1.2;">Habla con quien<br>tiene las llaves</p>
+      </div>
+      <div style="padding:1.75rem 1.75rem 1.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div class="section-label i18n-auto mb-2" style="color:#e8a020;letter-spacing:.22em;font-size:8px;">Para el propietario</div>
+        <p class="serif i18n-auto" style="font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:700;font-style:italic;color:white;margin:0;line-height:1.2;">Tu inmueble.<br>Tu dinero.<br>Tu decisión.</p>
+      </div>
+      <div style="padding:1.75rem 1.75rem 1.75rem 1.5rem;border-right:1px solid rgba(255,255,255,0.08);">
+        <div class="section-label i18n-auto mb-2" style="color:rgba(255,255,255,0.4);letter-spacing:.22em;font-size:8px;">La plataforma</div>
+        <p class="serif i18n-auto" style="font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:700;font-style:italic;color:white;margin:0;line-height:1.2;">Una web<br>muy particular</p>
+      </div>
+      <div style="padding:1.75rem 1.75rem 1.75rem 1.5rem;">
+        <div class="section-label i18n-auto mb-2" style="color:#e84c1e;letter-spacing:.22em;font-size:8px;">La revolución</div>
+        <p class="serif i18n-auto" style="font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:700;font-style:italic;color:white;margin:0;line-height:1.2;">Hemos venido a cambiar<br>las reglas<br>del juego.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- CALCULADORA -->
-<section id="calculadora" class="w-full px-6 pb-10">
-  <div class="panel p-8 md:p-12 overflow-hidden relative">
-    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.04]" style="background:var(--orange);"></div>
-    <div class="grid xl:grid-cols-2 gap-10 items-center">
-      <div>
+<section id="calculadora" class="w-full px-6 pb-10 sk-reveal">
+  <div class="panel overflow-hidden relative">
+    <div class="grid xl:grid-cols-2 gap-0 items-stretch">
+      <div class="p-8 md:p-12 relative">
+        <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.04]" style="background:var(--orange);"></div>
         <div class="i18n-auto section-label mb-3">Calculadora</div>
         <h2 class="serif text-4xl md:text-6xl leading-[0.92] text-black mb-5"><span class="i18n-auto">¿Cuánto te ahorras</span> <em class="text-[var(--orange)] i18n-auto">aquí?</em></h2>
         <p class="i18n-auto text-zinc-700 leading-relaxed mb-8">Introduce el precio de tu inmueble y ve en tiempo real cuánto te puedes ahorrar evitando la comisión inmobiliaria.</p>
@@ -1057,6 +1096,18 @@
         <p class="i18n-auto text-[10px] text-zinc-600 font-semibold mb-5">*Publicación básica gratuita. El Verificado es 8,99€ pago único.</p>
         <button onclick="openPublishModal()" class="i18n-auto publish-gate w-full py-4 orange-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar y ahorrar ahora</button>
         <p id="calc-dynamic-text" class="text-center text-sm text-zinc-700 mt-3 leading-relaxed" style="display:none;"></p>
+      </div>
+      <!-- Columna fotográfica de la calculadora -->
+      <div class="hidden xl:block relative overflow-hidden" style="min-height:420px;">
+        <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&auto=format&fit=crop&q=80"
+             alt="Casa con jardín en las Islas Baleares"
+             loading="lazy"
+             style="width:100%;height:100%;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(270deg,transparent 60%,rgba(255,255,255,0.92) 100%);"></div>
+        <div style="position:absolute;bottom:2rem;right:1.5rem;text-align:right;">
+          <div style="font-size:2.8rem;font-weight:900;color:var(--orange);line-height:1;letter-spacing:-0.04em;" id="calc-saving-photo">–</div>
+          <div class="i18n-auto" style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:#8a5f10;margin-top:.25rem;">ahorrados con SINKOMI</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2053,6 +2104,10 @@
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span class="i18n-auto">Apareces en el filtro "Solo verificados" — pensado para quien busca seguridad antes de contactar</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span class="i18n-auto">Más contactos y menos ruido — solo gente que ha visto que eres real</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check text-[var(--accent)] mt-0.5 shrink-0"></i><span class="i18n-auto">Verificación de identidad realizada una sola vez</span></div>
+          <div class="flex items-start gap-2" style="background:var(--accent-soft);border:1px solid rgba(0,217,143,0.2);padding:.55rem .75rem;border-radius:var(--r-sm);margin-top:.5rem;">
+            <i class="fa-solid fa-wand-magic-sparkles mt-0.5 shrink-0" style="color:var(--accent);font-size:11px;"></i>
+            <span class="i18n-auto text-[12.5px] font-bold" style="color:var(--accent-dark);">5 usos gratis del simulador IA — amuebla o reforma tus fotos antes de publicar</span>
+          </div>
         </div>
         <button onclick="openVerificationEntryPoint('verificado')" id="verificado-price-btn" class="i18n-auto w-full px-5 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Activar verificación · desde 8,99€</button>
         <div class="mt-3 flex items-center justify-center gap-2 py-2 px-3" style="background:var(--accent-soft);border:1px solid rgba(0,217,143,0.25);">
@@ -3181,6 +3236,8 @@ function calcSaving(){
     savEl.style.animation = 'none';
     requestAnimationFrame(()=>{ savEl.style.animation = 'calcPop .35s cubic-bezier(0.23,1,0.32,1) both'; });
   }
+  const photoEl = document.getElementById('calc-saving-photo');
+  if(photoEl) photoEl.textContent = `${formatted} €`;
   if(labelEl) labelEl.textContent = `Con comisión del ${calcPct}% + IVA sobre ${price.toLocaleString('es-ES')} €`;
   if(agencyEl) agencyEl.textContent = `${commission.toLocaleString('es-ES', {maximumFractionDigits:0})} €`;
   const dynText = document.getElementById('calc-dynamic-text');
