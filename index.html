@@ -5943,7 +5943,7 @@ function openToolModal(tool){
     title.textContent='Gastos de compra en Baleares';
     subtitle.textContent='Impuestos reales ATIB 2026';
     content.innerHTML=`<div class="md:col-span-2 space-y-4">
-      <div><label class="text-sm font-bold block mb-1">Precio de compra (€)</label><input id="tool-price" type="number" min="0" placeholder="Ej: 350000" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"></div>
+      <div><label class="text-sm font-bold block mb-1">Precio de compra (€)</label><input id="tool-price" type="number" min="0" placeholder="Ej: 350000 (sin puntos)" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"></div>
       <div><label class="text-sm font-bold block mb-1">Tipo de vivienda</label><select id="tool-type" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"><option value="usada">Segunda mano (ITP)</option><option value="nueva">Obra nueva (IVA + AJD)</option></select></div>
       <div><label class="text-sm font-bold block mb-1">¿Bonificación posible?</label><select id="tool-bonus" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"><option value="general">No (tipo general 8–13%)</option><option value="cero">Cuota cero (menor 30a / discapacidad ≥33% / 1ª vivienda ≤270.151€)</option><option value="2pct">Tipo 2% (menor 36a / familia numerosa ≤270.151€)</option><option value="4pct">Tipo 4% (residente / vivienda habitual ≤270.151€)</option></select></div>
       <div id="tool-result" class="hidden border border-black/8 px-5 py-4 bg-zinc-50 text-sm"></div>
@@ -5971,10 +5971,11 @@ function simulateTool(){
   if(!result) return;
   result.classList.remove('hidden');
   if(currentTool==='gastos'){
-    const price=Number(document.getElementById('tool-price').value)||0;
+    const rawPrice = document.getElementById('tool-price').value.replace(/\./g,'').replace(',','.');
+    const price=Number(rawPrice)||0;
     const type=document.getElementById('tool-type').value;
     const bonus=document.getElementById('tool-bonus').value;
-    if(!price){result.innerHTML='Introduce el precio de la vivienda.';return;}
+    if(!price||price<1000){result.innerHTML='Introduce un precio válido (ej: 350000).';return;}
     let imp=0,impLabel='',impDetail='';
     if(type==='usada'){
       if(bonus==='cero'&&price<=270151.20){imp=0;impLabel='ITP 0% — Cuota cero ATIB 2026';}
@@ -6007,8 +6008,10 @@ function simulateTool(){
       +'<tr style="background:var(--accent-soft)"><td class="py-2 font-black">TOTAL GASTOS ESTIMADOS</td><td class="text-right font-black text-base" style="color:var(--accent-dark)">'+total.toLocaleString('es-ES',{maximumFractionDigits:0})+' €</td></tr></table>'
       +'<p class="text-xs text-zinc-400 mt-2">Representa el <b>'+((total/price)*100).toFixed(1)+'%</b> adicional sobre el precio. Coste total: <b>'+(price+total).toLocaleString('es-ES',{maximumFractionDigits:0})+' €</b></p>';
   } else if(currentTool==='hipoteca'){
-    const price=Number(document.getElementById('tool-price').value)||0;
-    const savings=Number(document.getElementById('tool-savings').value)||0;
+    const rawPrice = document.getElementById('tool-price').value.replace(/\./g,'').replace(',','.');
+    const price=Number(rawPrice)||0;
+    const rawSavings = document.getElementById('tool-savings').value.replace(/\./g,'').replace(',','.');
+    const savings=Number(rawSavings)||0;
     const years=Number(document.getElementById('tool-years').value)||30;
     const rate=Number(document.getElementById('tool-percent').value)||3.5;
     if(!price||!years||!rate){result.innerHTML='Rellena todos los campos.';return;}
