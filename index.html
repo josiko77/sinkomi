@@ -1661,8 +1661,8 @@
       <div class="panel overflow-hidden">
         <div class="px-7 py-5 border-b border-black/6" style="background:#0d1a14;">
           <div class="i18n-auto section-label text-white/40 mb-1">Herramienta 01</div>
-          <h3 class="i18n-auto text-2xl font-black text-white mb-1">Precio del m² en Mallorca</h3>
-          <p class="i18n-auto text-xs text-white/50">Datos orientativos por municipio · Actualización prevista con datos reales de SINKOMI</p>
+          <h3 class="i18n-auto text-2xl font-black text-white mb-1">Precio del m² en Baleares</h3>
+          <p class="text-xs text-white/50">Fuentes: Idealista · Registradores de España Q2-2026 · Tinsa ago.2026 · Menorca.info · Noudiari · Engel&amp;Völkers · Fotocasa · Notariado<br><b style="color:rgba(0,217,143,0.8);">Actualizado: agosto 2026.</b> Los municipios con pocas transacciones muestran estimaciones orientativas marcadas.</p>
         </div>
         <div class="p-5">
           <!-- Buscador -->
@@ -4797,70 +4797,85 @@ const m2PriceData = [
   // ── FORMENTERA ────────────────────────────────────────────────────────────
   {name:"Formentera",sale:6500,rent:22,zone:"premium",trend:"↑",island:"Formentera"},          // Bankinter / Apibaleares 2026
 
-  // ── MALLORCA — datos reales 2025/2026 ────────────────────────────────────
-  {name:"Andratx",sale:7291,rent:23,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Calvià",sale:6800,rent:22,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Campos",sale:6823,rent:19,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Deià",sale:6500,rent:21,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Fornalutx",sale:6200,rent:20,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Valldemossa",sale:5900,rent:19,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Ses Salines",sale:5239,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Palma",sale:5152,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Sóller",sale:5114,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Estellencs",sale:5000,rent:15,zone:"premium",trend:"→",island:"Mallorca"},
-  {name:"Banyalbufar",sale:4800,rent:15,zone:"premium",trend:"→",island:"Mallorca"},
-  {name:"Pollença",sale:4700,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Santanyí",sale:4600,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Esporles",sale:4361,rent:14,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Alcúdia",sale:4200,rent:13,zone:"premium",trend:"↓",island:"Mallorca"},
-  {name:"Capdepera",sale:4079,rent:13,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Puigpunyent",sale:4000,rent:13,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Bunyola",sale:3900,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Escorca",sale:3700,rent:11,zone:"mid",trend:"→",island:"Mallorca"},
-  {name:"Artà",sale:3600,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Son Servera",sale:3300,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Marratxí",sale:3200,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Santa Maria del Camí",sale:3250,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Felanitx",sale:2399,rent:8,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Manacor",sale:2996,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Santa Margalida",sale:2800,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Alaró",sale:2800,rent:9,zone:"mid",trend:"→",island:"Mallorca"},
-  {name:"Consell",sale:2700,rent:9,zone:"mid",trend:"→",island:"Mallorca"},
-  {name:"Selva",sale:2700,rent:8,zone:"mid",trend:"→",island:"Mallorca"},
-  {name:"Inca",sale:2600,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Binissalem",sale:2600,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Sa Pobla",sale:2528,rent:8,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Mancor de la Vall",sale:2500,rent:8,zone:"mid",trend:"→",island:"Mallorca"},
-  {name:"Muro",sale:2650,rent:8,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Campanet",sale:2300,rent:7,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Lloseta",sale:2422,rent:7,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Llucmajor",sale:2300,rent:7,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Búger",sale:2200,rent:7,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Algaida",sale:2200,rent:7,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Montuïri",sale:2100,rent:7,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Sant Llorenç des Cardassar",sale:2100,rent:7,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Santa Eugènia",sale:2000,rent:7,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Sencelles",sale:2000,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Petra",sale:2502,rent:7,zone:"eco",trend:"→",island:"Mallorca"},       // Crónica Balear jul.2026 — más barato de Baleares
-  {name:"Sineu",sale:2000,rent:6,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Llubí",sale:1900,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Costitx",sale:1900,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Maria de la Salut",sale:1900,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Ariany",sale:1800,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Sant Joan",sale:1848,rent:6,zone:"eco",trend:"↑",island:"Mallorca"},
-  {name:"Porreres",sale:1800,rent:6,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Lloret de Vistalegre",sale:1700,rent:5,zone:"eco",trend:"→",island:"Mallorca"},
-  {name:"Vilafranca de Bonany",sale:1700,rent:5,zone:"eco",trend:"→",island:"Mallorca"},
+  // ── MALLORCA — datos reales agosto 2026 ─────────────────────────────────
+  // Fuentes: Idealista jul.2026 · Registradores Q2-2026 · Engel & Völkers jun.2026
+  {name:"Andratx",sale:8505,rent:28,zone:"premium",trend:"↑",island:"Mallorca"},      // Registradores Q2-2026 (+30,33% anual)
+  {name:"Deià",sale:7200,rent:24,zone:"premium",trend:"↑",island:"Mallorca"},         // Estimado (zona Tramuntana premium)
+  {name:"Fornalutx",sale:6900,rent:22,zone:"premium",trend:"↑",island:"Mallorca"},    // Estimado (Tramuntana)
+  {name:"Sóller",sale:6143,rent:20,zone:"premium",trend:"↑",island:"Mallorca"},       // Registradores Q2-2026 (+30,05% anual)
+  {name:"Valldemossa",sale:6000,rent:19,zone:"premium",trend:"↑",island:"Mallorca"},  // Estimado zona Tramuntana
+  {name:"Calvià",sale:7583,rent:24,zone:"premium",trend:"↑",island:"Mallorca"},       // Registradores Q2-2026
+  {name:"Palma",sale:5257,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},        // Idealista jun.2026 — máximo histórico
+  {name:"Santa Maria del Camí",sale:5820,rent:18,zone:"premium",trend:"↑",island:"Mallorca"}, // Registradores Q2-2026
+  {name:"Pollença",sale:5305,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},     // Registradores Q2-2026
+  {name:"Bunyola",sale:5137,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},      // Registradores Q2-2026
+  {name:"Alcúdia",sale:5050,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},      // Registradores Q2-2026
+  {name:"Santanyí",sale:5618,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},     // Registradores Q2-2026
+  {name:"Campos",sale:4996,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},       // Registradores Q2-2026
+  {name:"Ses Salines",sale:5300,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},  // Estimado (zona Santanyí/Campos premium)
+  {name:"Banyalbufar",sale:4800,rent:15,zone:"premium",trend:"→",island:"Mallorca"},  // Estimado Tramuntana
+  {name:"Estellencs",sale:4700,rent:14,zone:"premium",trend:"→",island:"Mallorca"},   // Estimado Tramuntana
+  {name:"Esporles",sale:4500,rent:14,zone:"mid",trend:"↑",island:"Mallorca"},         // Estimado zona Palma
+  {name:"Capdepera",sale:4200,rent:13,zone:"mid",trend:"↑",island:"Mallorca"},        // Estimado levante
+  {name:"Puigpunyent",sale:4100,rent:13,zone:"mid",trend:"↑",island:"Mallorca"},      // Estimado zona Palma
+  {name:"Artà",sale:3800,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},             // Estimado levante
+  {name:"Son Servera",sale:3600,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},      // Estimado levante
+  {name:"Llucmajor",sale:3400,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},        // Estimado sur Mallorca
+  {name:"Marratxí",sale:3350,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},         // Estimado área Palma
+  {name:"Santa Margalida",sale:3100,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},  // Estimado norte
+  {name:"Manacor",sale:3100,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},          // Estimado levante
+  {name:"Inca",sale:2900,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},              // Estimado raiguer
+  {name:"Binissalem",sale:2800,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},        // Estimado raiguer
+  {name:"Alaró",sale:2800,rent:9,zone:"mid",trend:"→",island:"Mallorca"},             // Estimado raiguer
+  {name:"Sa Pobla",sale:2700,rent:8,zone:"mid",trend:"↑",island:"Mallorca"},          // Estimado raiguer
+  {name:"Muro",sale:2750,rent:8,zone:"mid",trend:"↑",island:"Mallorca"},              // Estimado raiguer
+  {name:"Selva",sale:2700,rent:8,zone:"mid",trend:"→",island:"Mallorca"},             // Estimado raiguer
+  {name:"Sant Llorenç des Cardassar",sale:2600,rent:8,zone:"mid",trend:"↑",island:"Mallorca"}, // Estimado levante
+  {name:"Consell",sale:2600,rent:8,zone:"mid",trend:"→",island:"Mallorca"},           // Estimado raiguer
+  {name:"Felanitx",sale:2600,rent:8,zone:"eco",trend:"↑",island:"Mallorca"},          // Estimado migjorn
+  {name:"Campanet",sale:2500,rent:7,zone:"eco",trend:"→",island:"Mallorca"},          // Estimado raiguer
+  {name:"Lloseta",sale:2500,rent:7,zone:"eco",trend:"↑",island:"Mallorca"},           // Estimado raiguer
+  {name:"Búger",sale:2300,rent:7,zone:"eco",trend:"→",island:"Mallorca"},             // Estimado raiguer pequeño
+  {name:"Algaida",sale:2300,rent:7,zone:"eco",trend:"→",island:"Mallorca"},           // Estimado pla
+  {name:"Montuïri",sale:2200,rent:7,zone:"eco",trend:"→",island:"Mallorca"},          // Estimado pla
+  {name:"Mancor de la Vall",sale:2400,rent:7,zone:"eco",trend:"→",island:"Mallorca"}, // Estimado raiguer
+  {name:"Porreres",sale:2100,rent:6,zone:"eco",trend:"→",island:"Mallorca"},          // Estimado pla
+  {name:"Sineu",sale:2100,rent:6,zone:"eco",trend:"↑",island:"Mallorca"},             // Estimado pla
+  {name:"Santa Eugènia",sale:2000,rent:6,zone:"eco",trend:"→",island:"Mallorca"},     // Estimado pla
+  {name:"Sencelles",sale:2000,rent:6,zone:"eco",trend:"→",island:"Mallorca"},         // Estimado pla
+  {name:"Escorca",sale:3200,rent:10,zone:"mid",trend:"→",island:"Mallorca"},          // Estimado (zona Tramuntana rural)
+  {name:"Llubí",sale:2000,rent:6,zone:"eco",trend:"→",island:"Mallorca"},             // Estimado pla
+  {name:"Costitx",sale:2000,rent:6,zone:"eco",trend:"→",island:"Mallorca"},           // Estimado pla
+  {name:"Maria de la Salut",sale:1950,rent:6,zone:"eco",trend:"→",island:"Mallorca"}, // Estimado pla
+  {name:"Ariany",sale:1900,rent:6,zone:"eco",trend:"→",island:"Mallorca"},            // Estimado pla
+  {name:"Sant Joan",sale:1950,rent:6,zone:"eco",trend:"↑",island:"Mallorca"},         // Estimado pla
+  {name:"Petra",sale:2600,rent:7,zone:"eco",trend:"→",island:"Mallorca"},             // Crónica Balear jul.2026
+  {name:"Lloret de Vistalegre",sale:1800,rent:5,zone:"eco",trend:"→",island:"Mallorca"}, // Estimado pla
+  {name:"Vilafranca de Bonany",sale:1800,rent:5,zone:"eco",trend:"→",island:"Mallorca"}, // Estimado pla
 
-  // ── MENORCA — datos reales 2026 (Idealista / Menorca al Día) ─────────────
-  {name:"Sant Lluís",sale:4671,rent:16,zone:"premium",trend:"↑",island:"Menorca"},    // Idealista oct.2025
-  {name:"Alaior",sale:4525,rent:15,zone:"premium",trend:"↑",island:"Menorca"},        // Menorca al Día feb.2026 — máximo histórico
-  {name:"Es Mercadal",sale:4510,rent:15,zone:"premium",trend:"↑",island:"Menorca"},   // Menorca al Día feb.2026 — máximo histórico
-  {name:"Ciutadella",sale:4069,rent:14,zone:"premium",trend:"↑",island:"Menorca"},    // Idealista mar.2026
-  {name:"Maó",sale:3692,rent:13,zone:"mid",trend:"↑",island:"Menorca"},               // Menorca al Día feb.2026 — máximo histórico
-  {name:"Es Castell",sale:3304,rent:11,zone:"mid",trend:"↑",island:"Menorca"},        // Menorca al Día feb.2026
-  {name:"Ferreries",sale:3100,rent:10,zone:"mid",trend:"↑",island:"Menorca"},         // Estimado orientativo
-  {name:"Es Migjorn Gran",sale:2900,rent:10,zone:"mid",trend:"↑",island:"Menorca"},   // Estimado orientativo
+  // ── MENORCA — datos reales agosto 2026 ────────────────────────────────────
+  // Fuentes: Menorca.info ago.2026 · Tinsa ago.2026 · Fotocasa abr.2026 · Notariado 2026
+  {name:"Sant Lluís",sale:5026,rent:17,zone:"premium",trend:"↑",island:"Menorca"},    // Registradores Q2-2026
+  {name:"Es Mercadal",sale:4260,rent:15,zone:"premium",trend:"↑",island:"Menorca"},   // Menorcasa 2025 + Tinsa ago.2026
+  {name:"Alaior",sale:3786,rent:13,zone:"mid",trend:"↑",island:"Menorca"},            // Tinsa ago.2026 — mayor subida de Baleares (+24%)
+  {name:"Ciutadella",sale:3564,rent:12,zone:"mid",trend:"↑",island:"Menorca"},        // Menorca.info jun.2026
+  {name:"Es Castell",sale:3400,rent:12,zone:"mid",trend:"↑",island:"Menorca"},        // Estimado (similar Maó)
+  {name:"Maó",sale:2812,rent:10,zone:"mid",trend:"↑",island:"Menorca"},               // Menorca.info jun.2026
+  {name:"Ferreries",sale:2600,rent:9,zone:"eco",trend:"↑",island:"Menorca"},          // Estimado (mediana alquiler 485€)
+  {name:"Es Migjorn Gran",sale:2400,rent:8,zone:"eco",trend:"↑",island:"Menorca"},    // Estimado (municipio pequeño rural)
+
+  // ── IBIZA — datos reales agosto 2026 ──────────────────────────────────────
+  // Fuentes: Noudiari.es ago.2026 · Registradores Q2-2026 · Idealista 2026
+  {name:"Santa Eulària des Riu",sale:8494,rent:27,zone:"premium",trend:"↑",island:"Ibiza"}, // Noudiari ago.2026
+  {name:"Sant Antoni de Portmany",sale:8266,rent:26,zone:"premium",trend:"↑",island:"Ibiza"}, // Noudiari ago.2026 (+21,2% anual)
+  {name:"Sant Josep de sa Talaia",sale:7862,rent:25,zone:"premium",trend:"↑",island:"Ibiza"}, // Registradores Q2-2026
+  {name:"Eivissa",sale:7351,rent:24,zone:"premium",trend:"↑",island:"Ibiza"},         // Noudiari ago.2026
+  {name:"Sant Joan de Labritja",sale:5500,rent:18,zone:"premium",trend:"↑",island:"Ibiza"}, // Estimado (norte rural Ibiza)
+
+  // ── FORMENTERA — datos reales agosto 2026 ─────────────────────────────────
+  // Fuentes: Registradores Q2-2026 · Economiademallorca.com ago.2026
+  {name:"Formentera",sale:10354,rent:35,zone:"premium",trend:"↑",island:"Formentera"}, // Registradores Q2-2026 — municipio más caro de España
+
 ];
 
 var m2ZoneFilter = 'all';
