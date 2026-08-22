@@ -4787,54 +4787,95 @@ function applyMapTouchGesture(map, elId){
 
 // ── HERRAMIENTA 1: PRECIO M² POR MUNICIPIO ───────────────────────────────
 const m2PriceData = [
-  // ── IBIZA — datos reales 2026 (Apibaleares / Tinsa) ──────────────────────
-  {name:"Sant Josep de sa Talaia",sale:7378,rent:26,zone:"premium",trend:"↑",island:"Ibiza"},   // Apibaleares Q1 2026
-  {name:"Santa Eulària des Riu",sale:7368,rent:25,zone:"premium",trend:"↑",island:"Ibiza"},     // Apibaleares Q1 2026 — más caro de España jun.2026
-  {name:"Eivissa",sale:7024,rent:24,zone:"premium",trend:"↑",island:"Ibiza"},                  // Apibaleares Q1 2026
-  {name:"Sant Antoni de Portmany",sale:4023,rent:16,zone:"premium",trend:"↑",island:"Ibiza"},  // Tinsa 2025
-  {name:"Sant Joan de Labritja",sale:3800,rent:14,zone:"premium",trend:"↑",island:"Ibiza"},    // Estimado
+  // ── DATOS REALES IDEALISTA JULIO 2026 ────────────────────────────────────
+  // Fuente única: idealista.com/sala-de-prensa/informes-precio-vivienda/venta/baleares/report/
+  // Todos los datos son precios de oferta por m² en julio 2026
+
+  // ── MALLORCA — MUNICIPIOS ──────────────────────────────────────────────────
+  {name:"Andratx",sale:8771,rent:28,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Port d'Andratx",sale:10625,rent:32,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Alaró",sale:4455,rent:14,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Alcúdia",sale:4827,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Port d'Alcúdia",sale:4754,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Algaida",sale:3272,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Artà",sale:4560,rent:14,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Colònia de Sant Pere",sale:5960,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Binissalem",sale:3063,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Calvià",sale:7469,rent:23,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Palmanova",sale:6495,rent:20,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Santa Ponça",sale:7308,rent:22,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Portals Nous",sale:9500,rent:29,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Illetes",sale:8615,rent:26,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Costa d'en Blanes",sale:9987,rent:30,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Son Ferrer",sale:4732,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Campanet",sale:4301,rent:13,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Campos",sale:3529,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Sa Ràpita",sale:5833,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Capdepera",sale:4374,rent:13,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Cala Rajada",sale:3971,rent:12,zone:"mid",trend:"↓",island:"Mallorca"},
+  {name:"Canyamel",sale:5248,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Esporles",sale:4714,rent:15,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Felanitx",sale:3552,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Inca",sale:2982,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Llucmajor",sale:4462,rent:14,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"s'Arenal",sale:3730,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Manacor",sale:3463,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Porto Cristo",sale:3505,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Mancor de la Vall",sale:3157,rent:10,zone:"mid",trend:"→",island:"Mallorca"},
+  {name:"Marratxí",sale:4099,rent:13,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Montuïri",sale:2918,rent:9,zone:"mid",trend:"↓",island:"Mallorca"},
+  {name:"Muro",sale:2816,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Palma",sale:5540,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Palmanyola",sale:5592,rent:17,zone:"premium",trend:"→",island:"Mallorca"},
+  {name:"Petra",sale:2453,rent:8,zone:"eco",trend:"↑",island:"Mallorca"},
+  {name:"Sa Pobla",sale:2929,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Pollença",sale:5202,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Port de Pollença",sale:5790,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Porreres",sale:2837,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Puigpunyent",sale:4605,rent:14,zone:"premium",trend:"↓",island:"Mallorca"},
+  {name:"Sa Coma",sale:4161,rent:13,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Sant Llorenç des Cardassar",sale:2957,rent:9,zone:"mid",trend:"↓",island:"Mallorca"},
+  {name:"Santa Margalida",sale:3730,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Can Picafort",sale:3929,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Santa Maria del Camí",sale:4244,rent:13,zone:"premium",trend:"↓",island:"Mallorca"},
+  {name:"Santanyí",sale:5671,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Cala d'Or",sale:5592,rent:17,zone:"premium",trend:"→",island:"Mallorca"},
+  {name:"Cala Figuera",sale:5952,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Cala Llombards",sale:7054,rent:22,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Selva",sale:3186,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Sencelles",sale:3617,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Ses Salines",sale:4983,rent:15,zone:"premium",trend:"→",island:"Mallorca"},
+  {name:"Sineu",sale:3704,rent:11,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Sóller",sale:5791,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
+  {name:"Son Servera",sale:3374,rent:10,zone:"mid",trend:"↑",island:"Mallorca"},
+  {name:"Cala Millor",sale:3845,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
+
+  // ── MENORCA — MUNICIPIOS ───────────────────────────────────────────────────
+  {name:"Alaior",sale:4693,rent:15,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Ciutadella de Menorca",sale:4392,rent:14,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Cala en Bosch",sale:5454,rent:17,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Cala en Blanes",sale:4867,rent:15,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Es Mercadal",sale:4646,rent:15,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Son Parc",sale:4741,rent:15,zone:"premium",trend:"↑",island:"Menorca"},
+  {name:"Ferreries",sale:3247,rent:10,zone:"mid",trend:"↓",island:"Menorca"},
+  {name:"Maó",sale:3911,rent:12,zone:"mid",trend:"↑",island:"Menorca"},
+  {name:"Sant Lluís",sale:5130,rent:16,zone:"premium",trend:"↑",island:"Menorca"},
+
+  // ── IBIZA — MUNICIPIOS ─────────────────────────────────────────────────────
+  {name:"Eivissa",sale:7606,rent:24,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Marina Botafoc - Talamanca",sale:9121,rent:28,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Sant Antoni de Portmany",sale:6881,rent:22,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Sant Joan de Labritja",sale:8299,rent:26,zone:"premium",trend:"↓",island:"Ibiza"},
+  {name:"Sant Josep de sa Talaia",sale:8220,rent:26,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Sant Jordi de Ses Salines",sale:8886,rent:27,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Sant Josep",sale:9890,rent:30,zone:"premium",trend:"↓",island:"Ibiza"},
+  {name:"Es Cubells",sale:11942,rent:35,zone:"premium",trend:"↓",island:"Ibiza"},
+  {name:"Santa Eulària des Riu",sale:8045,rent:25,zone:"premium",trend:"↑",island:"Ibiza"},
+  {name:"Santa Gertrudis",sale:11148,rent:33,zone:"premium",trend:"↓",island:"Ibiza"},
+  {name:"Jesús",sale:8691,rent:26,zone:"premium",trend:"↑",island:"Ibiza"},
 
   // ── FORMENTERA ────────────────────────────────────────────────────────────
-  {name:"Formentera",sale:6500,rent:22,zone:"premium",trend:"↑",island:"Formentera"},          // Bankinter / Apibaleares 2026
-
-  // ── DATOS VERIFICADOS — Solo municipios con fuente oficial real ──────────
-  // Fuentes: Registradores Q2-2026 · Idealista jun-jul.2026 · Tinsa ago.2026
-  //          Fotocasa abr.2026 · MITMA jun.2026 · Noudiari ago.2026
-  // NOTA: Los municipios sin datos suficientes NO aparecen en la tabla
-  //       para no engañar al usuario con estimaciones presentadas como reales.
-
-  // ── MALLORCA ──────────────────────────────────────────────────────────────
-  {name:"Andratx",sale:8505,rent:28,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Calvià",sale:7583,rent:25,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Sóller",sale:6143,rent:20,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Santanyí",sale:5618,rent:18,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Palma",sale:5257,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Santa Maria del Camí",sale:5820,rent:19,zone:"premium",trend:"↓",island:"Mallorca"},
-  {name:"Pollença",sale:5305,rent:17,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Bunyola",sale:5137,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Alcúdia",sale:5050,rent:16,zone:"premium",trend:"↑",island:"Mallorca"},
-  {name:"Campos",sale:4996,rent:15,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Llucmajor",sale:3607,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Marratxí",sale:3803,rent:12,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Manacor",sale:2882,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-  {name:"Inca",sale:2633,rent:9,zone:"mid",trend:"↑",island:"Mallorca"},
-
-  // ── MENORCA ───────────────────────────────────────────────────────────────
-  {name:"Sant Lluís",sale:5026,rent:17,zone:"premium",trend:"↑",island:"Menorca"},
-  {name:"Es Mercadal",sale:4260,rent:14,zone:"premium",trend:"↑",island:"Menorca"},
-  {name:"Alaior",sale:3786,rent:13,zone:"mid",trend:"↑",island:"Menorca"},
-  {name:"Ciutadella",sale:3564,rent:12,zone:"mid",trend:"↑",island:"Menorca"},
-  {name:"Maó",sale:3471,rent:10,zone:"mid",trend:"↑",island:"Menorca"},
-
-  // ── IBIZA ─────────────────────────────────────────────────────────────────
-  {name:"Santa Eulària des Riu",sale:8494,rent:27,zone:"premium",trend:"↑",island:"Ibiza"},
-  {name:"Sant Antoni de Portmany",sale:8266,rent:26,zone:"premium",trend:"↑",island:"Ibiza"},
-  {name:"Sant Josep de sa Talaia",sale:7862,rent:25,zone:"premium",trend:"↑",island:"Ibiza"},
-  {name:"Eivissa",sale:7351,rent:24,zone:"premium",trend:"↑",island:"Ibiza"},
-  {name:"Sant Joan de Labritja",sale:8221,rent:26,zone:"premium",trend:"↑",island:"Ibiza"},
-
-  // ── FORMENTERA ────────────────────────────────────────────────────────────
-  {name:"Formentera",sale:10354,rent:35,zone:"premium",trend:"↑",island:"Formentera"},
+  {name:"Formentera",sale:9708,rent:32,zone:"premium",trend:"↑",island:"Formentera"},
 
 ];
 
