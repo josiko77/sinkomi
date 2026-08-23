@@ -267,8 +267,6 @@
     .data-overlay{position:absolute;left:0;right:0;bottom:0;padding:1.25rem;background:linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);color:white;}
     .saving-pill{display:inline-flex;align-items:center;gap:.5rem;background:var(--accent);color:white;padding:.42rem .9rem;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;border-radius:999px;}
     .sk-horizon{position:relative;height:1px;background:linear-gradient(90deg,transparent,var(--line) 15%,var(--line) 85%,transparent);margin:56px 0 40px;}
-    .sk-carousel-dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:background .3s;}
-    .sk-carousel-dots .dot.active{background:#fff;}
     .sk-reveal{opacity:0;transform:translateY(18px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
     .sk-reveal.is-visible{opacity:1;transform:none;}
     @media (prefers-reduced-motion: reduce){
@@ -968,14 +966,11 @@
       <div class="i18n-auto section-label mb-2">Descubre las islas</div>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-style:italic;font-weight:600;color:var(--ink);line-height:1.2;letter-spacing:-0.01em;" class="i18n-auto">67 municipios. Cuatro islas.<br>Un mercado que conocemos de verdad.</h3>
     </div>
-    <div class="grid md:grid-cols-3 gap-4" id="island-cards">
+    <div class="grid md:grid-cols-3 gap-4">
       <!-- Mallorca -->
-      <div class="relative overflow-hidden cursor-pointer sk-island-card" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Palma')">
-        <div class="sk-carousel" data-index="0" data-imgs='["https://images.pexels.com/photos/33189514/pexels-photo-33189514.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/19765743/pexels-photo-19765743.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/14925042/pexels-photo-14925042.jpeg?auto=compress&cs=tinysrgb&w=800"]'>
-          <img class="sk-carousel-img" src="https://images.pexels.com/photos/33189514/pexels-photo-33189514.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Tramuntana Mallorca" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;transition:opacity .8s ease;">
-        </div>
-        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));pointer-events:none;"></div>
-        <div class="sk-carousel-dots" style="position:absolute;top:.75rem;right:.75rem;display:flex;gap:.35rem;"></div>
+      <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Palma')">
+        <img src="https://images.pexels.com/photos/33189514/pexels-photo-33189514.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Tramuntana y casa rústica en Sóller, Mallorca" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));"></div>
         <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem 1.5rem;">
           <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:.35rem;" class="i18n-auto">Mallorca · 53 municipios</div>
           <div style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Palma, Sóller, Valldemossa,<br>Alcúdia y mucho más</div>
@@ -983,12 +978,9 @@
         </div>
       </div>
       <!-- Ibiza -->
-      <div class="relative overflow-hidden cursor-pointer sk-island-card" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Eivissa')">
-        <div class="sk-carousel" data-index="0" data-imgs='["https://images.pexels.com/photos/8464638/pexels-photo-8464638.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/3254729/pexels-photo-3254729.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/1461996/pexels-photo-1461996.jpeg?auto=compress&cs=tinysrgb&w=800"]'>
-          <img class="sk-carousel-img" src="https://images.pexels.com/photos/8464638/pexels-photo-8464638.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Costa Ibiza" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;transition:opacity .8s ease;">
-        </div>
-        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));pointer-events:none;"></div>
-        <div class="sk-carousel-dots" style="position:absolute;top:.75rem;right:.75rem;display:flex;gap:.35rem;"></div>
+      <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Eivissa')">
+        <img src="https://images.pexels.com/photos/8464638/pexels-photo-8464638.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Mar turquesa y acantilados en Sant Antoni de Portmany, Ibiza" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));"></div>
         <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem 1.5rem;">
           <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);margin-bottom:.35rem;" class="i18n-auto">Ibiza · 5 municipios</div>
           <div style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Eivissa, Santa Eulària,<br>Sant Antoni, Sant Josep</div>
@@ -996,12 +988,9 @@
         </div>
       </div>
       <!-- Menorca + Formentera -->
-      <div class="relative overflow-hidden cursor-pointer sk-island-card" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Maó')">
-        <div class="sk-carousel" data-index="0" data-imgs='["https://images.pexels.com/photos/20121622/pexels-photo-20121622.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/32218231/pexels-photo-32218231.jpeg?auto=compress&cs=tinysrgb&w=800","https://images.pexels.com/photos/4388164/pexels-photo-4388164.jpeg?auto=compress&cs=tinysrgb&w=800"]'>
-          <img class="sk-carousel-img" src="https://images.pexels.com/photos/20121622/pexels-photo-20121622.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Menorca y Formentera" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;transition:opacity .8s ease;">
-        </div>
-        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));pointer-events:none;"></div>
-        <div class="sk-carousel-dots" style="position:absolute;top:.75rem;right:.75rem;display:flex;gap:.35rem;"></div>
+      <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Maó')">
+        <img src="https://images.pexels.com/photos/20121622/pexels-photo-20121622.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Playa y aguas turquesas del Mediterráneo en las Islas Baleares" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));"></div>
         <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem 1.5rem;">
           <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.6);margin-bottom:.35rem;" class="i18n-auto">Menorca & Formentera · 9 municipios</div>
           <div style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Maó, Ciutadella,<br>La Savina y las calas</div>
@@ -6751,21 +6740,6 @@ function setPublishSeasonality(value){
   toggleEtvField();
 }
 function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } toggleEtvField();}
-// ── Carrusel automático de tarjetas de isla ─────────────────────────────────
-function initIslandCarousels(){
-  document.querySelectorAll('.sk-carousel').forEach(carousel=>{
-    const imgs=JSON.parse(carousel.dataset.imgs);
-    if(imgs.length<=1) return;
-    const imgEl=carousel.querySelector('.sk-carousel-img');
-    const dotsEl=carousel.closest('.sk-island-card')?.querySelector('.sk-carousel-dots');
-    let idx=0;
-    if(dotsEl){imgs.forEach((_,i)=>{const d=document.createElement('span');d.className='dot'+(i===0?' active':'');d.onclick=(e)=>{e.stopPropagation();goTo(i);};dotsEl.appendChild(d);});}
-    function goTo(n){idx=n;imgEl.style.opacity='0';setTimeout(()=>{imgEl.src=imgs[idx];imgEl.style.opacity='1';},400);if(dotsEl)dotsEl.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));}
-    imgs.forEach(src=>{const i=new Image();i.src=src;});
-    setInterval(()=>goTo((idx+1)%imgs.length),4000);
-  });
-}
-
 // ── Aparición suave al hacer scroll (respeta "reducir movimiento" del sistema) ──
 function initScrollReveals(){
   const els=document.querySelectorAll('.sk-reveal');
@@ -7231,7 +7205,7 @@ function hidePublishLocationSuggestions(){
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
 
-window.onload=()=>{initScrollReveals();initIslandCarousels();initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
+window.onload=()=>{initScrollReveals();initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
   initHearts();
 
   syncUI();
