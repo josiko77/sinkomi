@@ -1027,14 +1027,37 @@
           <div style="margin-top:.6rem;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);" class="i18n-auto">Ver inmuebles en Ibiza →</div>
         </div>
       </div>
-      <!-- Menorca + Formentera -->
+      <!-- Menorca -->
       <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Maó')">
-        <img src="https://images.pexels.com/photos/20121622/pexels-photo-20121622.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Playa y aguas turquesas del Mediterráneo en las Islas Baleares" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;">
+        <img src="https://images.pexels.com/photos/20121622/pexels-photo-20121622.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Costa de Menorca con aguas cristalinas" loading="lazy" style="width:100%;height:260px;object-fit:cover;display:block;">
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(13,26,20,0.9));"></div>
         <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem 1.5rem;">
-          <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.6);margin-bottom:.35rem;" class="i18n-auto">Menorca & Formentera · 9 municipios</div>
-          <div style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Maó, Ciutadella,<br>La Savina y las calas</div>
-          <div style="margin-top:.6rem;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);" class="i18n-auto">Ver inmuebles →</div>
+          <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.6);margin-bottom:.35rem;" class="i18n-auto">Menorca · 8 municipios</div>
+          <div style="font-size:1.2rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Maó, Ciutadella,<br>Alaior, Es Mercadal y más</div>
+          <div style="margin-top:.6rem;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);" class="i18n-auto">Ver inmuebles en Menorca →</div>
+        </div>
+      </div>
+    </div>
+    <!-- Segunda fila: Ibiza + Formentera -->
+    <div class="grid md:grid-cols-2 gap-4 mt-4">
+      <!-- Ibiza -->
+      <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Eivissa')">
+        <img src="https://images.pexels.com/photos/8464638/pexels-photo-8464638.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Mar turquesa y acantilados en Ibiza" loading="lazy" style="width:100%;height:200px;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(13,26,20,0.9));"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:1rem 1.25rem;">
+          <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);margin-bottom:.3rem;" class="i18n-auto">Ibiza · 5 municipios</div>
+          <div style="font-size:1.1rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">Eivissa, Santa Eulària,<br>Sant Antoni, Sant Josep, Sant Joan</div>
+          <div style="margin-top:.5rem;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);" class="i18n-auto">Ver inmuebles en Ibiza →</div>
+        </div>
+      </div>
+      <!-- Formentera -->
+      <div class="relative overflow-hidden group cursor-pointer" style="border-radius:var(--r-lg);box-shadow:var(--shadow-lg);" onclick="selectMunicipality('Formentera')">
+        <img src="https://images.pexels.com/photos/4388164/pexels-photo-4388164.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Aguas turquesas de Formentera" loading="lazy" style="width:100%;height:200px;object-fit:cover;display:block;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(13,26,20,0.9));"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:1rem 1.25rem;">
+          <div style="font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(255,255,255,0.5);margin-bottom:.3rem;" class="i18n-auto">Formentera · 1 municipio</div>
+          <div style="font-size:1.1rem;font-weight:900;color:#fff;line-height:1.2;" class="i18n-auto">La isla más cara de España<br>10.354 €/m² de media</div>
+          <div style="margin-top:.5rem;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);" class="i18n-auto">Ver inmuebles en Formentera →</div>
         </div>
       </div>
     </div>
@@ -3200,7 +3223,65 @@ document.addEventListener('click',e=>{ if(!e.target.closest('#hero-search-wrap')
 document.addEventListener('DOMContentLoaded',()=>{
   setHeroSearchType('Venta');
 });
-const municipalityList=["Palma","Calvià","Llucmajor","Marratxí","Inca","Manacor","Alcúdia","Pollença","Sóller","Andratx","Artà","Capdepera","Son Servera","Santanyí","Campos","Felanitx","Montuïri","Algaida","Santa Eugènia","Sencelles","Binissalem","Santa Maria del Camí","Consell","Bunyola","Valldemossa","Deià","Escorca","Selva","Campanet","Sa Pobla","Muro","Santa Margalida","Petra","Vilafranca de Bonany","Ariany","Maria de la Salut","Costitx","Lloret de Vistalegre","Lloseta","Alaró","Fornalutx","Banyalbufar","Búger","Esporles","Estellencs","Llubí","Mancor de la Vall","Porreres","Puigpunyent","Sant Joan","Sant Llorenç des Cardassar","Sineu","Ses Salines","Maó","Ciutadella","Alaior","Es Mercadal","Ferreries","Es Castell","Sant Lluís","Es Migjorn Gran","Eivissa","Santa Eulària des Riu","Sant Antoni de Portmany","Sant Josep de sa Talaia","Sant Joan de Labritja","Formentera"];
+const municipalityList=[
+  // ── MALLORCA — Municipios y pedanías principales ──────────────────────────
+  "Palma","Santa Catalina","Portixol","El Molinar","Génova","Son Vida",
+  "Es Coll d'en Rabassa","Sant Jordi","Son Ferriol","Son Rapinya",
+  "Calvià","Santa Ponça","Magaluf","Palmanova","Peguera","Portals Nous",
+  "Son Ferrer","El Toro","Costa d'en Blanes","Illetes","Cas Català","Portals Vells",
+  "Llucmajor","s'Arenal","Badia Gran","Badia Blava","Cala Pi","Vallgornera",
+  "Marratxí","Pòrtol","Sa Cabaneta","Es Pont d'Inca","Es Figueral",
+  "Inca","Muro","Platja de Muro","Can Picafort",
+  "Manacor","Porto Cristo","s'Illot","Cala Murada","Cales de Mallorca","Son Macià",
+  "Alcúdia","Port d'Alcúdia","Mal Pas","Bonaire",
+  "Pollença","Port de Pollença","Cala Sant Vicenç",
+  "Sóller","Port de Sóller","Fornalutx",
+  "Andratx","Port d'Andratx","Camp de Mar","Sant Elm","s'Arracó",
+  "Artà","Colònia de Sant Pere","Canyamel",
+  "Capdepera","Cala Rajada","Font de sa Cala",
+  "Son Servera","Cala Millor","Cala Bona","Costa dels Pins",
+  "Sant Llorenç des Cardassar","Sa Coma","Cala Millor Nord",
+  "Santanyí","Cala d'Or","Cala Figuera","Portopetro","s'Alqueria Blanca",
+  "Calonge","es Llombards","Cala Santanyí","Cala Llombards",
+  "Campos","Sa Ràpita","Ses Covetes","es Trenc",
+  "Felanitx","Portocolom","Cas Concos","s'Horta","Cala Ferrera",
+  "Ses Salines","Colònia de Sant Jordi","es Dolç",
+  "Montuïri","Algaida","Randa","Pina",
+  "Santa Eugènia","Sencelles","Biniali",
+  "Binissalem","Lloseta","Alaró","Consell",
+  "Santa Maria del Camí","Bunyola","Palmanyola",
+  "Valldemossa","Deià","Esporles","Banyalbufar","Estellencs","Puigpunyent",
+  "Escorca","Lluc","Sa Calobra",
+  "Selva","Caimari","Biniamar","Moscari","Mancor de la Vall",
+  "Campanet","Búger","Sa Pobla","Llubí",
+  "Santa Margalida","Son Serra de Marina",
+  "Petra","Vilafranca de Bonany","Ariany","Maria de la Salut",
+  "Costitx","Lloret de Vistalegre","Sineu","Sant Joan",
+  "Porreres",
+  // ── MENORCA — Municipios, pedanías y urbanizaciones habitadas ─────────────
+  "Maó","Llucmaçanes","Sant Climent","Es Grau","Cala Mesquida",
+  "Ciutadella de Menorca","Cala en Blanes","Cala en Forcat","Cala Morell",
+  "Son Xoriguer","Cala en Bosc","Cala Blanca","Cales Piques","Cap d'Artrutx",
+  "Alaior","Son Bou","Cala en Porter","Torre Soli Nou","Son Vitamina",
+  "Es Mercadal","Fornells","Arenal d'en Castell","Son Parc","Coves Noves","Na Macaret","Port d'Addaia",
+  "Es Castell","Cala Sant Esteve","Sol del Este","Son Vilar",
+  "Sant Lluís","Binibeca Vell","Binissafúller","Punta Prima","Alcaufar","Cala Torret","Biniancolla",
+  "Ferreries","Cala Galdana","Sant Tomàs",
+  "Es Migjorn Gran","Binigaus",
+  // ── IBIZA — Municipios, pedanías y urbanizaciones ─────────────────────────
+  "Eivissa","Dalt Vila","Marina Botafoch","Talamanca","Figueretes","Ses Figueretes",
+  "Sant Antoni de Portmany","Sant Rafel de sa Creu","Santa Agnès de Corona",
+  "Sant Mateu d'Albarca","Cala de Bou","Port des Torrent","Cala Gració","Cala Conta",
+  "Santa Eulària des Riu","Santa Gertrudis de Fruitera","Jesús","Sant Carles de Peralta",
+  "Es Puig d'en Valls","Cala Llonga","Siesta","Es Canar","Santa Eulalia",
+  "Sant Josep de sa Talaia","Sant Jordi de ses Salines","Es Cubells","Cala Vedella",
+  "Cala Tarida","Cala d'Hort","Platges de Comte","Platja d'en Bossa","Can Bossa",
+  "Sant Joan de Labritja","Sant Llorenç de Balàfia","Sant Miquel de Balansat",
+  "Sant Vicent de sa Cala","Portinatx","Cala de Sant Vicent",
+  // ── FORMENTERA ────────────────────────────────────────────────────────────
+  "Formentera","Sant Francesc Xavier","Sant Ferran de ses Roques","La Savina",
+  "Es Pujols","El Pilar de la Mola","Es Caló de Sant Agustí","Cala Saona"
+];
 const islandByMunicipio={"Palma":"Mallorca","Calvià":"Mallorca","Llucmajor":"Mallorca","Marratxí":"Mallorca","Inca":"Mallorca","Manacor":"Mallorca","Alcúdia":"Mallorca","Pollença":"Mallorca","Sóller":"Mallorca","Andratx":"Mallorca","Artà":"Mallorca","Capdepera":"Mallorca","Son Servera":"Mallorca","Santanyí":"Mallorca","Campos":"Mallorca","Felanitx":"Mallorca","Montuïri":"Mallorca","Algaida":"Mallorca","Santa Eugènia":"Mallorca","Sencelles":"Mallorca","Binissalem":"Mallorca","Santa Maria del Camí":"Mallorca","Consell":"Mallorca","Bunyola":"Mallorca","Valldemossa":"Mallorca","Deià":"Mallorca","Escorca":"Mallorca","Selva":"Mallorca","Campanet":"Mallorca","Sa Pobla":"Mallorca","Muro":"Mallorca","Santa Margalida":"Mallorca","Petra":"Mallorca","Vilafranca de Bonany":"Mallorca","Ariany":"Mallorca","Maria de la Salut":"Mallorca","Costitx":"Mallorca","Lloret de Vistalegre":"Mallorca","Lloseta":"Mallorca","Alaró":"Mallorca","Fornalutx":"Mallorca","Banyalbufar":"Mallorca","Búger":"Mallorca","Esporles":"Mallorca","Estellencs":"Mallorca","Llubí":"Mallorca","Mancor de la Vall":"Mallorca","Porreres":"Mallorca","Puigpunyent":"Mallorca","Sant Joan":"Mallorca","Sant Llorenç des Cardassar":"Mallorca","Sineu":"Mallorca","Ses Salines":"Mallorca","Maó":"Menorca","Ciutadella":"Menorca","Alaior":"Menorca","Es Mercadal":"Menorca","Ferreries":"Menorca","Es Castell":"Menorca","Sant Lluís":"Menorca","Es Migjorn Gran":"Menorca","Eivissa":"Ibiza","Santa Eulària des Riu":"Ibiza","Sant Antoni de Portmany":"Ibiza","Sant Josep de sa Talaia":"Ibiza","Sant Joan de Labritja":"Ibiza","Formentera":"Formentera"};
 const nucleosByMunicipio={"Palma":["Santa Catalina","Portixol","El Molinar","Génova","Son Vida","Es Coll d'en Rabassa","Sant Jordi","Son Ferriol"],"Calvià":["Santa Ponça","Magaluf","Palmanova","Peguera","Portals Nous","Son Ferrer","El Toro","Costa d'en Blanes","Illetes","Cas Català"],"Llucmajor":["s'Arenal","Badia Gran","Badia Blava","Cala Pi","Vallgornera"],"Andratx":["Port d'Andratx","Camp de Mar","Sant Elm","s'Arracó"],"Pollença":["Port de Pollença","Cala Sant Vicenç"],"Alcúdia":["Port d'Alcúdia","Mal Pas","Bonaire"],"Manacor":["Porto Cristo","s'Illot","Cala Murada","Cales de Mallorca","Son Macià"],"Santanyí":["Cala d'Or","Cala Figuera","Portopetro","s'Alqueria Blanca","Calonge","es Llombards","Cala Santanyí"],"Felanitx":["Portocolom","Cas Concos","s'Horta"],"Capdepera":["Cala Rajada","Canyamel","Font de sa Cala"],"Son Servera":["Cala Millor","Cala Bona","Costa dels Pins"],"Sant Llorenç des Cardassar":["Sa Coma","s'Illot","Cala Millor"],"Campos":["Sa Ràpita","Ses Covetes"],"Muro":["Platja de Muro"],"Santa Margalida":["Can Picafort","Son Serra de Marina"],"Artà":["Colònia de Sant Pere"],"Sóller":["Port de Sóller"],"Ses Salines":["Colònia de Sant Jordi"],"Maó":["Cales Fonts","S'Algar","Sant Climent","Llucmaçanes"],"Ciutadella":["Cala Morell","Cala en Blanes","Sa Caleta","Son Xoriguer","Cala en Bosc"],"Es Mercadal":["Fornells","Arenal d'en Castell","Son Parc"],"Es Castell":["Cales Fonts","Sol del Este"],"Sant Lluís":["Binibeca Vell","Binissafúller","Punta Prima","Alcaufar","Cala Torret"],"Ferreries":["Cala Galdana","Santa Galdana"],"Alaior":["Son Bou","Cala en Porter","Torre Soli Nou"],"Es Migjorn Gran":["Sant Tomàs","Binigaus"],"Eivissa":["Dalt Vila","Marina Botafoch","Talamanca","Platja d'en Bossa","Ses Figueretes"],"Santa Eulària des Riu":["Santa Eulària","Jesús","Santa Gertrudis","Sant Carles de Peralta","Es Puig d'en Valls","Cala Llonga","Siesta"],"Sant Antoni de Portmany":["Sant Antoni","Sant Rafel","Santa Agnès","Sant Mateu d'Albarca","Cala de Bou","Port des Torrent"],"Sant Josep de sa Talaia":["Sant Josep","Sant Jordi de ses Salines","Es Cubells","Cala Vedella","Cala Tarida","Cala d'Hort","Platges de Comte"],"Sant Joan de Labritja":["Sant Joan","Sant Miquel de Balansat","Sant Llorenç de Balàfia","Sant Vicent de sa Cala","Portinatx"],"Formentera":["Sant Francesc Xavier","Sant Ferran de ses Roques","Es Pujols","La Savina","Es Caló de Sant Agustí","El Pilar de la Mola"]};
 const heroSuggestionPool=buildHeroSuggestionPool();
