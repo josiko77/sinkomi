@@ -1133,7 +1133,7 @@
         <p class="i18n-auto text-zinc-700 leading-relaxed mb-8">Introduce el precio de tu inmueble y ve en tiempo real cuánto te puedes ahorrar evitando la comisión inmobiliaria.</p>
         <div class="space-y-5">
           <div><label class="i18n-auto section-label block mb-2">Precio del inmueble</label><div class="flex items-center gap-3"><input id="calc-price" type="text" inputmode="numeric" pattern="[0-9.]*" placeholder="350.000" oninput="calcSaving()" class="flex-1 border border-black/10 px-5 py-4 text-xl font-black bg-white focus:outline-none focus:border-[var(--accent)]"><span class="text-2xl font-black text-zinc-600">€</span></div></div>
-          <div><label class="i18n-auto section-label block mb-2">Comisión estimada de agencia</label><div class="flex gap-3"><button onclick="setCalcPct(3)" id="calc-btn-3" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">3%</button><button onclick="setCalcPct(4.5)" id="calc-btn-4.5" class="flex-1 py-3 border border-[var(--accent)] bg-[var(--accent-soft)] font-black text-sm text-[var(--accent)]">4.5% <span class="i18n-auto text-[9px]">MEDIA</span></button><button onclick="setCalcPct(6)" id="calc-btn-6" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">6%</button><button onclick="setCalcPct(7)" id="calc-btn-7" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">7%</button></div></div>
+          <div><label class="i18n-auto section-label block mb-2">Comisión estimada de agencia</label><div class="flex gap-2"><button onclick="setCalcPct(2)" id="calc-btn-2" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">2%</button><button onclick="setCalcPct(3)" id="calc-btn-3" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">3%</button><button onclick="setCalcPct(4)" id="calc-btn-4" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">4%</button><button onclick="setCalcPct(5)" id="calc-btn-5" class="flex-1 py-3 border border-[var(--accent)] bg-[var(--accent-soft)] font-black text-sm text-[var(--accent)]">5% <span class="i18n-auto text-[9px]">MEDIA</span></button><button onclick="setCalcPct(6)" id="calc-btn-6" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">6%</button><button onclick="setCalcPct(7)" id="calc-btn-7" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">7%</button></div></div>
         </div>
       </div>
       <div class="soft-panel p-8 relative overflow-hidden">
@@ -3261,7 +3261,7 @@ function refreshAllPropertyViews(){
 }
 
 let properties=[];
-let currentProperty=null,selectedMunicipality='all',selectedNucleo='',buyTypeFilter='Todos',rentTypeFilter='Todos',zoneTypeFilter='Todos',zoneOperationFilter='Todas',currentTool=null,calcPct=4.5;
+let currentProperty=null,selectedMunicipality='all',selectedNucleo='',buyTypeFilter='Todos',rentTypeFilter='Todos',zoneTypeFilter='Todos',zoneOperationFilter='Todas',currentTool=null,calcPct=5;
 let buySortOrder='featured',rentSortOrder='featured';
 const PAGE_SIZE=8;
 let buyPage=1,rentPage=1,traspasosPage=1;
@@ -3344,7 +3344,7 @@ function sortProperties(list,order){
 }
 
 /* CALCULADORA */
-function setCalcPct(pct){calcPct=pct;['3','4.5','6','7'].forEach(p=>{const btn=document.getElementById(`calc-btn-${p}`);if(!btn)return;if(Number(p)===pct){btn.className='flex-1 py-3 border border-[var(--accent)] bg-[var(--accent-soft)] font-black text-sm text-[var(--accent)]';}else{btn.className='flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors';}});calcSaving();}
+function setCalcPct(pct){calcPct=pct;['2','3','4','5','6','7'].forEach(p=>{const btn=document.getElementById(`calc-btn-${p}`);if(!btn)return;if(Number(p)===pct){btn.className='flex-1 py-3 border border-[var(--accent)] bg-[var(--accent-soft)] font-black text-sm text-[var(--accent)]';}else{btn.className='flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors';}});calcSaving();}
 function calcSaving(){
   const rawValue = document.getElementById('calc-price')?.value || '';
   const cleanValue = rawValue.replace(/\./g, '').replace(/[^0-9]/g, '');
