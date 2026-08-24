@@ -1840,6 +1840,8 @@
             </div>
             <div id="val-res-main" class="text-4xl font-black text-white mt-3" style="letter-spacing:-0.04em;"></div>
             <div id="val-res-m2" class="text-sm text-white/60 mt-1"></div>
+            <!-- Rentabilidad solo en op=venta -->
+            <div id="val-res-yield" class="hidden mt-3 pt-3 border-t border-white/10"></div>
           </div>
 
           <!-- Tabla de ajustes -->
@@ -2555,6 +2557,25 @@
             <div class="saving-pill mb-3 pulse-glow" id="property-saving"></div>
             <div class="text-4xl font-black mb-1" id="property-price"></div>
             <div class="text-sm text-zinc-500 mb-4" id="property-type"></div>
+
+            <!-- Rentabilidad del alquiler — solo para inmuebles en venta -->
+            <div id="property-yield-box" class="hidden mb-4 pb-4 border-b border-black/5">
+              <div class="text-[9px] font-black uppercase tracking-[0.16em] text-zinc-400 mb-2">Rentabilidad estimada como alquiler</div>
+              <div class="flex items-end gap-3 flex-wrap">
+                <div>
+                  <div class="text-2xl font-black" id="property-yield-pct" style="color:var(--accent);letter-spacing:-0.04em;"></div>
+                  <div class="text-[10px] text-zinc-400 font-bold">Rendimiento bruto anual</div>
+                </div>
+                <div class="flex-1">
+                  <div id="property-yield-bar" class="h-2 rounded-full" style="background:#eee;min-width:80px;max-width:160px;">
+                    <div id="property-yield-fill" style="height:100%;border-radius:999px;background:var(--accent);width:0%;transition:width .8s ease;"></div>
+                  </div>
+                  <div class="text-[9px] text-zinc-400 mt-1 font-semibold">Media Baleares: <span id="property-yield-avg"></span></div>
+                </div>
+              </div>
+              <div class="text-[9px] text-zinc-400 mt-2 leading-relaxed" id="property-yield-detail"></div>
+              <p class="text-[9px] text-zinc-300 mt-1">* Estimación basada en datos de alquiler del municipio (Idealista jul.2026). No constituye asesoramiento financiero.</p>
+            </div>
 
             <!-- Perfil verificado -->
             <div class="flex items-center gap-2 mb-4 pb-4 border-b border-black/5">
@@ -3997,6 +4018,37 @@ function openPropertyModal(id){
   document.getElementById('property-community').textContent = currentProperty.community ? `${currentProperty.community}€/${tr('mes')}` : tr('No especificado');
   document.getElementById('property-ibi').textContent = currentProperty.ibi ? `${currentProperty.ibi}€/${tr('año')}` : tr('No especificado');
 
+  // ── Rentabilidad del alquiler ─────────────────────────────────────────────
+  const yieldBox = document.getElementById('property-yield-box');
+  if(yieldBox){
+    const isVenta = currentProperty.type === 'Venta';
+    const price = Number(currentProperty.price) || 0;
+    const mun = currentProperty.municipality;
+    const munData = m2PriceData.find(r => r.name === mun);
+    if(isVenta && price > 0 && munData && munData.rent > 0){
+      // Estimamos superficie útil desde precio y precio/m² del municipio (o usamos surface si disponible)
+      const surfaceNum = parseInt((currentProperty.surface||'').replace(/[^\d]/g,'')) || Math.round(price / munData.sale);
+      const estimatedMonthlyRent = munData.rent * surfaceNum;
+      const annualRent = estimatedMonthlyRent * 12;
+      const grossYield = (annualRent / price) * 100;
+      // Media Baleares bruta histórica ~4.5% (fuente: Fotocasa abr.2026)
+      const avgBaleares = 4.5;
+      const isGood = grossYield >= avgBaleares;
+      const isExc = grossYield >= 6.0;
+      const pct = Math.min(grossYield, 10) / 10 * 100; // barra hasta 10%
+      document.getElementById('property-yield-pct').textContent = `${grossYield.toFixed(1)}%`;
+      document.getElementById('property-yield-pct').style.color = isExc ? '#00b377' : isGood ? 'var(--accent-dark)' : 'var(--orange)';
+      document.getElementById('property-yield-fill').style.width = `${pct}%`;
+      document.getElementById('property-yield-fill').style.background = isExc ? '#00d98f' : isGood ? 'var(--accent)' : 'var(--orange)';
+      document.getElementById('property-yield-avg').textContent = `${avgBaleares}%`;
+      document.getElementById('property-yield-detail').textContent =
+        `Alquiler estimado en ${mun}: ${estimatedMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0})} €/mes (${munData.rent} €/m² × ${surfaceNum} m²). ${isExc ? '✦ Excelente rentabilidad para la zona.' : isGood ? 'Por encima de la media de Baleares.' : 'Por debajo de la media de Baleares.'}`;
+      yieldBox.classList.remove('hidden');
+    } else {
+      yieldBox.classList.add('hidden');
+    }
+  }
+
   // Aviso legal ETV (alquiler vacacional/temporada en Baleares)
   const etvNotice = document.getElementById('property-etv-notice');
   if(etvNotice){
@@ -5137,10 +5189,19 @@ function calcValuationPremium(){
   const priceM2 = Math.round(adjustedM2);
   const mktM2 = op==='alquiler' ? priceData.rent : priceData.sale;
 
+  // Calcular rentabilidad para guardar en resultado y PDF
+  let yieldPct = null, yieldMonthlyRent = null;
+  if(op==='venta' && priceData.rent > 0 && mid > 0){
+    const estimatedM2 = m2 || Math.round(mid / priceData.sale);
+    yieldMonthlyRent = priceData.rent * estimatedM2;
+    yieldPct = ((yieldMonthlyRent * 12) / mid * 100);
+  }
+
   valLastResult = {municipality, m2, op, low, mid, high, priceM2, mktM2, factors,
     beds: document.getElementById('val-beds').value,
     baths, floor, condition, year, orientation,
-    extras: extraMap.filter(([id])=>document.getElementById(id)?.checked).map(([,label])=>label)
+    extras: extraMap.filter(([id])=>document.getElementById(id)?.checked).map(([,label])=>label),
+    yieldPct, yieldMonthlyRent
   };
 
   // Fill step 4
@@ -5151,6 +5212,28 @@ function calcValuationPremium(){
     ? `${mid.toLocaleString('es-ES')} €/mes`
     : `${mid.toLocaleString('es-ES')} €`;
   document.getElementById('val-res-m2').textContent = `${priceM2.toLocaleString('es-ES')} €/m² · Media en ${municipality}: ${mktM2.toLocaleString('es-ES')} €/m²`;
+
+  // ── Rentabilidad del alquiler en resultado de valoración ──────────────────
+  const yieldResEl = document.getElementById('val-res-yield');
+  if(yieldResEl){
+    if(op==='venta' && priceData.rent > 0 && mid > 0){
+      const estimatedM2 = m2 || Math.round(mid / priceData.sale);
+      const monthlyRent = priceData.rent * estimatedM2;
+      const grossYield = ((monthlyRent * 12) / mid * 100);
+      const avgBaleares = 4.5;
+      const isGood = grossYield >= avgBaleares;
+      yieldResEl.classList.remove('hidden');
+      const yieldColor = isGood ? 'var(--accent)' : 'var(--orange)';
+      const yieldMsg = isGood ? '✦ Por encima de la media de Baleares (4,5%)' : 'Por debajo de la media de Baleares (4,5%)';
+      yieldResEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px;">Como inversión — rentabilidad bruta estimada</div>'
+        + '<div style="display:flex;align-items:center;gap:12px;">'
+        + '<div style="font-size:24px;font-weight:900;color:' + yieldColor + ';letter-spacing:-0.04em;">' + grossYield.toFixed(1) + '%</div>'
+        + '<div style="font-size:11px;color:rgba(255,255,255,0.65);">' + monthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €/mes estimado<br>' + yieldMsg + '</div>'
+        + '</div>';
+    } else {
+      yieldResEl.classList.add('hidden');
+    }
+  }
   document.getElementById('val-res-min').textContent = op==='alquiler'?`${low.toLocaleString('es-ES')} €/mes`:`${low.toLocaleString('es-ES')} €`;
   document.getElementById('val-res-max').textContent = op==='alquiler'?`${high.toLocaleString('es-ES')} €/mes`:`${high.toLocaleString('es-ES')} €`;
 
@@ -5244,6 +5327,13 @@ function downloadValuationPDF(){
       ${r.factors.length ? r.factors.map(f=>`<div class="factor-row ${f.cls}"><span class="factor-label">${f.label}</span><span class="factor-val ${f.cls}">${f.val}</span></div>`).join('') : '<div class="factor-row neu"><span class="factor-label">Sin ajustes — precio base del municipio aplicado directamente</span></div>'}
     </div>
     ${r.extras.length?`<div style="margin-bottom:20px;"><div class="section-title">Extras incluidos en la valoración</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${r.extras.map(e=>`<span style="background:#f0fdf9;border:1px solid #c6f6e9;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;color:#00a878;">${e}</span>`).join('')}</div></div>`:''}
+    ${r.yieldPct!=null?`<div style="background:linear-gradient(135deg,#0d1a14,#1a2e1a);border-radius:10px;padding:18px 20px;margin-bottom:20px;color:#fff;">
+      <div style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(0,217,143,0.7);margin-bottom:8px;">Análisis de rentabilidad como inversión</div>
+      <div style="display:flex;align-items:center;gap:20px;">
+        <div><div style="font-size:28px;font-weight:900;color:${r.yieldPct>=4.5?`#00d98f`:`#ff9f0a`};">${r.yieldPct.toFixed(1)}%</div><div style="font-size:9px;color:rgba(255,255,255,0.5);">Rentabilidad bruta anual estimada</div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.6;">Alquiler estimado: ${r.yieldMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0})} €/mes<br>Ingresos anuales: ${(r.yieldMonthlyRent*12).toLocaleString('es-ES',{maximumFractionDigits:0})} €/año<br>Media Baleares: 4,5% · ${r.yieldPct>=4.5?'✦ Por encima de la media':'Por debajo de la media'}</div>
+      </div>
+    </div>`:''}
     <div class="disclaimer">
       <strong>Nota legal:</strong> Esta valoración es meramente orientativa y se ha calculado utilizando datos del mercado inmobiliario de Baleares de julio-agosto 2026 (fuentes: Idealista, Registradores de la Propiedad Q2-2026, Tinsa). No constituye tasación hipotecaria oficial ni asesoramiento inmobiliario profesional. El precio real de venta puede variar en función de factores no recogidos en este informe. SINKOMI no asume responsabilidad por decisiones basadas únicamente en esta estimación. Para una tasación oficial, contacta con una entidad tasadora homologada por el Banco de España.
     </div>
