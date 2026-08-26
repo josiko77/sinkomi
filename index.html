@@ -339,14 +339,6 @@
     .gallery-thumb{border:1px solid var(--line);cursor:pointer;transition:transform .2s ease,border-color .2s ease;}
     .gallery-thumb:hover{transform:translateY(-2px);border-color:rgba(0,0,0,.18);}
     .modal-scroll{overflow-y:auto;}
-    .property-quicknav-btn{flex:0 0 auto;padding:.5rem 1rem;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#777;white-space:nowrap;transition:all .15s ease;}
-    .property-quicknav-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-    .property-mobile-slide{flex:0 0 100%;scroll-snap-align:start;height:280px;object-fit:cover;border-radius:18px;}
-    .property-mobile-dot{width:6px;height:6px;border-radius:999px;background:rgba(0,0,0,.18);transition:all .2s ease;}
-    .property-mobile-dot.active{background:var(--accent);width:16px;}
-    .property-mobile-dot.on-dark{background:rgba(255,255,255,.35);}
-    .property-mobile-dot.on-dark.active{background:#fff;}
-    #property-gallery-fullscreen-track img{flex:0 0 100%;scroll-snap-align:start;width:100%;height:100%;object-fit:contain;}
     .hero-op-btn{color:#0d1a14;opacity:.55;}
 .hero-op-btn.active{background:#0d1a14;color:var(--accent);opacity:1;}
 .chat-bubble{max-width:82%;}
@@ -2548,31 +2540,17 @@
       </div>
     </div>
     <div id="property-modal-body" class="flex-1 modal-scroll p-6 bg-[#faf8f5]">
-      <!-- Navegación rápida — solo móvil/tablet. Fija arriba del contenido para saber siempre en qué sección estás. -->
-      <div id="property-quicknav" class="xl:hidden sticky top-0 z-10 -mx-6 px-6 py-2 mb-4 flex gap-2 overflow-x-auto" style="background:#faf8f5;border-bottom:1px solid var(--line);">
-        <button type="button" class="property-quicknav-btn" data-target="property-section-caracteristicas">Características</button>
-        <button type="button" class="property-quicknav-btn" data-target="property-section-gastos">Gastos</button>
-        <button type="button" class="property-quicknav-btn" data-target="property-section-descripcion">Descripción</button>
-        <button type="button" class="property-quicknav-btn" data-target="property-section-extras">Extras</button>
-      </div>
       <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6">
-        <div id="property-col1" class="space-y-4">
-          <div id="property-gallery-block">
-            <div id="property-image-frame" class="hidden xl:block overflow-hidden" style="border-radius:22px;border:12px solid var(--accent);transition:border-color .2s ease;box-shadow:0 14px 36px rgba(0,0,0,.08);"><img id="property-main-image" src="" alt="" class="w-full h-[420px] object-cover"></div>
-            <!-- Galería swipe — solo móvil/tablet -->
-            <div id="property-mobile-gallery" class="xl:hidden">
-              <div id="property-mobile-gallery-track" class="flex overflow-x-auto rounded-2xl" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;"></div>
-              <div id="property-mobile-gallery-dots" class="flex justify-center gap-1.5 mt-2"></div>
-            </div>
-            <div class="hidden xl:grid grid-cols-4 gap-3" id="property-thumbs"></div>
-          </div>
+        <div class="space-y-4">
+          <div id="property-image-frame" class="overflow-hidden" style="border-radius:22px;border:12px solid var(--accent);transition:border-color .2s ease;box-shadow:0 14px 36px rgba(0,0,0,.08);"><img id="property-main-image" src="" alt="" class="w-full h-[420px] object-cover"></div>
+          <div class="grid grid-cols-4 gap-3" id="property-thumbs"></div>
           <!-- Descripción -->
-          <div id="property-section-descripcion" class="panel p-6">
+          <div class="panel p-6">
             <div class="i18n-auto section-label mb-2">Descripción</div>
             <p id="property-description" class="text-zinc-600 leading-relaxed text-sm"></p>
           </div>
           <!-- Extras -->
-          <div id="property-section-extras" class="panel p-6">
+          <div class="panel p-6">
             <div class="i18n-auto section-label mb-3">Extras y equipamiento</div>
             <div id="property-extras-pills" class="flex flex-wrap gap-2"></div>
           </div>
@@ -2601,9 +2579,9 @@
           </div>
         </div>
 
-        <div id="property-col2" class="space-y-4">
+        <div class="space-y-4">
           <!-- Precio y ahorro -->
-          <div id="property-price-panel" class="panel p-6">
+          <div class="panel p-6">
             <div class="saving-pill mb-3 pulse-glow" id="property-saving"></div>
             <div class="text-4xl font-black mb-1" id="property-price"></div>
             <div class="text-sm text-zinc-500 mb-4" id="property-type"></div>
@@ -2654,7 +2632,7 @@
           </div>
 
           <!-- Características principales -->
-          <div id="property-section-caracteristicas" class="panel p-6">
+          <div class="panel p-6">
             <div class="i18n-auto section-label mb-3">Características</div>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Superficie</div><div id="property-surface" class="font-bold"></div></div>
@@ -2669,7 +2647,7 @@
           </div>
 
           <!-- Gastos -->
-          <div id="property-section-gastos" class="panel p-6">
+          <div class="panel p-6">
             <div class="i18n-auto section-label mb-3">Gastos adicionales</div>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Comunidad</div><div id="property-community" class="font-bold"></div></div>
@@ -2695,20 +2673,7 @@
         </div>
       </div>
     </div>
-    <!-- Barra de acción fija — solo móvil/tablet. Contactar siempre a mano, sin volver a subir. -->
-    <div id="property-mobile-ctabar" class="xl:hidden shrink-0 flex items-center gap-3 px-4 py-3 border-t border-black/10 bg-white" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom));">
-      <button id="property-mobile-fav-btn" onclick="toggleFavourite(currentProperty?.id, this, event)" class="w-12 h-12 shrink-0 border border-black/10 rounded-full flex items-center justify-center"><i class="fa-regular fa-heart"></i></button>
-      <a href="#" id="property-modal-mobile-call-btn" class="hidden w-12 h-12 shrink-0 border border-black/10 rounded-full flex items-center justify-center"><i class="fa-solid fa-phone"></i></a>
-      <button onclick="openChatFromProperty()" id="property-mobile-contact-btn" class="i18n-auto flex-1 contact-coral py-3.5 text-sm font-black uppercase tracking-[0.14em] rounded-full" style="font-family:'Special Elite','Courier New',monospace;">Contactar</button>
-    </div>
   </div>
-</div>
-
-<!-- Visor de fotos a pantalla completa — móvil -->
-<div id="property-gallery-fullscreen" class="hidden fixed inset-0 z-[1400]" style="background:#000;">
-  <button onclick="closeGalleryFullscreen()" style="position:absolute;top:1rem;right:1.25rem;z-index:2;color:#fff;font-size:1.9rem;background:none;border:none;line-height:1;">×</button>
-  <div id="property-gallery-fullscreen-track" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:100%;-webkit-overflow-scrolling:touch;"></div>
-  <div id="property-gallery-fullscreen-dots" style="position:absolute;bottom:1.25rem;left:0;right:0;display:flex;justify-content:center;gap:6px;"></div>
 </div>
 
 <div id="ai-staging-modal" class="hidden fixed inset-0 bg-black/70 z-[1250] flex items-center justify-center px-4 py-4">
@@ -4056,15 +4021,12 @@ function openPropertyModal(id){
   const body = document.getElementById('property-modal-body');
   const callBtn = document.getElementById('property-modal-call-btn');
   const callLabel = document.getElementById('property-modal-call-label');
-  const mobileCallBtn = document.getElementById('property-modal-mobile-call-btn');
   if(currentProperty.phone){
     callBtn.href = 'tel:' + currentProperty.phone.replace(/\s+/g,'');
     callLabel.textContent = currentProperty.phone;
     callBtn.classList.remove('hidden');
-    if(mobileCallBtn){ mobileCallBtn.href = callBtn.href; mobileCallBtn.classList.remove('hidden'); }
   } else {
     callBtn.classList.add('hidden');
-    if(mobileCallBtn) mobileCallBtn.classList.add('hidden');
   }
 
   if(tier === 3){
@@ -4207,7 +4169,7 @@ function openPropertyModal(id){
     extrasContainer.innerHTML = extrasHtml;
   }
 
-  // Galería de fotos — miniaturas de escritorio
+  // Galería de fotos
   const thumbs = document.getElementById('property-thumbs');
   thumbs.innerHTML = '';
   currentProperty.images.forEach((img,index)=>{
@@ -4220,136 +4182,9 @@ function openPropertyModal(id){
     thumbs.appendChild(el);
   });
   document.getElementById('property-main-image').setAttribute('onerror',`this.onerror=null;this.src='${fallbackImg}'`);
-
-  // Galería de fotos — carrusel swipe para móvil, con puntos e visor a pantalla completa
-  renderMobilePropertyGallery();
-
-  // Estado inicial del corazón de favoritos (escritorio + móvil)
-  updateHeartBtn(currentProperty.id, document.getElementById('property-fav-btn'));
-  updateHeartBtn(currentProperty.id, document.getElementById('property-mobile-fav-btn'));
-
   document.getElementById('property-modal').classList.remove('hidden');
-
-  // Reordena el contenido para móvil (precio/características/gastos justo tras la foto)
-  // y activa la navegación rápida con scrollspy.
-  layoutPropertyModalForMobile();
-  setupPropertyQuicknav();
 }
-
-// Construye el carrusel swipe de fotos para móvil/tablet con puntos de posición.
-function renderMobilePropertyGallery(){
-  const track = document.getElementById('property-mobile-gallery-track');
-  const dots = document.getElementById('property-mobile-gallery-dots');
-  if(!track || !dots || !currentProperty) return;
-  track.innerHTML = ''; dots.innerHTML = '';
-  currentProperty.images.forEach((img,index)=>{
-    const slide = document.createElement('img');
-    slide.src = img;
-    slide.alt = `${currentProperty.title} ${index+1}`;
-    slide.className = 'property-mobile-slide';
-    slide.setAttribute('onerror',`this.onerror=null;this.src='${fallbackImg}'`);
-    slide.onclick = ()=>openGalleryFullscreen(index);
-    track.appendChild(slide);
-    const dot = document.createElement('span');
-    dot.className = 'property-mobile-dot' + (index===0 ? ' active' : '');
-    dots.appendChild(dot);
-  });
-  track.onscroll = ()=>{
-    if(!track.clientWidth) return;
-    const idx = Math.round(track.scrollLeft / track.clientWidth);
-    [...dots.children].forEach((d,i)=>d.classList.toggle('active', i===idx));
-  };
-}
-
-// Visor de fotos a pantalla completa (móvil) — se abre al tocar una foto del carrusel.
-function openGalleryFullscreen(startIndex){
-  if(!currentProperty) return;
-  const overlay = document.getElementById('property-gallery-fullscreen');
-  const track = document.getElementById('property-gallery-fullscreen-track');
-  const dots = document.getElementById('property-gallery-fullscreen-dots');
-  if(!overlay || !track || !dots) return;
-  track.innerHTML = ''; dots.innerHTML = '';
-  currentProperty.images.forEach((img,i)=>{
-    const slide = document.createElement('img');
-    slide.src = img;
-    slide.setAttribute('onerror',`this.onerror=null;this.src='${fallbackImg}'`);
-    track.appendChild(slide);
-    const dot = document.createElement('span');
-    dot.className = 'property-mobile-dot on-dark' + (i===startIndex ? ' active' : '');
-    dots.appendChild(dot);
-  });
-  overlay.classList.remove('hidden');
-  requestAnimationFrame(()=>{ track.scrollLeft = startIndex * track.clientWidth; });
-  track.onscroll = ()=>{
-    if(!track.clientWidth) return;
-    const idx = Math.round(track.scrollLeft / track.clientWidth);
-    [...dots.children].forEach((d,i)=>d.classList.toggle('active', i===idx));
-  };
-}
-function closeGalleryFullscreen(){
-  const overlay = document.getElementById('property-gallery-fullscreen');
-  if(overlay) overlay.classList.add('hidden');
-}
-
-// ── Reordenación móvil de la ficha ──────────────────────────────────────
-// En escritorio la ficha va en dos columnas independientes. En móvil todo cae
-// en una sola columna, así que movemos precio + características + gastos justo
-// después de la foto para que se vean sin tener que bajar por la descripción.
-function layoutPropertyModalForMobile(){
-  const isMobile = window.matchMedia('(max-width: 1279px)').matches;
-  const gallery = document.getElementById('property-gallery-block');
-  const col2 = document.getElementById('property-col2');
-  const price = document.getElementById('property-price-panel');
-  const caracteristicas = document.getElementById('property-section-caracteristicas');
-  const gastos = document.getElementById('property-section-gastos');
-  if(!gallery || !col2 || !price || !caracteristicas || !gastos) return;
-  if(isMobile){
-    gallery.after(price);
-    price.after(caracteristicas);
-    caracteristicas.after(gastos);
-  } else if(price.parentNode !== col2){
-    col2.prepend(gastos);
-    col2.prepend(caracteristicas);
-    col2.prepend(price);
-  }
-}
-window.addEventListener('resize', ()=>{
-  if(document.getElementById('property-modal') && !document.getElementById('property-modal').classList.contains('hidden')){
-    layoutPropertyModalForMobile();
-  }
-});
-
-// ── Navegación rápida dentro de la ficha (móvil) ────────────────────────
-let propertyScrollspyObserver = null;
-function setupPropertyQuicknav(){
-  const body = document.getElementById('property-modal-body');
-  const quicknav = document.getElementById('property-quicknav');
-  const buttons = document.querySelectorAll('.property-quicknav-btn');
-  if(!body || !quicknav || !buttons.length) return;
-  // Colorea la barra igual que el fondo real del cuerpo de la ficha (varía según el nivel del anuncio).
-  quicknav.style.background = body.style.background || '#faf8f5';
-  buttons.forEach(btn=>{
-    btn.onclick = ()=>{
-      const target = document.getElementById(btn.dataset.target);
-      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
-    };
-  });
-  if(propertyScrollspyObserver) propertyScrollspyObserver.disconnect();
-  const sections = ['property-section-caracteristicas','property-section-gastos','property-section-descripcion','property-section-extras']
-    .map(id=>document.getElementById(id)).filter(Boolean);
-  propertyScrollspyObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        buttons.forEach(b=>b.classList.toggle('active', b.dataset.target===entry.target.id));
-      }
-    });
-  }, {root: body, threshold: 0.35});
-  sections.forEach(s=>propertyScrollspyObserver.observe(s));
-}
-function closePropertyModal(){
-  document.getElementById('property-modal').classList.add('hidden');
-  if(propertyScrollspyObserver){ propertyScrollspyObserver.disconnect(); propertyScrollspyObserver=null; }
-}
+function closePropertyModal(){document.getElementById('property-modal').classList.add('hidden');}
 function reportProperty(id){
   if(!id) return;
   const motivo = prompt("¿Por qué quieres reportar este anuncio?\n\n1. Es una agencia inmobiliaria camuflada\n2. El inmueble es falso o una estafa\n3. Los datos o el precio son incorrectos\n\nEscribe el número del motivo (1, 2 o 3):");
@@ -7645,16 +7480,6 @@ function updateHeartBtn(id, btn){
     var icon = btn.querySelector('i');
     if(icon){
       icon.className = isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-    }
-    // La ficha de inmueble tiene dos corazones (escritorio + barra fija móvil): mantenlos sincronizados.
-    if(btn.id === 'property-fav-btn' || btn.id === 'property-mobile-fav-btn'){
-      var otherId = btn.id === 'property-fav-btn' ? 'property-mobile-fav-btn' : 'property-fav-btn';
-      var other = document.getElementById(otherId);
-      if(other && other !== btn){
-        other.classList.toggle('active', isFav);
-        var otherIcon = other.querySelector('i');
-        if(otherIcon) otherIcon.className = isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-      }
     }
   }
 }
