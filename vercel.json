@@ -4,7 +4,7 @@
     {"source":"/comprar/:municipio","destination":"/api/comprar/:municipio"},
     {"source":"/alquiler/:municipio","destination":"/api/alquiler/:municipio"},
     {"source":"/inmueble/:id","destination":"/api/inmueble/:id"},
-    {"source":"/admin","destination":"/administrador.html"}
+    {"source":"/admin","destination":"/admin.html"}
   ]
 }
 
