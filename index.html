@@ -6861,7 +6861,7 @@ function renderVerificationPanel(propertyRow){
     <div style="border:1px solid rgba(0,0,0,0.08);padding:.9rem;">
       <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:.5rem;">2 · Nota Simple de este inmueble</div>
       ${notaBanner}
-      <p class="text-xs text-zinc-500 mb-3">Demuestra que este inmueble concreto es tuyo. Solo tú y el equipo de SINKOMI podéis verla.</p>
+      <p class="text-xs text-zinc-500 mb-3">Demuestra que este inmueble concreto es tuyo. Solo tú y el equipo de SINKOMI podéis verla. Sube el PDF oficial de tu Nota Simple si lo tienes — es más fiable que una foto, y evita que se quede fuera alguna página importante.</p>
       <div style="max-width:120px;">
         ${verificationSlotHtml('nota_simple', 'Nota Simple', notaSimpleUpload.url)}
       </div>
@@ -6906,7 +6906,7 @@ async function uploadNotaSimpleFile(file){
     notaSimpleUpload.url = signed?.signedUrl || null;
 
     const { error: updateError } = await supabase.from('properties')
-      .update({ nota_simple_url: notaSimpleUpload.url, nota_simple_status: 'pendiente' })
+      .update({ nota_simple_url: notaSimpleUpload.url, nota_simple_status: 'pendiente', nota_simple_submitted_at: new Date().toISOString() })
       .eq('id', verifyingPropertyId)
       .eq('owner_id', user.supabase_id);
     if(updateError) throw updateError;
