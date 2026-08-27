@@ -365,15 +365,15 @@
     <!-- VERIFICACIONES -->
     <div id="tab-verificaciones" class="tab-content">
       <div class="section-header">
-        <span class="section-title">Solicitudes de verificación (DNI + Nota Simple + selfie)</span>
+        <span class="section-title">Notas Simples pendientes de revisión</span>
         <button class="refresh-btn" onclick="loadVerifications()">↺ Actualizar</button>
       </div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Inmueble</th><th>Solicitado</th><th>Documentos</th><th>Estado</th><th>Acciones</th>
+            <th>Inmueble</th><th>Propietario</th><th>Solicitado</th><th>Nota Simple</th><th>Identidad</th><th>Estado</th><th>Acciones</th>
           </tr></thead>
-          <tbody id="verifications-body"><tr><td colspan="5"><div class="loading">Cargando...</div></td></tr></tbody>
+          <tbody id="verifications-body"><tr><td colspan="7"><div class="loading">Cargando...</div></td></tr></tbody>
         </table>
       </div>
     </div>
@@ -535,70 +535,70 @@
       </tr>`).join('');
   }
 
-  // ─── VERIFICACIONES (DNI + Nota Simple + selfie) ──────────────────
+  // ─── VERIFICACIONES (Nota Simple por inmueble + estado de identidad del propietario) ──
   async function loadVerifications(){
-    const { data, error } = await sb.from('verification_documents').select('*').order('submitted_at', {ascending:false});
+    const { data, error } = await sb.from('properties')
+      .select('id,title,municipality,owner_id,owner_name,nota_simple_url,nota_simple_status,nota_simple_submitted_at,nota_simple_rejection_note,verified')
+      .not('nota_simple_status', 'is', null)
+      .order('nota_simple_submitted_at', {ascending:false, nullsFirst:false});
     const tbody = document.getElementById('verifications-body');
-    if(error || !data){ tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Error cargando verificaciones<br><span style="font-size:9px;color:var(--red);">${error?.message || 'Sin datos'} ${error?.hint ? '· '+error.hint : ''}</span></div></td></tr>`; console.error('Error verificaciones:', error); return; }
-    if(!data.length){ document.getElementById('stat-pending').textContent = '0'; tbody.innerHTML = `<tr><td colspan="5"><div class="empty">Sin solicitudes aún</div></td></tr>`; return; }
+    if(error || !data){ tbody.innerHTML = `<tr><td colspan="7"><div class="empty">Error cargando verificaciones<br><span style="font-size:9px;color:var(--red);">${error?.message || 'Sin datos'} ${error?.hint ? '· '+error.hint : ''}</span></div></td></tr>`; console.error('Error verificaciones:', error); return; }
+    if(!data.length){ document.getElementById('stat-pending').textContent = '0'; tbody.innerHTML = `<tr><td colspan="7"><div class="empty">Sin solicitudes aún</div></td></tr>`; return; }
 
-    // Traemos los inmuebles relacionados por separado, sin depender del "join" automático de Supabase.
-    const propertyIds = [...new Set(data.map(v=>v.property_id).filter(Boolean))];
-    let propertiesMap = {};
-    if(propertyIds.length){
-      const { data: props } = await sb.from('properties').select('id,title,municipality').in('id', propertyIds);
-      (props||[]).forEach(p => { propertiesMap[p.id] = p; });
+    // Estado de identidad de cada propietario implicado, para mostrarlo junto a su Nota Simple.
+    const ownerIds = [...new Set(data.map(p=>p.owner_id).filter(Boolean))];
+    let identityMap = {};
+    if(ownerIds.length){
+      const { data: idents } = await sb.from('verification_documents').select('user_id,identity_verified_at,didit_status').in('user_id', ownerIds);
+      (idents||[]).forEach(v => { identityMap[v.user_id] = v; });
     }
 
-    const pendientes = data.filter(v=>v.status==='pendiente').length;
+    const pendientes = data.filter(p=>p.nota_simple_status==='pendiente').length;
     document.getElementById('stat-pending').textContent = pendientes;
 
-    tbody.innerHTML = data.map(v=>{
-      const statusBadge = v.status==='aprobado' ? '<span class="badge badge-green">Aprobado</span>'
-        : v.status==='rechazado' ? '<span class="badge badge-red">Rechazado</span>'
+    tbody.innerHTML = data.map(p=>{
+      const statusBadge = p.nota_simple_status==='aprobado' ? '<span class="badge badge-green">Aprobado</span>'
+        : p.nota_simple_status==='rechazado' ? '<span class="badge badge-red">Rechazado</span>'
         : '<span class="badge badge-orange">Pendiente</span>';
-      const docs = [
-        v.dni_url ? `<a href="${v.dni_url}" target="_blank" class="btn" style="text-decoration:none;">DNI</a>` : '',
-        v.nota_simple_url ? `<a href="${v.nota_simple_url}" target="_blank" class="btn" style="text-decoration:none;">Nota Simple</a>` : '',
-        v.selfie_url ? `<a href="${v.selfie_url}" target="_blank" class="btn" style="text-decoration:none;">Selfie</a>` : ''
-      ].filter(Boolean).join(' ');
-      const codeNote = v.selfie_code ? `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Código a comprobar en la foto: <b style="color:var(--accent);">${v.selfie_code}</b></div>` : '';
-      const aiNote = (typeof v.selfie_ai_score === 'number')
-        ? (v.selfie_ai_score >= 0.5
-            ? `<div style="margin-top:.35rem;font-size:9px;color:var(--red);font-weight:800;">⚠ Sightengine: ${Math.round(v.selfie_ai_score*100)}% posible IA — revisar con cuidado</div>`
-            : `<div style="margin-top:.35rem;font-size:9px;color:var(--accent);">Sightengine: ${Math.round(v.selfie_ai_score*100)}% IA (parece real)</div>`)
-        : `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Sightengine: sin comprobar</div>`;
-      const actions = v.status==='pendiente'
-        ? `<button class="btn btn-green" onclick="approveVerification('${v.id}','${v.property_id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectVerification('${v.id}')">Rechazar</button>`
-        : (v.admin_note ? `<span style="color:var(--muted);font-size:10px;">${v.admin_note}</span>` : '—');
-      const prop = propertiesMap[v.property_id];
+      const ident = identityMap[p.owner_id];
+      const identityBadge = ident?.identity_verified_at ? '<span class="badge badge-green">Verificada</span>'
+        : ident ? '<span class="badge badge-orange">'+(ident.didit_status||'En proceso')+'</span>'
+        : '<span class="badge badge-gray">Sin empezar</span>';
+      const notaLink = p.nota_simple_url
+        ? `<a href="${p.nota_simple_url}" target="_blank" class="btn" style="text-decoration:none;">Ver Nota Simple</a>`
+        : '<span style="color:var(--muted);font-size:10px;">Sin archivo</span>';
+      const rejectionNote = p.nota_simple_rejection_note ? `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Motivo: ${p.nota_simple_rejection_note}</div>` : '';
+      const actions = p.nota_simple_status==='pendiente'
+        ? `<button class="btn btn-green" onclick="approveNotaSimple('${p.id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectNotaSimple('${p.id}')">Rechazar</button>`
+        : rejectionNote || '—';
       return `
       <tr>
-        <td>${prop?.title || 'Inmueble eliminado'}<br><span style="color:var(--muted);font-size:10px;">${prop?.municipality||''}</span></td>
-        <td style="font-size:11px;color:var(--muted);">${v.submitted_at ? new Date(v.submitted_at).toLocaleDateString('es-ES') : '—'}</td>
-        <td>${docs}${codeNote}${aiNote}</td>
+        <td>${p.title || '—'}<br><span style="color:var(--muted);font-size:10px;">${p.municipality||''}</span></td>
+        <td style="font-size:11px;">${p.owner_name || '—'}</td>
+        <td style="font-size:11px;color:var(--muted);">${p.nota_simple_submitted_at ? new Date(p.nota_simple_submitted_at).toLocaleDateString('es-ES') : '—'}</td>
+        <td>${notaLink}</td>
+        <td>${identityBadge}</td>
         <td>${statusBadge}</td>
         <td>${actions}</td>
       </tr>`;
     }).join('');
   }
 
-  async function approveVerification(verificationId, propertyId){
-    if(!confirm('¿Aprobar esta verificación? El inmueble pasará a mostrar el sello "Verificado".')) return;
-    const { error: e1 } = await sb.from('verification_documents').update({ status:'aprobado', reviewed_at: new Date().toISOString() }).eq('id', verificationId);
-    const { error: e2 } = await sb.from('properties').update({ verified: true }).eq('id', propertyId);
-    if(e1 || e2){ showToast('Error al aprobar'); console.error(e1||e2); return; }
-    showToast('Verificación aprobada');
+  async function approveNotaSimple(propertyId){
+    if(!confirm('¿Aprobar esta Nota Simple? Si el propietario ya tiene la identidad verificada, el inmueble pasará a mostrar el sello "Verificado" automáticamente.')) return;
+    const { error } = await sb.from('properties').update({ nota_simple_status:'aprobado' }).eq('id', propertyId);
+    if(error){ showToast('Error al aprobar'); console.error(error); return; }
+    showToast('Nota Simple aprobada');
     loadVerifications();
     loadProperties();
   }
 
-  async function rejectVerification(verificationId){
+  async function rejectNotaSimple(propertyId){
     const motivo = prompt('Motivo del rechazo (lo verá el propietario):');
     if(motivo === null) return;
-    const { error } = await sb.from('verification_documents').update({ status:'rechazado', admin_note: motivo, reviewed_at: new Date().toISOString() }).eq('id', verificationId);
+    const { error } = await sb.from('properties').update({ nota_simple_status:'rechazado', nota_simple_rejection_note: motivo }).eq('id', propertyId);
     if(error){ showToast('Error al rechazar'); console.error(error); return; }
-    showToast('Verificación rechazada');
+    showToast('Nota Simple rechazada');
     loadVerifications();
   }
 
