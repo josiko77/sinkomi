@@ -3107,14 +3107,14 @@
 <!-- FLOTANTE -->
 <!-- BANNER PWA -->
 <!-- Aviso de bienvenida, grande y centrado (al iniciar sesión o al registrarse) -->
-<div id="welcome-toast" class="hidden" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:rgba(0,0,0,0.7);" onclick="if(event.target===this) hideWelcomeToast()">
+<div id="welcome-toast" style="display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;padding:1.5rem;background:rgba(0,0,0,0.7);" onclick="if(event.target===this) hideWelcomeToast()">
   <div style="background:#0d1a14;color:white;max-width:440px;width:100%;padding:2.75rem 2.25rem 2.25rem;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,0.5);text-align:center;position:relative;overflow:hidden;">
     <div style="position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:999px;background:var(--accent);opacity:0.08;pointer-events:none;"></div>
     <div style="position:absolute;bottom:-50px;left:-40px;width:140px;height:140px;border-radius:999px;background:var(--orange);opacity:0.06;pointer-events:none;"></div>
     <button onclick="hideWelcomeToast()" style="position:absolute;top:1rem;right:1.1rem;background:none;border:none;color:rgba(255,255,255,.35);font-size:1.4rem;line-height:1;cursor:pointer;z-index:1;">×</button>
-    <div id="welcome-toast-emoji" style="font-size:2.75rem;margin-bottom:.9rem;position:relative;">👋</div>
+    <div id="welcome-toast-emoji" style="font-size:2.75rem;margin-bottom:.9rem;position:relative;"></div>
     <div id="welcome-toast-title" class="serif" style="font-size:1.9rem;font-style:italic;line-height:1.2;margin-bottom:.85rem;position:relative;">
-      <span id="welcome-toast-prefix"></span><span id="welcome-toast-name" style="color:var(--accent);"></span><span id="welcome-toast-suffix">!</span>
+      <span id="welcome-toast-prefix"></span><span id="welcome-toast-name" style="color:var(--accent);"></span><span id="welcome-toast-suffix"></span>
     </div>
     <div id="welcome-toast-subtitle" style="font-size:14px;color:rgba(255,255,255,.55);line-height:1.55;position:relative;max-width:340px;margin:0 auto;"></div>
   </div>
@@ -8926,7 +8926,7 @@ function showWelcomeOverlay({emoji, prefix, name, suffix, subtitle}){
   document.getElementById('welcome-toast-subtitle').textContent = subtitle;
 
   const card = overlay.firstElementChild;
-  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
   overlay.style.animation = 'none'; card.style.animation = 'none';
   void overlay.offsetWidth;
   overlay.style.animation = 'welcomeOverlayIn .3s ease forwards';
@@ -8939,7 +8939,7 @@ function hideWelcomeToast(){
   const overlay = document.getElementById('welcome-toast');
   if(!overlay) return;
   clearTimeout(welcomeToastTimer);
-  overlay.classList.add('hidden');
+  overlay.style.display = 'none';
 }
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') hideWelcomeToast();
