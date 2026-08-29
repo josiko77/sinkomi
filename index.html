@@ -2576,8 +2576,14 @@
             </div>
             <button id="staging-generate-btn" onclick="generateStaging()" class="relative i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver amueblado</button>
             <div id="staging-result-wrap" class="hidden mt-5 relative">
-              <img id="staging-result-img" class="w-full rounded-2xl border border-black/8" src="">
-              <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no representa el mobiliario real de la vivienda.</p>
+              <div class="relative" style="cursor:zoom-in;" onclick="openImageLightbox(document.getElementById('staging-result-img').src)">
+                <img id="staging-result-img" class="w-full rounded-2xl border border-black/8" src="">
+                <span style="position:absolute;top:.6rem;right:.6rem;width:30px;height:30px;background:rgba(0,0,0,0.55);border-radius:999px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;"><i class="fa-solid fa-expand"></i></span>
+              </div>
+              <div class="flex justify-end mt-2">
+                <button onclick="downloadImage(document.getElementById('staging-result-img').src,'sinkomi-simulacion-ia.jpg')" class="i18n-auto px-4 py-2 border border-black/10 text-[10px] font-black uppercase tracking-[0.1em] hover:bg-zinc-50 transition-colors"><i class="fa-solid fa-download"></i> Descargar</button>
+              </div>
+              <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no representa el mobiliario real de la vivienda. Toca la foto para ampliarla.</p>
             </div>
           </div>
         </div>
@@ -2728,13 +2734,23 @@
       </div>
       <div id="ai-staging-result-wrap" class="hidden">
         <div class="grid md:grid-cols-2 gap-3">
-          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Antes</div><img id="ai-staging-before-img" class="w-full rounded-2xl border border-black/8"></div>
-          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Después</div><img id="ai-staging-after-img" class="w-full rounded-2xl border border-black/8"></div>
+          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Antes</div><div class="relative" style="cursor:zoom-in;" onclick="openImageLightbox(document.getElementById('ai-staging-before-img').src)"><img id="ai-staging-before-img" class="w-full rounded-2xl border border-black/8"><span style="position:absolute;top:.5rem;right:.5rem;width:26px;height:26px;background:rgba(0,0,0,0.55);border-radius:999px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;"><i class="fa-solid fa-expand"></i></span></div></div>
+          <div><div class="i18n-auto text-xs font-black uppercase tracking-[0.1em] text-zinc-400 mb-1">Después</div><div class="relative" style="cursor:zoom-in;" onclick="openImageLightbox(document.getElementById('ai-staging-after-img').src)"><img id="ai-staging-after-img" class="w-full rounded-2xl border border-black/8"><span style="position:absolute;top:.5rem;right:.5rem;width:26px;height:26px;background:rgba(0,0,0,0.55);border-radius:999px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;"><i class="fa-solid fa-expand"></i></span></div></div>
         </div>
-        <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no es un proyecto de reforma real ni presupuesto vinculante.</p>
+        <div class="flex justify-end mt-3">
+          <button onclick="downloadImage(document.getElementById('ai-staging-after-img').src,'sinkomi-simulacion-ia.jpg')" class="i18n-auto px-4 py-2 border border-black/10 text-[10px] font-black uppercase tracking-[0.1em] hover:bg-zinc-50 transition-colors"><i class="fa-solid fa-download"></i> Descargar resultado</button>
+        </div>
+        <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no es un proyecto de reforma real ni presupuesto vinculante. Toca una foto para ampliarla.</p>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Visor a pantalla completa para las imágenes generadas por IA (simulador de amueblado/reforma) -->
+<div id="image-lightbox" class="hidden fixed inset-0 z-[1500] flex items-center justify-center px-4 py-6" style="background:rgba(0,0,0,0.92);" onclick="closeImageLightbox()">
+  <button onclick="closeImageLightbox()" style="position:absolute;top:1rem;right:1.25rem;color:#fff;font-size:2rem;background:none;border:none;line-height:1;z-index:2;">×</button>
+  <button onclick="event.stopPropagation();downloadImage(document.getElementById('image-lightbox-img').src,'sinkomi-simulacion-ia.jpg')" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:2;" class="i18n-auto px-5 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.12em]"><i class="fa-solid fa-download"></i> Descargar imagen</button>
+  <img id="image-lightbox-img" src="" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;" onclick="event.stopPropagation()">
 </div>
 
 <div id="chat-modal" class="hidden fixed inset-0 bg-black/70 z-[1200] flex items-center justify-center px-4 py-4">
@@ -7313,6 +7329,34 @@ function setStagingStyle(style,btn){
   const container = btn ? btn.parentElement : document.getElementById('staging-style-pills');
   if(container) container.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+}
+
+// ── Visor a pantalla completa + descarga real para las imágenes de IA ──
+function openImageLightbox(src){
+  if(!src) return;
+  document.getElementById('image-lightbox-img').src = src;
+  document.getElementById('image-lightbox').classList.remove('hidden');
+}
+function closeImageLightbox(){
+  document.getElementById('image-lightbox').classList.add('hidden');
+}
+async function downloadImage(url, filename){
+  if(!url) return;
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'sinkomi-simulacion-ia.jpg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  }catch(e){
+    console.error('Error descargando imagen, la abrimos en pestaña nueva:', e);
+    window.open(url, '_blank');
+  }
 }
 async function updateStagingUsesBadge(){
   const badge=document.getElementById('staging-uses-badge');
