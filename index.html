@@ -2535,6 +2535,7 @@
       </div>
       <div class="flex items-center gap-3">
         <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
+        <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
         <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em]">Contactar</button>
         <button onclick="closePropertyModal()" id="property-modal-close-btn" class="text-2xl hover:opacity-70">×</button>
       </div>
@@ -3355,6 +3356,34 @@ async function loadRealProperties(){
     console.error('Error de red cargando inmuebles reales:', e);
   }
   refreshAllPropertyViews();
+  handleDeepLinkParams();
+}
+
+// Aplica lo que venga en la URL cuando alguien llega desde un enlace compartido
+// (WhatsApp, Instagram, Google) una vez los inmuebles ya están cargados en memoria:
+// ?inmueble=ID  → abre esa ficha directamente.
+// ?zona=X&op=Y  → se va a la pestaña Comprar/Alquilar con ese municipio ya filtrado.
+let deepLinkHandled = false;
+function handleDeepLinkParams(){
+  if(deepLinkHandled) return; // solo la primera vez que se cargan los inmuebles, no en cada recarga posterior
+  const params = new URLSearchParams(window.location.search);
+  const inmuebleId = params.get('inmueble');
+  if(inmuebleId){
+    deepLinkHandled = true;
+    openPropertyModal(inmuebleId);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return;
+  }
+  const zona = params.get('zona');
+  if(zona){
+    deepLinkHandled = true;
+    const op = params.get('op');
+    const tabId = op === 'alquiler' ? 'tab-alquilar' : (op === 'traspasar' ? 'tab-traspasos' : 'tab-comprar');
+    const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
+    if(tabBtn) tabBtn.click();
+    selectMunicipality(zona);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 }
 
 // Vuelve a pintar parrillas, mapa y contadores tras cargar/actualizar los datos reales.
@@ -4204,6 +4233,32 @@ function openPropertyModal(id){
   document.getElementById('property-modal').classList.remove('hidden');
 }
 function closePropertyModal(){document.getElementById('property-modal').classList.add('hidden');}
+
+// Comparte (o copia) el enlace propio de este inmueble — /inmueble/ID, la misma ruta
+// que ya entienden WhatsApp/Instagram/Google gracias a la función de servidor.
+async function shareProperty(){
+  if(!currentProperty) return;
+  const url = `https://sinkomi.es/inmueble/${currentProperty.id}`;
+  const title = currentProperty.title || 'Un inmueble en SINKOMI';
+  const priceTxt = currentProperty.price ? Number(currentProperty.price).toLocaleString('es-ES') + ' €' : '';
+  const text = `${title}${priceTxt ? ' · ' + priceTxt : ''} — en SINKOMI, sin comisiones.`;
+
+  if(navigator.share){
+    try{
+      await navigator.share({ title, text, url });
+      return;
+    }catch(e){
+      // Si cancela el panel de compartir, no hacemos nada más.
+      if(e && e.name === 'AbortError') return;
+    }
+  }
+  try{
+    await navigator.clipboard.writeText(url);
+    alert('Enlace copiado. Ya puedes pegarlo donde quieras.');
+  }catch(e){
+    prompt('Copia este enlace:', url);
+  }
+}
 function reportProperty(id){
   if(!id) return;
   const motivo = prompt("¿Por qué quieres reportar este anuncio?\n\n1. Es una agencia inmobiliaria camuflada\n2. El inmueble es falso o una estafa\n3. Los datos o el precio son incorrectos\n\nEscribe el número del motivo (1, 2 o 3):");
