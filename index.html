@@ -8937,12 +8937,13 @@ function showWelcomeOverlay({emoji, prefix, name, suffix, subtitle}){
 }
 function hideWelcomeToast(){
   const overlay = document.getElementById('welcome-toast');
-  if(!overlay || overlay.classList.contains('hidden')) return;
+  if(!overlay) return;
   clearTimeout(welcomeToastTimer);
-  overlay.style.animation = 'welcomeOverlayIn .25s ease forwards reverse';
-  overlay.firstElementChild.style.animation = 'welcomeCardIn .3s ease forwards reverse';
-  setTimeout(()=>{ overlay.classList.add('hidden'); }, 280);
+  overlay.classList.add('hidden');
 }
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') hideWelcomeToast();
+});
 // Al iniciar sesión.
 function showWelcomeToast(name){
   const firstName = (name || '').trim().split(' ')[0] || '';
