@@ -2226,7 +2226,7 @@
       </div>
 
       <!-- VERIFICADO -->
-      <div class="panel p-8 flex flex-col relative" style="border:2px solid var(--accent);">
+      <div class="panel p-8 flex flex-col relative">
         <div class="absolute top-0 left-0 right-0 h-0.5" style="background:var(--accent);"></div>
         <div class="i18n-auto section-label mb-4" style="color:var(--accent);">Más visibilidad y confianza</div>
         <h3 class="i18n-auto text-2xl font-black mb-2">Verificado</h3>
@@ -2256,21 +2256,22 @@
       </div>
 
       <!-- VERIFICADO + DESTACADO -->
-      <div class="flex flex-col relative overflow-hidden p-8" style="background:#0d1a14;border:2px solid var(--orange);">
+      <div class="flex flex-col relative overflow-hidden p-8" style="background:#0d1a14;">
         <div class="absolute top-0 left-0 right-0 h-0.5" style="background:var(--orange);"></div>
         <div class="absolute top-6 right-6 text-[8px] font-black uppercase tracking-[0.16em] px-2 py-1" style="background:var(--orange);color:#0d1a14;">Recomendado</div>
         <div class="i18n-auto section-label mb-4" style="color:var(--orange);">Para vender o alquilar rápido</div>
         <h3 class="i18n-auto text-2xl font-black mb-2 text-white">Verificado + Destacado</h3>
         <p class="i18n-auto text-sm mb-6 leading-relaxed" style="color:rgba(255,255,255,0.5);">Cada día que tu inmueble no se vende o no se alquila tiene un coste. Este plan existe para acortar ese tiempo.</p>
-        <div class="flex items-center gap-2 mb-3" id="destacado-duration-pills">
-          <button type="button" onclick="selectDestacadoDuration(7,this)" data-duration="7" class="i18n-auto destacado-pill flex-1 py-2 text-center text-xs font-bold uppercase tracking-wide" style="border:1.5px solid var(--orange);color:var(--orange);background:transparent;">7 días · 12,99€</button>
-          <button type="button" onclick="selectDestacadoDuration(15,this)" data-duration="15" class="i18n-auto destacado-pill flex-1 py-2 text-center text-xs font-bold uppercase tracking-wide" style="border:1.5px solid var(--orange);color:var(--orange);background:transparent;">15 días · 19,99€</button>
-          <button type="button" onclick="selectDestacadoDuration(30,this)" data-duration="30" class="i18n-auto destacado-pill flex-1 py-2 text-center text-xs font-bold uppercase tracking-wide active" style="border:1.5px solid var(--orange);color:#0d1a14;background:var(--orange);">30 días · 29,99€</button>
+        <div class="flex items-start gap-2 mb-3" id="destacado-duration-pills">
+          <button type="button" onclick="selectDestacadoDuration(7,this)" data-duration="7" class="i18n-auto destacado-pill flex-1 py-2.5 text-center text-xs font-bold uppercase tracking-wide" style="border:1.5px solid var(--orange);color:var(--orange);background:transparent;">7 días<br><span style="font-size:10px;">12,99€</span><br><span style="font-size:8px;font-weight:600;opacity:.7;">≈1,86€/día</span></button>
+          <button type="button" onclick="selectDestacadoDuration(15,this)" data-duration="15" class="i18n-auto destacado-pill flex-1 py-2.5 text-center text-xs font-bold uppercase tracking-wide" style="border:1.5px solid var(--orange);color:var(--orange);background:transparent;">15 días<br><span style="font-size:10px;">19,99€</span><br><span style="font-size:8px;font-weight:600;opacity:.7;">≈1,33€/día</span></button>
+          <button type="button" onclick="selectDestacadoDuration(30,this)" data-duration="30" class="i18n-auto destacado-pill flex-1 py-2.5 text-center text-xs font-bold uppercase tracking-wide active" style="border:1.5px solid var(--orange);color:#0d1a14;background:var(--orange);">30 días<br><span style="font-size:10px;">29,99€</span><br><span style="font-size:8px;font-weight:600;opacity:.7;">≈1€/día</span></button>
         </div>
         <div class="flex items-end gap-2 mb-1">
           <span class="text-5xl font-black" style="color:var(--orange);" id="destacado-price">29,99€</span>
           <span class="i18n-auto text-sm mb-1.5 font-semibold" style="color:rgba(255,255,255,0.35);" id="destacado-price-unit">/30 días</span>
         </div>
+        <div class="text-xs font-black mb-2" style="color:var(--orange);" id="destacado-price-per-day">≈1€/día</div>
         <div class="text-xs uppercase font-black tracking-[0.14em] mb-7" style="color:rgba(255,255,255,0.3);">Pago único · sin renovaciones automáticas</div>
         <div class="space-y-3 text-sm mb-8 flex-1" style="color:rgba(255,255,255,0.7);">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Todo lo del plan Verificado</span></div>
@@ -2556,13 +2557,16 @@
           <div id="property-etv-notice" class="hidden panel p-5" style="background:var(--orange-soft);border-color:rgba(255,159,10,0.3);"></div>
 
           <!-- Simulador de amueblado con IA -->
-          <div class="panel p-6">
-            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-              <div class="i18n-auto section-label">✨ Simulador de amueblado con IA</div>
+          <div class="p-6 relative overflow-hidden" style="border-radius:var(--r-lg);border:1.5px dashed rgba(0,168,120,0.35);background:linear-gradient(135deg, rgba(0,168,120,0.05) 0%, rgba(255,159,10,0.04) 100%);">
+            <div style="position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:999px;background:var(--accent);opacity:0.06;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:-40px;left:-30px;width:110px;height:110px;border-radius:999px;background:var(--orange);opacity:0.05;pointer-events:none;"></div>
+            <div class="relative flex items-center justify-between mb-1 flex-wrap gap-2">
+              <div class="i18n-auto text-[10px] font-black uppercase tracking-[0.2em]" style="color:var(--accent);">✨ Herramienta con IA</div>
               <span id="staging-uses-badge" class="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-1 rounded-full" style="background:var(--accent-soft);color:var(--accent-dark);"></span>
             </div>
-            <p class="i18n-auto text-sm text-zinc-600 mb-4">Elige un estilo y visualiza esta vivienda amueblada con IA a partir de la primera foto. Tienes 5 usos gratis.</p>
-            <div class="flex flex-wrap gap-2 mb-4" id="staging-style-pills">
+            <h4 class="relative serif text-2xl italic mb-2" style="color:var(--ink);">Visualiza esta casa <span style="color:var(--accent);">amueblada</span></h4>
+            <p class="relative i18n-auto text-sm text-zinc-600 mb-4">Elige un estilo y visualiza esta vivienda amueblada con IA a partir de la primera foto. Tienes 5 usos gratis.</p>
+            <div class="relative flex flex-wrap gap-2 mb-4" id="staging-style-pills">
               <button type="button" class="filter-pill active" onclick="setStagingStyle('Modern',this)">Moderno</button>
               <button type="button" class="filter-pill" onclick="setStagingStyle('Scandinavian',this)">Escandinavo</button>
               <button type="button" class="filter-pill" onclick="setStagingStyle('Rustic',this)">Rústico</button>
@@ -2570,8 +2574,8 @@
               <button type="button" class="filter-pill" onclick="setStagingStyle('Coastal',this)">Costero</button>
               <button type="button" class="filter-pill" onclick="setStagingStyle('Traditional',this)">Tradicional</button>
             </div>
-            <button id="staging-generate-btn" onclick="generateStaging()" class="i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver amueblado</button>
-            <div id="staging-result-wrap" class="hidden mt-5">
+            <button id="staging-generate-btn" onclick="generateStaging()" class="relative i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver amueblado</button>
+            <div id="staging-result-wrap" class="hidden mt-5 relative">
               <img id="staging-result-img" class="w-full rounded-2xl border border-black/8" src="">
               <p class="i18n-auto text-xs text-zinc-400 mt-2">Simulación generada con IA — orientativa, no representa el mobiliario real de la vivienda.</p>
             </div>
@@ -6155,50 +6159,37 @@ function openPlanSelector(){
             <div style="font-size:10px;color:#888;margin-top:.35rem;">Badge de propietario real · Filtro "Solo verificados" · Pago único permanente</div>
           </div>
 
-          <!-- Destacado 7 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',7);"
-            style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
-            onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div style="display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
-                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
-                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">7 días</span>
-              </div>
-              <span style="font-weight:900;font-size:16px;color:#e8a020;">12,99€</span>
+          <!-- Verificado + Destacado -->
+          <div style="border:2px solid #e8a020;padding:1.1rem 1.25rem 1.25rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">
+              <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
+              <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
             </div>
-            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 7 días</div>
-          </div>
-
-          <!-- Destacado 15 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',15);"
-            style="border:2px solid #e8a020;padding:1rem 1.25rem;cursor:pointer;transition:background .15s;"
-            onmouseover="this.style.background='rgba(232,160,32,0.04)'" onmouseout="this.style.background='white'">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div style="display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
-                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
-                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">15 días</span>
+            <div style="font-size:10px;color:#888;margin-bottom:.9rem;">Todo lo de Verificado + primera posición en portada mientras dure. Elige la duración:</div>
+            <div style="display:flex;gap:.5rem;">
+              <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',7);"
+                style="flex:1;border:1.5px solid rgba(232,160,32,0.35);padding:.7rem .4rem;text-align:center;cursor:pointer;transition:background .15s;"
+                onmouseover="this.style.background='rgba(232,160,32,0.06)'" onmouseout="this.style.background='white'">
+                <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;">7 días</div>
+                <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">12,99€</div>
+                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1,86€/día</div>
               </div>
-              <span style="font-weight:900;font-size:16px;color:#e8a020;">19,99€</span>
-            </div>
-            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 15 días</div>
-          </div>
-
-          <!-- Destacado 30 días -->
-          <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',30);"
-            style="border:2px solid #e8a020;background:rgba(232,160,32,0.03);padding:1rem 1.25rem;cursor:pointer;transition:background .15s;position:relative;"
-            onmouseover="this.style.background='rgba(232,160,32,0.07)'" onmouseout="this.style.background='rgba(232,160,32,0.03)'">
-            <div style="position:absolute;top:-1px;right:-.5rem;background:#e8a020;color:white;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .5rem;">Más popular</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div style="display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-fire" style="color:#e8a020;font-size:14px;"></i>
-                <span style="font-weight:900;font-size:13px;">Verificado + Destacado</span>
-                <span style="font-size:10px;font-weight:800;background:#e8a020;color:white;padding:.15rem .4rem;">30 días</span>
+              <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',15);"
+                style="flex:1;border:1.5px solid rgba(232,160,32,0.35);padding:.7rem .4rem;text-align:center;cursor:pointer;transition:background .15s;"
+                onmouseover="this.style.background='rgba(232,160,32,0.06)'" onmouseout="this.style.background='white'">
+                <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;">15 días</div>
+                <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">19,99€</div>
+                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1,33€/día</div>
               </div>
-              <span style="font-weight:900;font-size:16px;color:#e8a020;">29,99€</span>
+              <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',30);"
+                style="flex:1;border:1.5px solid #e8a020;background:rgba(232,160,32,0.05);padding:.7rem .4rem;text-align:center;cursor:pointer;transition:background .15s;position:relative;"
+                onmouseover="this.style.background='rgba(232,160,32,0.1)'" onmouseout="this.style.background='rgba(232,160,32,0.05)'">
+                <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#e8a020;color:white;font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.15rem .4rem;white-space:nowrap;">Más popular</div>
+                <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem;">30 días</div>
+                <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">29,99€</div>
+                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1€/día</div>
+              </div>
             </div>
-            <div style="font-size:10px;color:#888;margin-top:.35rem;">Todo lo de Verificado + primera posición en portada durante 30 días</div>
           </div>
 
         </div>
@@ -7319,7 +7310,8 @@ async function generateStandaloneStaging(){
 }
 function setStagingStyle(style,btn){
   selectedStagingStyle=style;
-  document.querySelectorAll('#staging-style-pills .filter-pill').forEach(b=>b.classList.remove('active'));
+  const container = btn ? btn.parentElement : document.getElementById('staging-style-pills');
+  if(container) container.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 }
 async function updateStagingUsesBadge(){
@@ -7404,7 +7396,9 @@ function selectDestacadoDuration(days,btn){
   if(wrap) wrap.querySelectorAll('.destacado-pill').forEach(p=>{p.classList.remove('active');p.style.background='transparent';p.style.color='var(--orange)';});
   btn.classList.add('active'); btn.style.background='var(--orange)'; btn.style.color='#0d1a14';
   const price = days===7 ? '12,99€' : (days===15 ? '19,99€' : '29,99€');
+  const perDay = days===7 ? '≈1,86€/día' : (days===15 ? '≈1,33€/día' : '≈1€/día');
   const priceEl=document.getElementById('destacado-price'); if(priceEl) priceEl.textContent=price;
+  const perDayEl=document.getElementById('destacado-price-per-day'); if(perDayEl) perDayEl.textContent=perDay;
   const unitEl=document.getElementById('destacado-price-unit'); if(unitEl) unitEl.textContent='/'+days+' días';
   const ctaEl=document.getElementById('destacado-cta'); if(ctaEl) ctaEl.textContent='Activar Verificado + Destacado · '+price+'/'+days+' días';
 }
