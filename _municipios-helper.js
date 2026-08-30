@@ -18,10 +18,9 @@ const TRASPASO_CATEGORIES = ["Traspaso","Bar / Cafetería","Restaurante","Tienda
 
 const BOT_PATTERN = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
 
-// "Sant Josep de sa Talaia" -> "sant-josep-de-sa-talaia" (sin tildes, todo minúsculas)
 function slugify(text){
   return text.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 }
