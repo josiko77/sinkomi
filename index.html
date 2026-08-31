@@ -3194,7 +3194,7 @@
 </button>
 <script>
 const fallbackImg='data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f4f2ef"/><stop offset="1" stop-color="#d8d0c7"/></linearGradient></defs><rect width="900" height="650" fill="url(#g)"/><path d="M260 385 L450 235 L640 385 V520 H310 V385 Z" fill="#fff" stroke="#111" stroke-opacity=".12" stroke-width="10"/><rect x="390" y="420" width="120" height="100" fill="#13a7ff" opacity=".18"/><text x="450" y="590" text-anchor="middle" font-family="Arial" font-size="38" font-weight="700" fill="#222">SINKOMI</text></svg>`);
-const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpolicy="no-referrer"`;
+const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpolicy="no-referrer" loading="lazy"`;
 
 function openDatosModal(){ document.getElementById('datos-modal').classList.remove('hidden'); setTimeout(initPreciosChart,80); }
 function closeDatosModal(){ document.getElementById('datos-modal').classList.add('hidden'); }
