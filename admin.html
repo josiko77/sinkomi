@@ -589,6 +589,7 @@
     const { error } = await sb.from('properties').update({ nota_simple_status:'aprobado' }).eq('id', propertyId);
     if(error){ showToast('Error al aprobar'); console.error(error); return; }
     showToast('Nota Simple aprobada');
+    notifyOwner(propertyId, 'aprobado');
     loadVerifications();
     loadProperties();
   }
@@ -599,7 +600,36 @@
     const { error } = await sb.from('properties').update({ nota_simple_status:'rechazado', nota_simple_rejection_note: motivo }).eq('id', propertyId);
     if(error){ showToast('Error al rechazar'); console.error(error); return; }
     showToast('Nota Simple rechazada');
+    notifyOwner(propertyId, 'rechazado', motivo);
     loadVerifications();
+  }
+
+  // Avisa por email al propietario de que su Nota Simple ha sido revisada.
+  // Si el email falla por lo que sea (falta la API key, Resend caído, etc.), no bloquea
+  // nada — el estado ya quedó guardado en Supabase, el aviso es un extra, no un requisito.
+  async function notifyOwner(propertyId, status, motivo){
+    try{
+      const { data: prop } = await sb.from('properties').select('title, owner_id').eq('id', propertyId).maybeSingle();
+      if(!prop?.owner_id) return;
+      const { data: owner } = await sb.from('profiles').select('email, nombre').eq('id', prop.owner_id).maybeSingle();
+      if(!owner?.email) return;
+
+      const nombre = owner.nombre ? ' ' + owner.nombre : '';
+      const tituloInmueble = prop.title || 'tu inmueble';
+
+      const subject = status === 'aprobado'
+        ? `Tu Nota Simple ha sido aprobada — ${tituloInmueble}`
+        : `Tu Nota Simple necesita revisión — ${tituloInmueble}`;
+
+      const html = status === 'aprobado'
+        ? `<p>Hola${nombre},</p><p>Buenas noticias: hemos aprobado la Nota Simple de <strong>${tituloInmueble}</strong>. Si tu identidad también está verificada, tu anuncio ya muestra el sello "Verificado" en SINKOMI.</p><p>— El equipo de SINKOMI</p>`
+        : `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y de momento no podemos aprobarla.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Puedes volver a subirla desde "Mis inmuebles publicados" en tu cuenta de SINKOMI.</p><p>— El equipo de SINKOMI</p>`;
+
+      const { error: notifyError } = await sb.functions.invoke('sinkomi-notify', { body: { to: owner.email, subject, html } });
+      if(notifyError) console.error('No se pudo enviar el email de notificación:', notifyError);
+    }catch(e){
+      console.error('No se pudo enviar el email de notificación:', e);
+    }
   }
 
   // ─── HELPERS ─────────────────────────────────────────────────────
