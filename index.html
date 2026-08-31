@@ -380,6 +380,10 @@
     .calc-pct-row{display:flex;gap:.5rem;}
     @media(max-width:480px){.calc-pct-row{display:grid;grid-template-columns:repeat(3,1fr);}}
     .precios-compare-strip{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;justify-content:center;}
+    .chat-lang-pill{background:#111a14;color:#e8f0eb;border:1.5px solid rgba(94,230,176,0.35);font-size:11.5px;font-weight:800;padding:.5rem .8rem;border-radius:999px;outline:none;cursor:pointer;transition:border-color .18s ease,background .18s ease;}
+    .chat-lang-pill:hover{border-color:rgba(94,230,176,0.6);}
+    .chat-lang-pill:focus{border-color:#5ee6b0;box-shadow:0 0 0 3px rgba(94,230,176,0.15);}
+    .chat-lang-pill-accent{background:rgba(94,230,176,0.12);border-color:rgba(94,230,176,0.5);color:#5ee6b0;}
     .mini-catalog-card{background:white;border:1px solid var(--line);overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,0.04);}
     .mini-catalog-img{width:100%;height:170px;object-fit:cover;display:block;}
     .comparison-value{font-size:2.2rem;line-height:1;font-weight:900;letter-spacing:-0.025em;color:var(--accent);}
@@ -2632,6 +2636,12 @@
             <div class="text-4xl font-black mb-1" id="property-price"></div>
             <div class="text-sm text-zinc-500 mb-4" id="property-type"></div>
 
+            <!-- Aviso de traducción en vivo — la misma promesa que se hace en la home, visible aquí antes de entrar al chat -->
+            <div class="flex items-center gap-2 mb-4 pb-4 border-b border-black/5" style="font-size:11px;font-weight:800;color:var(--accent-dark);">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--accent);animation:pulseSoft 1.6s infinite;display:inline-block;flex-shrink:0;"></span>
+              <span class="i18n-auto">🌐 Chat con traducción en vivo · 8 idiomas</span>
+            </div>
+
             <!-- Rentabilidad del alquiler — solo para inmuebles en venta -->
             <div id="property-yield-box" class="hidden mb-4 pb-4 border-b border-black/5">
               <div class="text-[9px] font-black uppercase tracking-[0.16em] text-zinc-400 mb-2">Rentabilidad estimada como alquiler</div>
@@ -2811,13 +2821,13 @@
         <div class="chat-topbar px-6 py-4 flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><div class="w-11 h-11 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-black border border-[var(--accent)]/20" id="seller-avatar"></div><div class="min-w-0"><div class="font-bold truncate" id="seller-name"></div><div class="text-xs text-zinc-700 flex items-center gap-2"><span class="online-dot"></span><span id="seller-status" class="i18n-auto">En línea · propietario/a verificado/a</span></div></div></div><div class="flex items-center gap-2 flex-wrap justify-end"><button onclick="showScheduleVisit()" class="i18n-auto hidden md:inline-flex px-4 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]">Agendar visita</button><button onclick="closeChat()" class="text-2xl text-zinc-600 hover:text-zinc-700">×</button></div></div>
         <div class="px-6 py-3 flex items-center gap-3 flex-wrap" style="background:#0d1a14;border-bottom:1px solid rgba(255,255,255,0.06);">
           <div class="flex items-center gap-2 shrink-0">
-            <span style="font-size:1.05rem;filter:drop-shadow(0 0 6px rgba(94,230,176,0.5));">🌐</span>
+            <span style="width:7px;height:7px;border-radius:999px;background:#5ee6b0;animation:pulseSoft 1.6s infinite;display:inline-block;box-shadow:0 0 8px rgba(94,230,176,0.7);"></span>
             <span style="color:#5ee6b0;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;" class="i18n-auto">Traducción en vivo</span>
           </div>
           <div class="flex items-center gap-2 flex-wrap ml-auto">
-            <select id="chat-my-lang" onchange="onChatLangChange()" style="background:#111a14;color:#e8f0eb;border:1px solid rgba(94,230,176,0.25);font-size:11px;font-weight:700;padding:.42rem .55rem;outline:none;"><option value="Español">Español</option><option value="Catalán">Catalán</option><option value="Alemán">Alemán</option><option value="Inglés">Inglés</option><option value="Francés">Francés</option><option value="Sueco">Sueco</option><option value="Italiano">Italiano</option><option value="Árabe">Árabe</option><option value="Ruso">Ruso</option></select>
+            <select id="chat-my-lang" onchange="onChatLangChange()" class="chat-lang-pill"><option value="Español">🇪🇸 Español</option><option value="Catalán">Catalán</option><option value="Alemán">🇩🇪 Alemán</option><option value="Inglés">🇬🇧 Inglés</option><option value="Francés">🇫🇷 Francés</option><option value="Sueco">🇸🇪 Sueco</option><option value="Italiano">🇮🇹 Italiano</option><option value="Árabe">🇦🇪 Árabe</option><option value="Ruso">🇷🇺 Ruso</option></select>
             <span style="color:rgba(94,230,176,0.5);font-size:13px;font-weight:900;">→</span>
-            <select id="chat-their-lang" onchange="onChatLangChange()" style="background:#111a14;color:#e8f0eb;border:1px solid rgba(94,230,176,0.25);font-size:11px;font-weight:700;padding:.42rem .55rem;outline:none;"><option value="">Sin traducir</option><option value="Catalán">Catalán</option><option value="Alemán">Alemán</option><option value="Inglés">Inglés</option><option value="Francés">Francés</option><option value="Sueco">Sueco</option><option value="Italiano">Italiano</option><option value="Árabe">Árabe</option><option value="Ruso">Ruso</option><option value="Español">Español</option></select>
+            <select id="chat-their-lang" onchange="onChatLangChange()" class="chat-lang-pill chat-lang-pill-accent"><option value="">Sin traducir</option><option value="Catalán">Catalán</option><option value="Alemán">🇩🇪 Alemán</option><option value="Inglés">🇬🇧 Inglés</option><option value="Francés">🇫🇷 Francés</option><option value="Sueco">🇸🇪 Sueco</option><option value="Italiano">🇮🇹 Italiano</option><option value="Árabe">🇦🇪 Árabe</option><option value="Ruso">🇷🇺 Ruso</option><option value="Español">🇪🇸 Español</option></select>
           </div>
         </div>
         <div class="chat-property-preview"><img id="chat-property-img" src="" class="w-full h-20 object-cover"><div class="min-w-0"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="font-black text-lg truncate" id="chat-property-title"></div><div class="text-sm text-zinc-700 truncate" id="chat-property-price"></div></div><span class="saving-pill shrink-0" id="chat-saving-pill">P2P</span></div><div class="grid grid-cols-3 gap-2 mt-3 text-[10px] font-black uppercase tracking-[0.12em] text-zinc-700"><span class="bg-white border border-black/8 px-3 py-2" id="chat-property-m2">m²</span><span class="i18n-auto bg-white border border-black/8 px-3 py-2" id="chat-property-rooms">Hab.</span><span class="i18n-auto bg-white border border-black/8 px-3 py-2" id="chat-property-baths">Baños</span></div></div></div>
