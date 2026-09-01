@@ -660,6 +660,7 @@
       <a href="#inicio" id="nav-home" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Inicio</a>
       <a href="javascript:void(0)" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
       <a href="javascript:void(0)" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
+      <a href="javascript:void(0)" onclick="openRoommateSection()" id="nav-roommate" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Piso compartido</a>
       <a href="javascript:void(0)" onclick="openAyudaModal()" id="nav-help" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Ayuda</a>
       <a href="javascript:void(0)" onclick="openContratosTab()" id="nav-contratos" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contratos</a>
       <div class="relative h-10 inline-flex items-center" id="precios-wrapper">
@@ -2529,6 +2530,53 @@
   </div>
 </div>
 
+<div id="roommate-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-6xl max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="sticky top-0 bg-white z-10 px-6 py-4 border-b border-black/6 flex items-center justify-between">
+      <div>
+        <span class="i18n-auto font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500"><i class="fa-solid fa-people-roof" style="color:var(--accent);"></i> Piso compartido · SINKOMI</span>
+        <p class="i18n-auto text-xs text-zinc-500 mt-1">Habitaciones libres y gente buscando piso compartido en Baleares, sin comisiones.</p>
+      </div>
+      <button onclick="closeRoommateModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div class="px-6 pt-5 flex gap-2">
+      <button id="roommate-tab-btn-rooms" onclick="switchRoommateTab('rooms')" class="px-5 py-3 text-[11px] font-black uppercase tracking-[0.12em] border-b-2" style="border-color:var(--accent);color:var(--accent);">Habitaciones libres</button>
+      <button id="roommate-tab-btn-seeking" onclick="switchRoommateTab('seeking')" class="px-5 py-3 text-[11px] font-black uppercase tracking-[0.12em] border-b-2 border-transparent text-zinc-500">Buscan piso</button>
+      <div class="flex-1"></div>
+      <button onclick="openCreateRoommateProfileModal()" class="mb-2 px-4 py-2.5 accent-btn text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap"><i class="fa-solid fa-plus"></i> Busco piso: crear mi perfil</button>
+    </div>
+    <div id="roommate-tab-rooms" class="p-6">
+      <div id="roommate-rooms-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="text-sm text-zinc-400 col-span-full text-center py-8">Cargando habitaciones…</div></div>
+    </div>
+    <div id="roommate-tab-seeking" class="hidden p-6">
+      <div id="roommate-seeking-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"><div class="text-sm text-zinc-400 col-span-full text-center py-8">Cargando perfiles…</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="roommate-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center px-4 py-4">
+  <div class="bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div class="px-6 py-4 border-b border-black/6 flex items-center justify-between">
+      <span class="i18n-auto font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Busco piso compartido</span>
+      <button onclick="closeCreateRoommateProfileModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+    </div>
+    <div class="p-6 space-y-4">
+      <p class="text-xs text-zinc-500">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
+      <div><label class="text-sm font-medium mb-2 block">Cuéntanos sobre ti</label><textarea id="roommate-bio" rows="3" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Trabajo en hostelería, tranquilo/a, no fumador/a, busco piso compartido cerca del centro..."></textarea></div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="text-sm font-medium mb-2 block">Presupuesto máximo (€/mes)</label><input id="roommate-budget" type="number" min="0" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div>
+        <div><label class="text-sm font-medium mb-2 block">Municipio</label><select id="roommate-municipality" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="">Cualquiera</option></select></div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="text-sm font-medium mb-2 block">Fecha de entrada deseada</label><input id="roommate-move-in" type="date" class="w-full border border-black/8 px-4 py-3 bg-white"></div>
+        <div><label class="text-sm font-medium mb-2 block">Preferencia de piso</label><select id="roommate-looking-gender" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Indiferente">Indiferente</option><option value="Piso mixto">Piso mixto</option><option value="Solo chicas">Solo chicas</option><option value="Solo chicos">Solo chicos</option></select></div>
+      </div>
+      <button onclick="submitRoommateProfile()" class="w-full px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar mi perfil gratis</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="contacto-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
   <div class="bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
     <div class="px-6 py-4 border-b border-black/6 flex items-center justify-between">
@@ -2899,6 +2947,20 @@
   <label class="text-sm font-medium mb-2 block">Alquiler mensual del local (€/mes) *</label>
   <input id="publish-rent-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="1.200">
 </div>
+<div id="publish-roommate-wrap" class="hidden panel p-5" style="background:var(--accent-soft);border:2px solid var(--accent);">
+  <label class="text-sm font-black mb-1 block" style="color:var(--accent-dark);"><i class="fa-solid fa-people-roof"></i> Datos de la habitación compartida</label>
+  <p class="i18n-auto text-xs text-zinc-500 mb-3">En "Precio" pon el alquiler de la habitación, no del piso entero.</p>
+  <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div><label class="text-sm font-medium mb-2 block">Compañeros ya viviendo ahí</label><input id="publish-roommates-count" type="number" min="0" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div>
+    <div><label class="text-sm font-medium mb-2 block">Buscan</label><select id="publish-looking-for" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Indiferente">Indiferente</option><option value="Chico">Chico</option><option value="Chica">Chica</option></select></div>
+    <div><label class="text-sm font-medium mb-2 block">Fecha de entrada</label><input id="publish-move-in-date" type="date" class="w-full border border-black/8 px-4 py-3 bg-white"></div>
+    <div class="flex flex-col justify-end gap-2">
+      <label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="publish-bills-included" type="checkbox"> Gastos incluidos</label>
+      <label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="publish-pets-allowed" type="checkbox"> Se admiten mascotas</label>
+    </div>
+  </div>
+  <div class="mt-4"><label class="text-sm font-medium mb-2 block">Normas de la casa (opcional)</label><textarea id="publish-house-rules" rows="2" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. no fumadores, horario tranquilo entre semana..."></textarea></div>
+</div>
 </div>
 <div id="publish-step-2" class="hidden">
 <div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
@@ -3208,6 +3270,139 @@ const imgAttrs=`onerror="this.onerror=null;this.src='${fallbackImg}'" referrerpo
 function openDatosModal(){ document.getElementById('datos-modal').classList.remove('hidden'); setTimeout(initPreciosChart,80); }
 function closeDatosModal(){ document.getElementById('datos-modal').classList.add('hidden'); }
 function openContactoModal(){ document.getElementById('contacto-modal').classList.remove('hidden'); }
+
+/* ── PISO COMPARTIDO ─────────────────────────────────────────── */
+function openRoommateSection(){
+  document.getElementById('roommate-modal').classList.remove('hidden');
+  loadRoommateRooms();
+  loadRoommateSeeking();
+}
+function closeRoommateModal(){ document.getElementById('roommate-modal').classList.add('hidden'); }
+
+function switchRoommateTab(tab){
+  const isRooms = tab === 'rooms';
+  document.getElementById('roommate-tab-rooms').classList.toggle('hidden', !isRooms);
+  document.getElementById('roommate-tab-seeking').classList.toggle('hidden', isRooms);
+  const btnRooms = document.getElementById('roommate-tab-btn-rooms');
+  const btnSeeking = document.getElementById('roommate-tab-btn-seeking');
+  if(isRooms){
+    btnRooms.style.borderColor='var(--accent)'; btnRooms.style.color='var(--accent)';
+    btnSeeking.style.borderColor='transparent'; btnSeeking.style.color='';
+  } else {
+    btnSeeking.style.borderColor='var(--accent)'; btnSeeking.style.color='var(--accent)';
+    btnRooms.style.borderColor='transparent'; btnRooms.style.color='';
+  }
+}
+
+async function loadRoommateRooms(){
+  const grid = document.getElementById('roommate-rooms-grid');
+  const { data, error } = await supabase.from('properties').select('*')
+    .eq('category', 'Habitación en vivienda compartida').eq('active', true)
+    .order('created_at', { ascending: false });
+  if(error){ grid.innerHTML = `<div class="text-sm text-red-500 col-span-full text-center py-8">No se han podido cargar las habitaciones.</div>`; return; }
+  if(!data || !data.length){ grid.innerHTML = `<div class="text-sm text-zinc-400 col-span-full text-center py-8">Ahora mismo no hay habitaciones publicadas. ¡Sé el primero!</div>`; return; }
+  grid.innerHTML = data.map(p => {
+    const img = (p.images && p.images[0]) || fallbackImg;
+    return `<div class="border border-black/8 overflow-hidden cursor-pointer hover:-translate-y-0.5 transition-all" onclick="openPropertyModal('${p.id}')">
+      <img src="${img}" class="w-full h-40 object-cover" ${imgAttrs}>
+      <div class="p-4">
+        <div class="font-bold text-sm truncate">${escapeHtml(p.title)}</div>
+        <div class="text-xs text-zinc-500 mt-1">${escapeHtml(p.municipality||'Baleares')}${p.nucleo?' · '+escapeHtml(p.nucleo):''}</div>
+        <div class="text-lg font-black mt-2" style="color:var(--accent);">${Number(p.price||0).toLocaleString('es-ES')} €<span class="text-xs font-medium text-zinc-400">/mes</span></div>
+        <div class="flex flex-wrap gap-2 mt-2 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500">
+          ${p.roommates_count!=null?`<span>${p.roommates_count} compañeros</span>`:''}
+          ${p.looking_for?`<span>· Buscan: ${escapeHtml(p.looking_for)}</span>`:''}
+          ${p.bills_included?`<span>· Gastos incl.</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadRoommateSeeking(){
+  const grid = document.getElementById('roommate-seeking-grid');
+  const { data, error } = await supabase.from('roommate_profiles').select('*')
+    .eq('active', true).order('created_at', { ascending: false });
+  if(error){ grid.innerHTML = `<div class="text-sm text-red-500 col-span-full text-center py-8">No se han podido cargar los perfiles.</div>`; return; }
+  if(!data || !data.length){ grid.innerHTML = `<div class="text-sm text-zinc-400 col-span-full text-center py-8">Todavía nadie ha creado un perfil de búsqueda. ¡Sé el primero!</div>`; return; }
+  const userIds = [...new Set(data.map(p=>p.user_id))];
+  let nameMap = {};
+  if(userIds.length){
+    const { data: profs } = await supabase.from('profiles').select('id,nombre,verified').in('id', userIds);
+    (profs||[]).forEach(p => { nameMap[p.id] = p; });
+  }
+  const user = SinKomiAuth.getUser();
+  grid.innerHTML = data.map(p => {
+    const owner = nameMap[p.user_id] || {};
+    const name = owner.nombre || 'Usuario';
+    const isMine = user && user.supabase_id === p.user_id;
+    return `<div class="border border-black/8 p-4">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold rounded-full">${escapeHtml(name).charAt(0).toUpperCase()}</div>
+        <div>
+          <div class="font-bold text-sm">${escapeHtml(name)}${owner.verified?' <i class="fa-solid fa-circle-check text-[var(--accent)] text-xs"></i>':''}</div>
+          <div class="text-xs text-zinc-500">${escapeHtml(p.municipality||'Cualquier zona')}</div>
+        </div>
+      </div>
+      <p class="text-sm text-zinc-600 mt-3 leading-relaxed">${escapeHtml(p.bio||'Sin descripción.')}</p>
+      <div class="flex flex-wrap gap-2 mt-3 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500">
+        ${p.budget_max?`<span>Hasta ${Number(p.budget_max).toLocaleString('es-ES')} €</span>`:''}
+        ${p.looking_for_gender?`<span>· ${escapeHtml(p.looking_for_gender)}</span>`:''}
+      </div>
+      ${isMine
+        ? `<button onclick="deactivateRoommateProfile('${p.id}')" class="mt-3 w-full px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50">Este es tu perfil · Desactivar</button>`
+        : `<button onclick="openRoommateChat('${p.id}','${p.user_id}','${escapeHtml(name).replace(/'/g,"\\'")}',{budget_max:${Number(p.budget_max)||0},municipality:'${escapeHtml(p.municipality||'').replace(/'/g,"\\'")}'})" class="mt-3 w-full px-4 py-2.5 accent-btn text-[11px] font-bold uppercase tracking-[0.12em]">Contactar</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+async function deactivateRoommateProfile(id){
+  if(!confirm('¿Desactivar tu perfil de "busco piso compartido"? Dejará de verse en la web.')) return;
+  const { error } = await supabase.from('roommate_profiles').update({ active:false }).eq('id', id);
+  if(error){ alert('No se ha podido desactivar el perfil.'); return; }
+  loadRoommateSeeking();
+}
+
+function openCreateRoommateProfileModal(){
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  const sel = document.getElementById('roommate-municipality');
+  if(sel && sel.options.length === 1){
+    const sorted = [...municipalityList].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+    sorted.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
+  }
+  document.getElementById('roommate-profile-modal').classList.remove('hidden');
+}
+function closeCreateRoommateProfileModal(){ document.getElementById('roommate-profile-modal').classList.add('hidden'); }
+
+async function submitRoommateProfile(){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ alert('Debes iniciar sesión.'); return; }
+  const bio = escapeHtml(document.getElementById('roommate-bio').value.trim());
+  if(!bio){ alert('Cuéntanos algo sobre ti para que quien tiene una habitación libre sepa a quién está contactando.'); return; }
+  const payload = {
+    user_id: user.supabase_id,
+    bio,
+    budget_max: Number(document.getElementById('roommate-budget').value) || null,
+    municipality: document.getElementById('roommate-municipality').value || null,
+    move_in_date: document.getElementById('roommate-move-in').value || null,
+    looking_for_gender: document.getElementById('roommate-looking-gender').value || null,
+    active: true
+  };
+  const { error } = await supabase.from('roommate_profiles').insert(payload);
+  if(error){
+    console.error('Error creando perfil roommate:', error);
+    alert('No se ha podido publicar tu perfil.\n\n' + (error.message||''));
+    return;
+  }
+  closeCreateRoommateProfileModal();
+  document.getElementById('roommate-bio').value='';
+  document.getElementById('roommate-budget').value='';
+  document.getElementById('roommate-move-in').value='';
+  switchRoommateTab('seeking');
+  loadRoommateSeeking();
+  alert('¡Tu perfil ya está publicado! Quien tenga una habitación libre podrá contactarte por chat.');
+}
 function closeContactoModal(){ document.getElementById('contacto-modal').classList.add('hidden'); }
 let _ayudaModalReady=false;
 function openAyudaModal(){
@@ -4508,6 +4703,8 @@ function restoreChatLangSelectors(){
   if(theirEl) theirEl.value = chatTheirLang;
 }
 let currentChatPropertyId = null;
+let currentChatRoommateId = null;
+let currentRoommateProfile = null;
 let currentChatOtherUserId = null;
 let chatRealtimeChannel = null;
 let chatRenderedIds = new Set();
@@ -4517,6 +4714,8 @@ function openChatFromProperty(){if(!currentProperty)return;closePropertyModal();
 async function openChatsList(){
   if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
   currentChatPropertyId = null;
+  currentChatRoommateId = null;
+  currentRoommateProfile = null;
   document.getElementById('chat-modal').classList.remove('hidden');
   restoreChatLangSelectors();
   document.getElementById('chat-property-img').src='';
@@ -4530,7 +4729,7 @@ async function openChatsList(){
   document.getElementById('seller-avatar').textContent='';
   document.getElementById('seller-status').textContent='';
   document.getElementById('chat-messages').innerHTML = `<div class="text-center text-xs text-zinc-400 py-10">Elige una conversación de la lista para verla aquí.</div>`;
-  await loadChatThreads(null);
+  await loadChatThreads(null, null);
 }
 async function openChat(id, otherUserId, otherUserName){
   if(!SinKomiAuth.isLoggedIn()){
@@ -4554,6 +4753,8 @@ async function openChat(id, otherUserId, otherUserName){
   }
 
   currentChatPropertyId = id;
+  currentChatRoommateId = null;
+  currentRoommateProfile = null;
   currentChatOtherUserId = viewingExistingThread ? otherUserId : currentProperty.owner_id;
   chatRenderedIds = new Set();
 
@@ -4579,21 +4780,66 @@ async function openChat(id, otherUserId, otherUserName){
   const messagesEl = document.getElementById('chat-messages');
   messagesEl.innerHTML = `<div class="text-center text-xs text-zinc-400 py-6">Cargando conversación…</div>`;
 
-  loadChatThreads(id);
+  loadChatThreads(id, null);
   await loadChatHistory();
   subscribeChatRealtime();
 }
 
-// Carga todo el historial real de esta conversación (yo ↔ propietario, sobre este inmueble).
+// Hermana de openChat, pero para hablar sobre un perfil de "busco piso compartido"
+// en vez de sobre un inmueble. Reutiliza el mismo modal de chat.
+async function openRoommateChat(profileId, otherUserId, otherUserName, profileSummary){
+  if(!SinKomiAuth.isLoggedIn()){
+    openLoginModal();
+    return;
+  }
+  const user = SinKomiAuth.getUser();
+  const viewingExistingThread = !!otherUserId;
+  if(!viewingExistingThread && otherUserId === user.supabase_id){
+    alert('Este es tu propio perfil — no puedes chatear contigo mismo.');
+    return;
+  }
+
+  currentChatPropertyId = null;
+  currentProperty = null;
+  currentChatRoommateId = profileId;
+  currentRoommateProfile = profileSummary || null;
+  currentChatOtherUserId = otherUserId;
+  chatRenderedIds = new Set();
+
+  document.getElementById('chat-modal').classList.remove('hidden');
+  restoreChatLangSelectors();
+  document.getElementById('chat-property-img').src = roommateIconDataUrl;
+  document.getElementById('chat-property-title').textContent = 'Busca piso compartido';
+  document.getElementById('chat-property-price').textContent = profileSummary ? `Hasta ${Number(profileSummary.budget_max||0).toLocaleString('es-ES')} € • ${profileSummary.municipality||'Baleares'}` : '';
+  document.getElementById('chat-saving-pill').textContent = 'Piso compartido';
+  document.getElementById('chat-property-m2').textContent = '';
+  document.getElementById('chat-property-rooms').textContent = '';
+  document.getElementById('chat-property-baths').textContent = '';
+  document.getElementById('seller-name').textContent = otherUserName || 'Usuario';
+  document.getElementById('seller-avatar').textContent = (otherUserName||'?').trim().charAt(0).toUpperCase();
+  document.getElementById('seller-status').textContent = 'Busca piso compartido';
+  document.getElementById('chat-input').value = '';
+
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML = `<div class="text-center text-xs text-zinc-400 py-6">Cargando conversación…</div>`;
+
+  loadChatThreads(null, profileId);
+  await loadChatHistory();
+  subscribeChatRealtime();
+}
+const roommateIconDataUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0d1a14"/><g transform="rotate(45 32 32)"><circle cx="21" cy="32" r="9" fill="none" stroke="#00d98f" stroke-width="5.5"/><rect x="29" y="29.2" width="22" height="5.6" fill="#00d98f"/><rect x="40" y="34.8" width="5.2" height="7.5" fill="#00d98f"/><rect x="47" y="34.8" width="5.2" height="9.5" fill="#00d98f"/></g></svg>');
+
+// Carga todo el historial real de esta conversación (yo ↔ otra persona, sobre este inmueble o perfil).
 async function loadChatHistory(){
   const user = SinKomiAuth.getUser();
   const messagesEl = document.getElementById('chat-messages');
+  const isRoommate = !!currentChatRoommateId;
 
-  // Traemos todos los mensajes de este inmueble, y filtramos aquí mismo los de esta conversación
-  // concreta (más simple y fiable que un filtro complejo dentro de Supabase).
-  const { data: allData, error } = await supabase.from('messages').select('*')
-    .eq('property_id', currentChatPropertyId)
-    .order('created_at', { ascending: true });
+  // Traemos todos los mensajes de este contexto (inmueble o perfil), y filtramos aquí mismo
+  // los de esta conversación concreta (más simple y fiable que un filtro complejo en Supabase).
+  let query = supabase.from('messages').select('*').order('created_at', { ascending: true });
+  query = isRoommate ? query.eq('roommate_profile_id', currentChatRoommateId) : query.eq('property_id', currentChatPropertyId);
+  const { data: allData, error } = await query;
 
   if(error){
     console.error('Error cargando el chat:', error);
@@ -4608,7 +4854,11 @@ async function loadChatHistory(){
 
   messagesEl.innerHTML = '';
   if(!data.length){
-    messagesEl.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Estás preguntando por <span class="font-medium">${escapeHtml(currentProperty.title)}</span>.</p><p class="mt-2 text-sm text-zinc-700">Escribe tu primer mensaje a ${escapeHtml(currentProperty.sellerName)} para empezar la conversación.</p></div></div>`;
+    if(isRoommate){
+      messagesEl.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold"><i class="fa-solid fa-people-roof"></i></div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Estás escribiendo sobre un perfil de piso compartido.</p><p class="mt-2 text-sm text-zinc-700">Escribe tu primer mensaje para empezar la conversación.</p></div></div>`;
+    } else {
+      messagesEl.innerHTML = `<div class="flex items-start gap-3"><div class="w-8 h-8 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold">${currentProperty.initials}</div><div class="chat-bubble bg-white p-4 shadow-sm border border-black/5"><p class="font-medium">Estás preguntando por <span class="font-medium">${escapeHtml(currentProperty.title)}</span>.</p><p class="mt-2 text-sm text-zinc-700">Escribe tu primer mensaje a ${escapeHtml(currentProperty.sellerName)} para empezar la conversación.</p></div></div>`;
+    }
   } else {
     data.forEach(msg => renderMessageBubble(msg));
   }
@@ -4620,11 +4870,9 @@ async function loadChatHistory(){
 // Marca como leídos los mensajes que me han mandado a mí en esta conversación.
 async function markIncomingMessagesAsRead(){
   const user = SinKomiAuth.getUser();
-  await supabase.from('messages').update({ read_at: new Date().toISOString() })
-    .eq('property_id', currentChatPropertyId)
-    .eq('sender_id', currentChatOtherUserId)
-    .eq('recipient_id', user.supabase_id)
-    .is('read_at', null);
+  let query = supabase.from('messages').update({ read_at: new Date().toISOString() });
+  query = currentChatRoommateId ? query.eq('roommate_profile_id', currentChatRoommateId) : query.eq('property_id', currentChatPropertyId);
+  await query.eq('sender_id', currentChatOtherUserId).eq('recipient_id', user.supabase_id).is('read_at', null);
   updateChatUnreadBadge();
 }
 
@@ -4683,8 +4931,11 @@ function unsubscribeGlobalUnreadMessages(){
 function subscribeChatRealtime(){
   if(chatRealtimeChannel){ supabase.removeChannel(chatRealtimeChannel); chatRealtimeChannel = null; }
   const user = SinKomiAuth.getUser();
-  chatRealtimeChannel = supabase.channel('chat-' + currentChatPropertyId + '-' + user.supabase_id)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `property_id=eq.${currentChatPropertyId}` }, (payload) => {
+  const isRoommate = !!currentChatRoommateId;
+  const contextId = isRoommate ? currentChatRoommateId : currentChatPropertyId;
+  const filterCol = isRoommate ? 'roommate_profile_id' : 'property_id';
+  chatRealtimeChannel = supabase.channel('chat-' + contextId + '-' + user.supabase_id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `${filterCol}=eq.${contextId}` }, (payload) => {
       const msg = payload.new;
       const belongsHere = (msg.sender_id === user.supabase_id && msg.recipient_id === currentChatOtherUserId)
                         || (msg.sender_id === currentChatOtherUserId && msg.recipient_id === user.supabase_id);
@@ -4693,7 +4944,7 @@ function subscribeChatRealtime(){
       const messagesEl = document.getElementById('chat-messages');
       messagesEl.scrollTop = messagesEl.scrollHeight;
       if(msg.recipient_id === user.supabase_id){ markIncomingMessagesAsRead(); }
-      loadChatThreads(currentChatPropertyId); // refresca la lista de conversaciones (último mensaje, no leídos)
+      loadChatThreads(currentChatPropertyId, currentChatRoommateId); // refresca la lista de conversaciones (último mensaje, no leídos)
     })
     .subscribe();
 }
@@ -4702,6 +4953,8 @@ function closeChat(){
   document.getElementById('chat-modal').classList.add('hidden');
   if(chatRealtimeChannel){ supabase.removeChannel(chatRealtimeChannel); chatRealtimeChannel = null; }
   currentChatPropertyId = null;
+  currentChatRoommateId = null;
+  currentRoommateProfile = null;
   currentChatOtherUserId = null;
 }
 
@@ -4829,12 +5082,13 @@ async function sendMessage(){
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   const user = SinKomiAuth.getUser();
-  if(!currentChatPropertyId || !currentChatOtherUserId) return;
+  if((!currentChatPropertyId && !currentChatRoommateId) || !currentChatOtherUserId) return;
   if(window.chatAttachedFile){ sendChatFile(window.chatAttachedFile); }
   if(!text) return;
   input.value = '';
   const { data, error } = await supabase.from('messages').insert({
-    property_id: currentChatPropertyId,
+    property_id: currentChatRoommateId ? null : currentChatPropertyId,
+    roommate_profile_id: currentChatRoommateId || null,
     sender_id: user.supabase_id,
     recipient_id: currentChatOtherUserId,
     content: text
@@ -4850,7 +5104,7 @@ async function sendMessage(){
     renderMessageBubble(data);
     const messagesEl = document.getElementById('chat-messages');
     messagesEl.scrollTop = messagesEl.scrollHeight;
-    loadChatThreads(currentChatPropertyId);
+    loadChatThreads(currentChatPropertyId, currentChatRoommateId);
   }
 }
 function quickReply(text){ document.getElementById('chat-input').value = text; sendMessage(); }
@@ -4885,7 +5139,8 @@ async function sendChatFile(file){
     if(uploadError) throw uploadError;
     const { data } = supabase.storage.from('chat-attachments').getPublicUrl(path);
     const { error } = await supabase.from('messages').insert({
-      property_id: currentChatPropertyId,
+      property_id: currentChatRoommateId ? null : currentChatPropertyId,
+      roommate_profile_id: currentChatRoommateId || null,
       sender_id: user.supabase_id,
       recipient_id: currentChatOtherUserId,
       file_url: data.publicUrl,
@@ -4900,7 +5155,7 @@ async function sendChatFile(file){
 
 // Lista real de conversaciones (no propiedades destacadas al azar): agrupa mensajes por
 // inmueble + la otra persona, y muestra el último mensaje y cuántos hay sin leer.
-async function loadChatThreads(activePropertyId){
+async function loadChatThreads(activePropertyId, activeRoommateId){
   const list = document.getElementById('chat-thread-list');
   if(!list) return;
   const user = SinKomiAuth.getUser();
@@ -4914,19 +5169,26 @@ async function loadChatThreads(activePropertyId){
   const threadsMap = {};
   (data||[]).forEach(msg => {
     const otherId = msg.sender_id === user.supabase_id ? msg.recipient_id : msg.sender_id;
-    const key = msg.property_id + '::' + otherId;
-    if(!threadsMap[key]) threadsMap[key] = { propertyId: msg.property_id, otherId, lastMessage: msg, unread: 0 };
+    const isRoommate = !!msg.roommate_profile_id;
+    const key = (isRoommate ? 'r:'+msg.roommate_profile_id : 'p:'+msg.property_id) + '::' + otherId;
+    if(!threadsMap[key]) threadsMap[key] = { propertyId: msg.property_id, roommateId: msg.roommate_profile_id, otherId, lastMessage: msg, unread: 0 };
     if(msg.recipient_id === user.supabase_id && !msg.read_at) threadsMap[key].unread++;
   });
   const threads = Object.values(threadsMap);
 
   if(!threads.length){ list.innerHTML = `<div class="text-xs text-zinc-400 p-5">Aún no tienes conversaciones.</div>`; return; }
 
-  const propIds = [...new Set(threads.map(t=>t.propertyId))];
+  const propIds = [...new Set(threads.filter(t=>t.propertyId).map(t=>t.propertyId))];
   let propMap = {};
   if(propIds.length){
     const { data: props } = await supabase.from('properties').select('id,title,images,price,type,owner_name').in('id', propIds);
     (props||[]).forEach(p => { propMap[p.id] = p; });
+  }
+  const roommateIds = [...new Set(threads.filter(t=>t.roommateId).map(t=>t.roommateId))];
+  let roommateMap = {};
+  if(roommateIds.length){
+    const { data: profs } = await supabase.from('roommate_profiles').select('id,budget_max,municipality').in('id', roommateIds);
+    (profs||[]).forEach(p => { roommateMap[p.id] = p; });
   }
 
   // Nombre real de la OTRA persona de cada hilo (no siempre es el propietario: si tú eres el
@@ -4939,11 +5201,28 @@ async function loadChatThreads(activePropertyId){
   }
 
   list.innerHTML = threads.map(t => {
+    const preview = t.lastMessage.content ? escapeHtml(t.lastMessage.content) : '📎 Archivo adjunto';
+    if(t.roommateId){
+      const rp = roommateMap[t.roommateId];
+      if(!rp) return '';
+      const otherName = otherProfileMap[t.otherId] || 'Usuario';
+      const isActive = t.roommateId===activeRoommateId;
+      return `<div class="chat-thread-item ${isActive?'active':''}" onclick="openRoommateChat('${t.roommateId}','${t.otherId}','${escapeHtml(otherName).replace(/'/g,"\\'")}',{budget_max:${Number(rp.budget_max)||0},municipality:'${escapeHtml(rp.municipality||'').replace(/'/g,"\\'")}'})">
+        <div class="chat-thread-img" style="display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);"><i class="fa-solid fa-people-roof"></i></div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <div class="font-bold text-sm truncate">${escapeHtml(otherName)}</div>
+            ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
+          </div>
+          <div class="text-xs text-zinc-700 truncate mt-1">${preview}</div>
+          <div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">Busca piso compartido</div>
+        </div>
+      </div>`;
+    }
     const prop = propMap[t.propertyId];
     if(!prop) return '';
     const otherName = otherProfileMap[t.otherId] || prop.owner_name || 'Usuario';
     const img = (prop.images && prop.images[0]) || fallbackImg;
-    const preview = t.lastMessage.content ? escapeHtml(t.lastMessage.content) : '📎 Archivo adjunto';
     return `<div class="chat-thread-item ${t.propertyId===activePropertyId?'active':''}" onclick="openChat('${t.propertyId}','${t.otherId}','${escapeHtml(otherName).replace(/'/g,"\\'")}')">
       <img src="${img}" class="chat-thread-img">
       <div class="min-w-0 flex-1">
@@ -6936,6 +7215,14 @@ async function submitPublishForm(){
   const extras=getCheckedExtras();
   const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
 
+  const isRoommateRoom = category === 'Habitación en vivienda compartida';
+  const roommatesCount = isRoommateRoom ? (Number(document.getElementById('publish-roommates-count').value) || null) : null;
+  const lookingFor = isRoommateRoom ? (document.getElementById('publish-looking-for').value || 'Indiferente') : null;
+  const moveInDate = isRoommateRoom ? (document.getElementById('publish-move-in-date').value || null) : null;
+  const billsIncluded = isRoommateRoom ? document.getElementById('publish-bills-included').checked : null;
+  const petsAllowed = isRoommateRoom ? document.getElementById('publish-pets-allowed').checked : null;
+  const houseRules = isRoommateRoom ? (escapeHtml(document.getElementById('publish-house-rules').value.trim()) || null) : null;
+
   const payload = {
     owner_id: user.supabase_id,
     owner_name: ownerName,
@@ -6946,7 +7233,9 @@ async function submitPublishForm(){
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
     extras, images, video_url: publishedVideo || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
-    seasonality, etv_number: etvNumber, rent_price: rentPrice, floor_plan_url: floorPlanUrl, virtual_tour_url: virtualTourUrl
+    seasonality, etv_number: etvNumber, rent_price: rentPrice, floor_plan_url: floorPlanUrl, virtual_tour_url: virtualTourUrl,
+    roommates_count: roommatesCount, looking_for: lookingFor, move_in_date: moveInDate,
+    bills_included: billsIncluded, pets_allowed: petsAllowed, house_rules: houseRules
   };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
@@ -7716,6 +8005,8 @@ function toggleEtvField(){const type=document.getElementById('publish-type').val
   const traspasoCats=['Traspaso','Bar / Cafetería','Restaurante','Tienda / Comercio','Peluquería / Estética','Oficina','Nave industrial'];
   const traspasoWrap=document.getElementById('publish-traspaso-wrap');
   if(traspasoWrap) traspasoWrap.classList.toggle('hidden', !traspasoCats.includes(category));
+  const roommateWrap=document.getElementById('publish-roommate-wrap');
+  if(roommateWrap) roommateWrap.classList.toggle('hidden', category!=='Habitación en vivienda compartida');
 }
 let selectedDestacadoDays = 30;
 let currentVerificationPlan = 'verificado';
