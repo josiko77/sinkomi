@@ -2581,6 +2581,13 @@
         <div><label class="text-sm font-medium mb-2 block">Fecha de entrada deseada</label><input id="roommate-move-in" type="date" class="w-full border border-black/8 px-4 py-3 bg-white"></div>
         <div><label class="text-sm font-medium mb-2 block">Preferencia de piso</label><select id="roommate-looking-gender" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Indiferente">Indiferente</option><option value="Piso mixto">Piso mixto</option><option value="Solo chicas">Solo chicas</option><option value="Solo chicos">Solo chicos</option></select></div>
       </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="text-sm font-medium mb-2 block">Duración que buscas</label><select id="roommate-duration" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Larga duración">Larga duración</option><option value="Temporal, unos meses">Temporal, unos meses</option></select></div>
+        <div class="flex items-end gap-2">
+          <label class="flex-1 flex gap-2 items-center bg-white border border-black/8 p-3"><input id="roommate-has-pet" type="checkbox"> Tengo mascota</label>
+          <label class="flex-1 flex gap-2 items-center bg-white border border-black/8 p-3"><input id="roommate-smoker" type="checkbox"> Fumador/a</label>
+        </div>
+      </div>
       <button onclick="submitRoommateProfile()" class="w-full px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar mi perfil gratis</button>
     </div>
   </div>
@@ -3360,6 +3367,9 @@ async function loadRoommateSeeking(){
           ${p.budget_max?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-[var(--accent-soft)] text-[var(--accent-dark)]">Hasta ${Number(p.budget_max).toLocaleString('es-ES')} €</span>`:''}
           ${p.looking_for_gender?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600">${escapeHtml(p.looking_for_gender)}</span>`:''}
           ${p.move_in_date?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600">Desde ${new Date(p.move_in_date).toLocaleDateString('es-ES')}</span>`:''}
+          ${p.stay_duration?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600">${escapeHtml(p.stay_duration)}</span>`:''}
+          ${p.has_pet?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600"><i class="fa-solid fa-paw"></i> Con mascota</span>`:''}
+          ${p.smoker?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600"><i class="fa-solid fa-smoking"></i> Fumador/a</span>`:''}
         </div>
         ${isMine
           ? `<button onclick="deactivateRoommateProfile('${p.id}')" class="mt-4 w-full px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50">Este es tu perfil · Desactivar</button>`
@@ -3429,6 +3439,9 @@ async function submitRoommateProfile(){
     municipality: document.getElementById('roommate-municipality').value || null,
     move_in_date: document.getElementById('roommate-move-in').value || null,
     looking_for_gender: document.getElementById('roommate-looking-gender').value || null,
+    stay_duration: document.getElementById('roommate-duration').value || null,
+    has_pet: document.getElementById('roommate-has-pet').checked,
+    smoker: document.getElementById('roommate-smoker').checked,
     active: true
   };
   const { error } = await supabase.from('roommate_profiles').insert(payload);
