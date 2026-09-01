@@ -3162,7 +3162,7 @@
       <div>
         <div id="alert-summary" class="text-xs text-zinc-500 font-semibold leading-relaxed"></div>
       </div>
-      <button onclick="confirmAlert()" class="px-6 py-3 accent-btn font-black uppercase tracking-[0.14em] text-[11px] flex-shrink-0 flex items-center gap-2">
+      <button id="alert-confirm-btn" onclick="confirmAlert()" class="px-6 py-3 accent-btn font-black uppercase tracking-[0.14em] text-[11px] flex-shrink-0 flex items-center gap-2">
         <i class="fa-solid fa-bell"></i> Activar alerta
       </button>
     </div>
@@ -6802,32 +6802,41 @@ function updateAlertSummary(){
   if(el) el.textContent = parts.join(' · ');
 }
 
-function confirmAlert(){
+async function confirmAlert(){
   const email = document.getElementById('alert-email')?.value?.trim() || '';
   if(!email || !email.includes('@')){ alert('Por favor introduce un email válido.'); return; }
 
-  const alert_data = {
-    id: 'alert-'+Date.now(),
+  const user = SinKomiAuth.getUser();
+  const priceMaxRaw = document.getElementById('alert-price-max')?.value || '';
+  const bedsRaw = document.getElementById('alert-beds')?.value || '';
+
+  const alert_row = {
+    user_id: (user && user.id) ? user.id : null,
     email,
-    op: alertOp,
-    municipality: document.getElementById('alert-municipality')?.value || '',
-    type: document.getElementById('alert-type')?.value || '',
-    priceMax: document.getElementById('alert-price-max')?.value || '',
-    beds: document.getElementById('alert-beds')?.value || '',
-    verifiedOnly: document.getElementById('alert-verified-only')?.checked || false,
-    freq: alertFreq,
-    created: new Date().toLocaleDateString('es-ES')
+    operation: alertOp,
+    municipality: document.getElementById('alert-municipality')?.value || null,
+    property_type: document.getElementById('alert-type')?.value || null,
+    price_max: priceMaxRaw ? Number(priceMaxRaw) : null,
+    bedrooms_min: bedsRaw ? Number(bedsRaw) : null,
+    verified_only: document.getElementById('alert-verified-only')?.checked || false,
+    frequency: alertFreq
   };
 
-  // Guardar en localStorage
-  try {
-    const saved = JSON.parse(localStorage.getItem('sinkomi_alerts')||'[]');
-    saved.push(alert_data);
-    localStorage.setItem('sinkomi_alerts', JSON.stringify(saved));
-  } catch(e){}
+  const btn = document.getElementById('alert-confirm-btn');
+  if(btn){ btn.disabled = true; }
 
-  closeAlertModal();
-  alert('¡Alerta activada!\n\nTe avisaremos en '+email+' cuando aparezca un inmueble con tus criterios.\n\n(El envío real de emails se activará cuando conectemos Supabase.)');
+  try {
+    const { error } = await supabase.from('alerts').insert(alert_row);
+    if(error){
+      console.error('Error guardando la alerta:', error);
+      alert('No se ha podido activar la alerta. Inténtalo de nuevo en un momento.');
+      return;
+    }
+    closeAlertModal();
+    alert('¡Alerta activada!\n\nTe avisaremos en '+email+' cuando aparezca un inmueble con tus criterios.');
+  } finally {
+    if(btn){ btn.disabled = false; }
+  }
 }
 
 // Actualizar summary al cambiar inputs
