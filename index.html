@@ -2562,6 +2562,16 @@
     </div>
     <div class="p-6 space-y-4">
       <p class="text-xs text-zinc-500">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
+      <div>
+        <label class="text-sm font-medium mb-2 block">Foto de perfil (opcional, pero ayuda mucho)</label>
+        <div class="flex items-center gap-4">
+          <div id="roommate-photo-preview" class="w-16 h-16 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold text-xl overflow-hidden shrink-0"><i class="fa-solid fa-user"></i></div>
+          <label class="px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] cursor-pointer hover:bg-zinc-50">
+            Subir foto
+            <input id="roommate-photo-input" type="file" accept="image/*" class="hidden" onchange="handleRoommatePhotoUpload(this)">
+          </label>
+        </div>
+      </div>
       <div><label class="text-sm font-medium mb-2 block">Cuéntanos sobre ti</label><textarea id="roommate-bio" rows="3" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Trabajo en hostelería, tranquilo/a, no fumador/a, busco piso compartido cerca del centro..."></textarea></div>
       <div class="grid sm:grid-cols-2 gap-4">
         <div><label class="text-sm font-medium mb-2 block">Presupuesto máximo (€/mes)</label><input id="roommate-budget" type="number" min="0" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div>
@@ -3336,23 +3346,26 @@ async function loadRoommateSeeking(){
     const owner = nameMap[p.user_id] || {};
     const name = owner.nombre || 'Usuario';
     const isMine = user && user.supabase_id === p.user_id;
-    return `<div class="border border-black/8 p-4">
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold rounded-full">${escapeHtml(name).charAt(0).toUpperCase()}</div>
-        <div>
-          <div class="font-bold text-sm">${escapeHtml(name)}${owner.verified?' <i class="fa-solid fa-circle-check text-[var(--accent)] text-xs"></i>':''}</div>
-          <div class="text-xs text-zinc-500">${escapeHtml(p.municipality||'Cualquier zona')}</div>
+    const avatar = p.photo_url
+      ? `<img src="${p.photo_url}" class="w-full h-full object-cover">`
+      : `<div class="w-full h-full flex items-center justify-center text-2xl font-black">${escapeHtml(name).charAt(0).toUpperCase()}</div>`;
+    return `<div class="border border-black/8 overflow-hidden hover:-translate-y-0.5 transition-all shadow-sm">
+      <div class="h-24" style="background:linear-gradient(120deg, var(--accent-soft), var(--orange-soft));"></div>
+      <div class="px-4 pb-4">
+        <div class="w-16 h-16 rounded-full border-4 border-white bg-[var(--accent-soft)] text-[var(--accent)] overflow-hidden -mt-8 shadow-md">${avatar}</div>
+        <div class="font-bold text-base mt-2">${escapeHtml(name)}${owner.verified?' <i class="fa-solid fa-circle-check text-[var(--accent)] text-sm" title="Identidad verificada"></i>':''}</div>
+        <div class="text-xs text-zinc-500 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.municipality||'Cualquier zona de Baleares')}</div>
+        <p class="text-sm text-zinc-600 mt-3 leading-relaxed line-clamp-4">${escapeHtml(p.bio||'Sin descripción.')}</p>
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${p.budget_max?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-[var(--accent-soft)] text-[var(--accent-dark)]">Hasta ${Number(p.budget_max).toLocaleString('es-ES')} €</span>`:''}
+          ${p.looking_for_gender?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600">${escapeHtml(p.looking_for_gender)}</span>`:''}
+          ${p.move_in_date?`<span class="text-[10px] font-black uppercase tracking-[0.08em] px-2.5 py-1 bg-zinc-100 text-zinc-600">Desde ${new Date(p.move_in_date).toLocaleDateString('es-ES')}</span>`:''}
         </div>
+        ${isMine
+          ? `<button onclick="deactivateRoommateProfile('${p.id}')" class="mt-4 w-full px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50">Este es tu perfil · Desactivar</button>`
+          : `<button onclick="openRoommateChat('${p.id}','${p.user_id}','${escapeHtml(name).replace(/'/g,"\\'")}',{budget_max:${Number(p.budget_max)||0},municipality:'${escapeHtml(p.municipality||'').replace(/'/g,"\\'")}'})" class="mt-4 w-full px-4 py-2.5 accent-btn text-[11px] font-bold uppercase tracking-[0.12em]">Contactar</button>`
+        }
       </div>
-      <p class="text-sm text-zinc-600 mt-3 leading-relaxed">${escapeHtml(p.bio||'Sin descripción.')}</p>
-      <div class="flex flex-wrap gap-2 mt-3 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500">
-        ${p.budget_max?`<span>Hasta ${Number(p.budget_max).toLocaleString('es-ES')} €</span>`:''}
-        ${p.looking_for_gender?`<span>· ${escapeHtml(p.looking_for_gender)}</span>`:''}
-      </div>
-      ${isMine
-        ? `<button onclick="deactivateRoommateProfile('${p.id}')" class="mt-3 w-full px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50">Este es tu perfil · Desactivar</button>`
-        : `<button onclick="openRoommateChat('${p.id}','${p.user_id}','${escapeHtml(name).replace(/'/g,"\\'")}',{budget_max:${Number(p.budget_max)||0},municipality:'${escapeHtml(p.municipality||'').replace(/'/g,"\\'")}'})" class="mt-3 w-full px-4 py-2.5 accent-btn text-[11px] font-bold uppercase tracking-[0.12em]">Contactar</button>`
-      }
     </div>`;
   }).join('');
 }
@@ -3375,14 +3388,43 @@ function openCreateRoommateProfileModal(){
 }
 function closeCreateRoommateProfileModal(){ document.getElementById('roommate-profile-modal').classList.add('hidden'); }
 
+let roommatePhotoUrl = null;
+let roommatePhotoUploading = false;
+async function handleRoommatePhotoUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id){ openLoginModal(); return; }
+  const preview = document.getElementById('roommate-photo-preview');
+  const localUrl = URL.createObjectURL(file);
+  preview.innerHTML = `<img src="${localUrl}" class="w-full h-full object-cover">`;
+  roommatePhotoUploading = true;
+  try{
+    const ext = (file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const path = `${user.supabase_id}/roommate-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('property-images').upload(path, file, { cacheControl:'3600', upsert:false });
+    if(uploadError) throw uploadError;
+    const { data } = supabase.storage.from('property-images').getPublicUrl(path);
+    roommatePhotoUrl = data.publicUrl;
+  }catch(e){
+    console.error('Error subiendo foto de perfil:', e);
+    alert('No se ha podido subir la foto. Puedes publicar tu perfil igualmente sin ella.');
+    roommatePhotoUrl = null;
+  } finally {
+    roommatePhotoUploading = false;
+  }
+}
+
 async function submitRoommateProfile(){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id){ alert('Debes iniciar sesión.'); return; }
+  if(roommatePhotoUploading){ alert('Espera a que termine de subirse la foto.'); return; }
   const bio = escapeHtml(document.getElementById('roommate-bio').value.trim());
   if(!bio){ alert('Cuéntanos algo sobre ti para que quien tiene una habitación libre sepa a quién está contactando.'); return; }
   const payload = {
     user_id: user.supabase_id,
     bio,
+    photo_url: roommatePhotoUrl,
     budget_max: Number(document.getElementById('roommate-budget').value) || null,
     municipality: document.getElementById('roommate-municipality').value || null,
     move_in_date: document.getElementById('roommate-move-in').value || null,
@@ -3399,6 +3441,8 @@ async function submitRoommateProfile(){
   document.getElementById('roommate-bio').value='';
   document.getElementById('roommate-budget').value='';
   document.getElementById('roommate-move-in').value='';
+  document.getElementById('roommate-photo-preview').innerHTML = '<i class="fa-solid fa-user"></i>';
+  roommatePhotoUrl = null;
   switchRoommateTab('seeking');
   loadRoommateSeeking();
   alert('¡Tu perfil ya está publicado! Quien tenga una habitación libre podrá contactarte por chat.');
