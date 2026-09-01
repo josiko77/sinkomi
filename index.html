@@ -2615,6 +2615,7 @@
               <button type="button" class="filter-pill" onclick="setStagingStyle('Coastal',this)">Costero</button>
               <button type="button" class="filter-pill" onclick="setStagingStyle('Traditional',this)">Tradicional</button>
             </div>
+            <textarea id="staging-custom-prompt" oninput="stagingCustomPrompt=this.value" rows="2" maxlength="300" placeholder="Detalles concretos (opcional): sofá azul marino, mesa de madera clara, evita alfombras…" class="i18n-auto relative w-full border border-black/10 px-4 py-3 text-sm mb-4 focus:outline-none focus:border-[var(--accent)]" style="border-radius:var(--r-md);resize:vertical;"></textarea>
             <button id="staging-generate-btn" onclick="generateStaging()" class="relative i18n-auto px-6 py-3 accent-btn text-[11px] font-black uppercase tracking-[0.14em]"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver amueblado</button>
             <div id="staging-result-wrap" class="hidden mt-5 relative">
               <div class="relative" style="cursor:zoom-in;" onclick="openImageLightbox(document.getElementById('staging-result-img').src)">
@@ -2787,6 +2788,11 @@
           <button type="button" class="filter-pill" onclick="setStagingStyle('Coastal',this)">Costero</button>
           <button type="button" class="filter-pill" onclick="setStagingStyle('Traditional',this)">Tradicional</button>
         </div>
+      </div>
+      <div>
+        <div class="i18n-auto section-label mb-2">4. Detalles concretos (opcional)</div>
+        <textarea id="ai-staging-custom-prompt" oninput="standaloneStagingCustomPrompt=this.value" rows="2" maxlength="300" placeholder="Ej: sofá azul marino, mesa de madera clara, evita alfombras, quiero mucha luz natural…" class="i18n-auto w-full border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)]" style="border-radius:var(--r-md);resize:vertical;"></textarea>
+        <p class="i18n-auto text-xs text-zinc-400 mt-1">Escribe justo lo que quieres ver — colores, muebles concretos, qué evitar. Se suma al estilo elegido arriba.</p>
       </div>
       <div class="flex items-center justify-between flex-wrap gap-3">
         <span id="ai-staging-uses-badge" class="text-[11px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-full" style="background:var(--accent-soft);color:var(--accent-dark);"></span>
@@ -7489,6 +7495,8 @@ function initScrollReveals(){
 
 // ── Herramienta independiente de amueblado/reforma con IA (accesible desde la home) ──
 let selectedStagingStyle='Modern';
+let stagingCustomPrompt='';
+let standaloneStagingCustomPrompt='';
 let selectedStagingMode='amueblar';
 let standaloneStagingImageUrl=null;
 
@@ -7569,7 +7577,7 @@ async function generateStandaloneStaging(){
         'Content-Type':'application/json',
         'Authorization':`Bearer ${sessionData.session.access_token}`
       },
-      body: JSON.stringify({ image_url: standaloneStagingImageUrl, style: selectedStagingStyle, mode: selectedStagingMode })
+      body: JSON.stringify({ image_url: standaloneStagingImageUrl, style: selectedStagingStyle, mode: selectedStagingMode, custom_prompt: standaloneStagingCustomPrompt })
     });
     const data = await res.json();
     if(!res.ok){
@@ -7663,7 +7671,7 @@ async function generateStaging(){
         'Content-Type':'application/json',
         'Authorization':`Bearer ${sessionData.session.access_token}`
       },
-      body: JSON.stringify({ image_url: currentProperty.img, style: selectedStagingStyle })
+      body: JSON.stringify({ image_url: currentProperty.img, style: selectedStagingStyle, custom_prompt: stagingCustomPrompt })
     });
     const data = await res.json();
     if(!res.ok){
