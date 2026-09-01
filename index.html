@@ -2554,41 +2554,35 @@
   </div>
 </div>
 
-<div id="roommate-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center px-4 py-4">
-  <div class="bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl">
-    <div class="px-6 py-4 border-b border-black/6 flex items-center justify-between">
-      <span class="i18n-auto font-black text-[11px] uppercase tracking-[0.16em] text-zinc-500">Busco piso compartido</span>
-      <button onclick="closeCreateRoommateProfileModal()" class="text-3xl text-zinc-400 hover:text-zinc-700 leading-none">×</button>
+<div id="roommate-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center" style="padding:16px;">
+  <div class="bg-white shadow-2xl" style="width:100%;max-width:420px;max-height:92vh;overflow-y:auto;border-radius:var(--r-md);">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
+      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Busco piso compartido</span>
+      <button onclick="closeCreateRoommateProfileModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
     </div>
-    <div class="p-6 space-y-4">
-      <p class="text-xs text-zinc-500">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:22px;">
+      <p style="font-size:12px;color:#71717a;line-height:1.6;">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
       <div>
-        <label class="text-sm font-medium mb-2 block">Foto de perfil (opcional, pero ayuda mucho)</label>
-        <div class="flex items-center gap-4">
-          <div id="roommate-photo-preview" class="w-16 h-16 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center font-bold text-xl overflow-hidden shrink-0"><i class="fa-solid fa-user"></i></div>
-          <label class="px-4 py-2.5 border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] cursor-pointer hover:bg-zinc-50">
+        <label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Foto de perfil (opcional, pero ayuda mucho)</label>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div id="roommate-photo-preview" style="width:64px;height:64px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;overflow:hidden;flex-shrink:0;"><i class="fa-solid fa-user"></i></div>
+          <label style="padding:10px 16px;border:1px solid rgba(0,0,0,0.1);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;">
             Subir foto
             <input id="roommate-photo-input" type="file" accept="image/*" class="hidden" onchange="handleRoommatePhotoUpload(this)">
           </label>
         </div>
       </div>
-      <div><label class="text-sm font-medium mb-2 block">Cuéntanos sobre ti</label><textarea id="roommate-bio" rows="3" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Trabajo en hostelería, tranquilo/a, no fumador/a, busco piso compartido cerca del centro..."></textarea></div>
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div><label class="text-sm font-medium mb-2 block">Presupuesto máximo (€/mes)</label><input id="roommate-budget" type="number" min="0" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div>
-        <div><label class="text-sm font-medium mb-2 block">Municipio</label><select id="roommate-municipality" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="">Cualquiera</option></select></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Cuéntanos sobre ti</label><textarea id="roommate-bio" rows="3" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;" placeholder="Ej. Trabajo en hostelería, tranquilo/a, no fumador/a, busco piso compartido cerca del centro..."></textarea></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Presupuesto máximo (€/mes)</label><input id="roommate-budget" type="number" min="0" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;" placeholder="450"></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Municipio</label><select id="roommate-municipality" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;"><option value="">Cualquiera</option></select></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Fecha de entrada deseada</label><input id="roommate-move-in" type="date" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;"></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Preferencia de piso</label><select id="roommate-looking-gender" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;"><option value="Indiferente">Indiferente</option><option value="Piso mixto">Piso mixto</option><option value="Solo chicas">Solo chicas</option><option value="Solo chicos">Solo chicos</option></select></div>
+      <div><label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Duración que buscas</label><select id="roommate-duration" style="width:100%;border:1px solid rgba(0,0,0,0.08);padding:12px 16px;background:#fff;"><option value="Larga duración">Larga duración</option><option value="Temporal, unos meses">Temporal, unos meses</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <label style="display:flex;gap:10px;align-items:center;background:#fff;border:1px solid rgba(0,0,0,0.08);padding:14px;"><input id="roommate-has-pet" type="checkbox"> <span>Tengo mascota</span></label>
+        <label style="display:flex;gap:10px;align-items:center;background:#fff;border:1px solid rgba(0,0,0,0.08);padding:14px;"><input id="roommate-smoker" type="checkbox"> <span>Fumador/a</span></label>
       </div>
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div><label class="text-sm font-medium mb-2 block">Fecha de entrada deseada</label><input id="roommate-move-in" type="date" class="w-full border border-black/8 px-4 py-3 bg-white"></div>
-        <div><label class="text-sm font-medium mb-2 block">Preferencia de piso</label><select id="roommate-looking-gender" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Indiferente">Indiferente</option><option value="Piso mixto">Piso mixto</option><option value="Solo chicas">Solo chicas</option><option value="Solo chicos">Solo chicos</option></select></div>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div><label class="text-sm font-medium mb-2 block">Duración que buscas</label><select id="roommate-duration" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Larga duración">Larga duración</option><option value="Temporal, unos meses">Temporal, unos meses</option></select></div>
-        <div class="flex items-end gap-2">
-          <label class="flex-1 flex gap-2 items-center bg-white border border-black/8 p-3"><input id="roommate-has-pet" type="checkbox"> Tengo mascota</label>
-          <label class="flex-1 flex gap-2 items-center bg-white border border-black/8 p-3"><input id="roommate-smoker" type="checkbox"> Fumador/a</label>
-        </div>
-      </div>
-      <button onclick="submitRoommateProfile()" class="w-full px-6 py-4 accent-btn font-bold uppercase tracking-[0.12em] text-[11px]">Publicar mi perfil gratis</button>
+      <button onclick="submitRoommateProfile()" class="accent-btn" style="width:100%;padding:16px 24px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:11px;">Publicar mi perfil gratis</button>
     </div>
   </div>
 </div>
