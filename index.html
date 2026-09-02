@@ -150,6 +150,7 @@
           SinKomiAuth.loginFromSupabase(profile);
           syncUI();
           if(typeof loadFavouritesFromSupabase==='function') loadFavouritesFromSupabase();
+          if(typeof loadDiscardedIds==='function') loadDiscardedIds().then(()=>{ if(typeof refreshAllPropertyViews==='function') refreshAllPropertyViews(); });
           if(typeof updateChatUnreadBadge==='function') updateChatUnreadBadge();
           if(typeof subscribeGlobalUnreadMessages==='function') subscribeGlobalUnreadMessages();
         }
@@ -158,6 +159,7 @@
         SinKomiAuth.clearLocalSession();
         syncUI();
         if(typeof favIdsCache!=='undefined'){ favIdsCache = []; if(typeof initHearts==='function') initHearts(); }
+        if(typeof discardedIdsCache!=='undefined'){ discardedIdsCache = new Set(); if(typeof refreshAllPropertyViews==='function') refreshAllPropertyViews(); }
         if(typeof unsubscribeGlobalUnreadMessages==='function') unsubscribeGlobalUnreadMessages();
       }
       // El usuario ha pulsado el enlace de recuperación de su email y ha vuelto a la web:
@@ -2716,13 +2718,23 @@
       </div>
       <div class="flex items-center gap-3">
         <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
+        <button onclick="toggleDiscardProperty()" id="property-modal-discard-btn" title="Descartar" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-trash-can"></i></button>
+        <button onclick="openPropertyDirections()" id="property-modal-directions-btn" title="Calcular ruta" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-diamond-turn-right"></i></button>
         <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
         <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em]">Contactar</button>
         <button onclick="closePropertyModal()" id="property-modal-close-btn" class="text-2xl hover:opacity-70">×</button>
       </div>
     </div>
     <div id="property-modal-body" class="flex-1 modal-scroll p-6 bg-[#faf8f5]">
-      <!-- Navegación rápida — solo móvil/tablet. Fija arriba del contenido para saber siempre en qué sección estás. -->
+      <div style="background:#fff7d6;border:1px solid rgba(0,0,0,0.06);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;" onclick="togglePropertyNoteBox()">
+        <span style="font-size:13px;font-weight:600;color:#5c4a00;"><i class="fa-solid fa-note-sticky" style="margin-right:8px;"></i><span id="property-note-label">Añadir tu nota</span></span>
+        <i class="fa-solid fa-chevron-down" id="property-note-chevron" style="color:#5c4a00;font-size:11px;"></i>
+      </div>
+      <div id="property-note-box" class="hidden" style="margin-bottom:16px;">
+        <textarea id="property-note-input" rows="2" style="width:100%;border:1px solid rgba(0,0,0,0.1);padding:10px 14px;font-size:13px;" placeholder="Escribe algo para recordar sobre este inmueble (solo lo ves tú)..."></textarea>
+        <button onclick="savePropertyNote()" class="accent-btn" style="margin-top:8px;padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;">Guardar nota</button>
+      </div>
+
       <div id="property-quicknav" class="xl:hidden sticky top-0 z-10 -mx-6 px-6 py-2 mb-4 flex gap-2 overflow-x-auto" style="background:#faf8f5;border-bottom:1px solid var(--line);">
         <button type="button" class="property-quicknav-btn" data-target="property-section-caracteristicas">Características</button>
         <button type="button" class="property-quicknav-btn" data-target="property-section-gastos">Gastos</button>
@@ -4365,6 +4377,7 @@ function renderPropertyCards(targetId,type,append=false){
   const active=type==='Venta'?buyTypeFilter:rentTypeFilter;
   const allFiltered=sortProperties(
     properties.filter(p=>p.type===type)
+      .filter(p=>!discardedIdsCache.has(p.id))
       .filter(matchesMunicipality)
       .filter(p=>matchesCategory(p,active))
       .filter(p=>matchesAdvancedFilters(p,tab)),
@@ -4678,6 +4691,12 @@ async function openPropertyModal(id){
   updateHeartBtn(currentProperty.id, document.getElementById('property-fav-btn'));
   updateHeartBtn(currentProperty.id, document.getElementById('property-mobile-fav-btn'));
 
+  // Estado inicial del botón "Descartar" y de la nota personal
+  const discardBtn = document.getElementById('property-modal-discard-btn');
+  if(discardBtn) discardBtn.innerHTML = discardedIdsCache.has(currentProperty.id) ? '<i class="fa-solid fa-trash-can-arrow-up"></i>' : '<i class="fa-solid fa-trash-can"></i>';
+  document.getElementById('property-note-box').classList.add('hidden');
+  loadPropertyNote(currentProperty.id);
+
   document.getElementById('property-modal').classList.remove('hidden');
 
   // Reordena el contenido para móvil (precio/características/gastos justo tras la foto)
@@ -4827,6 +4846,84 @@ async function shareProperty(){
     prompt('Copia este enlace:', url);
   }
 }
+
+/* ── DESCARTAR / RUTA / NOTA (comparativa con Idealista) ─────────────── */
+let discardedIdsCache = new Set();
+
+async function loadDiscardedIds(){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  const { data, error } = await supabase.from('discarded_properties').select('property_id').eq('user_id', user.supabase_id);
+  if(error){ console.error('Error cargando descartados:', error); return; }
+  discardedIdsCache = new Set((data||[]).map(d => d.property_id));
+}
+
+async function toggleDiscardProperty(){
+  if(!currentProperty) return;
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  const user = SinKomiAuth.getUser();
+  const btn = document.getElementById('property-modal-discard-btn');
+  const isDiscarded = discardedIdsCache.has(currentProperty.id);
+
+  if(isDiscarded){
+    const { error } = await supabase.from('discarded_properties').delete().eq('user_id', user.supabase_id).eq('property_id', currentProperty.id);
+    if(error){ console.error('Error al recuperar el descartado:', error); return; }
+    discardedIdsCache.delete(currentProperty.id);
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+  } else {
+    if(!confirm('¿Descartar este anuncio? Dejará de aparecer en tus búsquedas. Puedes recuperarlo desde aquí mismo si cambias de idea.')) return;
+    const { error } = await supabase.from('discarded_properties').insert({ user_id: user.supabase_id, property_id: currentProperty.id });
+    if(error){ console.error('Error al descartar:', error); return; }
+    discardedIdsCache.add(currentProperty.id);
+    if(btn) btn.innerHTML = '<i class="fa-solid fa-trash-can-arrow-up"></i>';
+    closePropertyModal();
+    refreshAllPropertyViews(); // refresca listados/mapa para que el descartado desaparezca ya
+  }
+}
+
+function openPropertyDirections(){
+  if(!currentProperty) return;
+  const query = encodeURIComponent(`${currentProperty.nucleo ? currentProperty.nucleo + ', ' : ''}${currentProperty.municipality || ''} Baleares`);
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
+}
+
+function togglePropertyNoteBox(){
+  const box = document.getElementById('property-note-box');
+  const chevron = document.getElementById('property-note-chevron');
+  box.classList.toggle('hidden');
+  chevron.style.transform = box.classList.contains('hidden') ? '' : 'rotate(180deg)';
+}
+
+async function loadPropertyNote(propertyId){
+  const label = document.getElementById('property-note-label');
+  const input = document.getElementById('property-note-input');
+  label.textContent = 'Añadir tu nota';
+  input.value = '';
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id) return;
+  const { data, error } = await supabase.from('property_notes').select('note').eq('user_id', user.supabase_id).eq('property_id', propertyId).maybeSingle();
+  if(error){ console.error('Error cargando la nota:', error); return; }
+  if(data && data.note){ label.textContent = 'Tu nota: ' + (data.note.length > 40 ? data.note.slice(0,40)+'…' : data.note); input.value = data.note; }
+}
+
+async function savePropertyNote(){
+  if(!currentProperty) return;
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  const user = SinKomiAuth.getUser();
+  const text = document.getElementById('property-note-input').value.trim();
+  if(!text){
+    const { error } = await supabase.from('property_notes').delete().eq('user_id', user.supabase_id).eq('property_id', currentProperty.id);
+    if(error){ console.error('Error borrando la nota:', error); return; }
+    document.getElementById('property-note-label').textContent = 'Añadir tu nota';
+    togglePropertyNoteBox();
+    return;
+  }
+  const { error } = await supabase.from('property_notes').upsert({ user_id: user.supabase_id, property_id: currentProperty.id, note: text, updated_at: new Date().toISOString() }, { onConflict: 'user_id,property_id' });
+  if(error){ console.error('Error guardando la nota:', error); alert('No se ha podido guardar la nota.'); return; }
+  document.getElementById('property-note-label').textContent = 'Tu nota: ' + (text.length > 40 ? text.slice(0,40)+'…' : text);
+  togglePropertyNoteBox();
+}
+
 function reportProperty(id){
   if(!id) return;
   const motivo = prompt("¿Por qué quieres reportar este anuncio?\n\n1. Es una agencia inmobiliaria camuflada\n2. El inmueble es falso o una estafa\n3. Los datos o el precio son incorrectos\n\nEscribe el número del motivo (1, 2 o 3):");
