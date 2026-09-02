@@ -627,6 +627,33 @@
   </style>
 </head>
 <body>
+<div id="sinkomi-gate" style="position:fixed;inset:0;z-index:999999;background:#0d1a14;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:32px;">
+  <svg width="220" height="220" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect width="64" height="64" rx="14" fill="#132720"/>
+    <g transform="rotate(45 32 32)">
+      <circle cx="21" cy="32" r="9" fill="none" stroke="#00d98f" stroke-width="5.5"/>
+      <rect x="29" y="29.2" width="22" height="5.6" fill="#00d98f"/>
+      <rect x="40" y="34.8" width="5.2" height="7.5" fill="#00d98f"/>
+      <rect x="47" y="34.8" width="5.2" height="9.5" fill="#00d98f"/>
+    </g>
+  </svg>
+  <div style="font-family:Helvetica,Arial,sans-serif;font-size:72px;font-weight:800;letter-spacing:.06em;color:#ffffff;">SINKOMI</div>
+  <div style="font-family:Helvetica,Arial,sans-serif;font-size:26px;font-weight:500;color:#8fa89c;">(construyendo)</div>
+</div>
+<script>
+(function(){
+  var SECRET = 'HthrfZOmA2ch';
+  var KEY = 'sinkomi_dev_access';
+  try{
+    var params = new URLSearchParams(window.location.search);
+    if(params.get('josiko') === SECRET){ localStorage.setItem(KEY, '1'); }
+    if(localStorage.getItem(KEY) === '1'){
+      var gate = document.getElementById('sinkomi-gate');
+      if(gate) gate.style.display = 'none';
+    }
+  }catch(e){ /* si falla el acceso a localStorage, la puerta se queda puesta por defecto */ }
+})();
+</script>
 <!-- TICKER -->
 <div class="w-full bg-[#f43f5e] text-white py-2.5 ticker-wrap border-b border-white/10" style="position:sticky;top:0;z-index:51;">
   <div class="ticker-inner">
