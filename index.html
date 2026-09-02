@@ -695,6 +695,7 @@
       <a href="javascript:void(0)" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
       <a href="javascript:void(0)" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
       <a href="javascript:void(0)" onclick="openRoommateSection()" id="nav-roommate" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Piso compartido</a>
+      <a href="javascript:void(0)" onclick="openPublishGuideModal()" id="nav-publish-guide" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Cómo publicar bien</a>
       <a href="javascript:void(0)" onclick="openAyudaModal()" id="nav-help" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Ayuda</a>
       <a href="javascript:void(0)" onclick="openContratosTab()" id="nav-contratos" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Contratos</a>
       <div class="relative h-10 inline-flex items-center" id="precios-wrapper">
@@ -2588,7 +2589,65 @@
   </div>
 </div>
 
-<div id="roommate-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center" style="padding:16px;">
+<div id="publish-guide-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center" style="padding:16px;">
+  <div class="bg-white shadow-2xl" style="width:100%;max-width:720px;max-height:92vh;overflow-y:auto;">
+    <div style="padding:24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
+      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Guía · SINKOMI</span>
+      <button onclick="closePublishGuideModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:32px 28px;">
+      <h2 class="i18n-auto" style="font-size:26px;font-weight:800;color:#111;line-height:1.3;margin-bottom:8px;">¿Te lías al publicar? Aquí te lo explicamos paso a paso</h2>
+      <p class="i18n-auto" style="font-size:14px;color:#71717a;line-height:1.6;margin-bottom:28px;">No hace falta que seas fotógrafo ni que sepas de tecnología. Sigue estos 5 pasos y tu anuncio quedará tan bien como el de cualquier profesional.</p>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <div style="display:flex;gap:16px;">
+          <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">1</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#111;margin-bottom:4px;"><i class="fa-solid fa-sun" style="color:#ff9f0a;margin-right:6px;"></i>Antes de hacer las fotos</div>
+            <p class="i18n-auto" style="font-size:13.5px;color:#52525b;line-height:1.6;">Abre las persianas y enciende las luces — la luz natural lo cambia todo. Recoge un poco la casa y quita de la vista objetos personales de valor (documentos, joyas, dinero).</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;">
+          <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">2</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#111;margin-bottom:4px;"><i class="fa-solid fa-camera" style="color:#ff9f0a;margin-right:6px;"></i>Qué fotos hacer, y en qué orden</div>
+            <p class="i18n-auto" style="font-size:13.5px;color:#52525b;line-height:1.6;">Sube al menos <b>8-10 fotos</b> — cuantas más, mejor. Orden recomendado: salón/comedor primero, luego cocina, dormitorios, baños, y termina con la terraza o las vistas.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;">
+          <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">3</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#111;margin-bottom:4px;"><i class="fa-solid fa-video" style="color:#ff9f0a;margin-right:6px;"></i>El vídeo (opcional, pero recomendado)</div>
+            <p class="i18n-auto" style="font-size:13.5px;color:#52525b;line-height:1.6;">Un paseo corto por la casa grabado con el móvil, sin necesidad de edición, transmite mucha más confianza que solo fotos. No hace falta que sea perfecto.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;">
+          <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">4</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#111;margin-bottom:4px;"><i class="fa-solid fa-pen" style="color:#ff9f0a;margin-right:6px;"></i>Cómo escribir la descripción</div>
+            <p class="i18n-auto" style="font-size:13.5px;color:#52525b;line-height:1.6;">Da datos concretos: m², orientación, gastos de comunidad, año de construcción. Evita frases vacías tipo "precioso piso, no te lo pierdas" — la gente confía más en los datos que en los adjetivos.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;">
+          <div style="flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">5</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#111;margin-bottom:4px;"><i class="fa-solid fa-heart" style="color:#ff9f0a;margin-right:6px;"></i>Y sobre todo...</div>
+            <p class="i18n-auto" style="font-size:13.5px;color:#52525b;line-height:1.6;">No hace falta que seas fotógrafo profesional. Solo que se vea real y cuidado. Y si algo se te resiste, siempre puedes escribirnos por el chat de ayuda.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <button onclick="closePublishGuideModal()" class="accent-btn" style="width:100%;padding:16px 24px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:11px;margin-top:32px;">Entendido, ¡a publicar!</button>
+    </div>
+  </div>
+</div>
+
   <div class="bg-white shadow-2xl" style="width:100%;max-width:420px;max-height:92vh;overflow-y:auto;border-radius:var(--r-md);">
     <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
       <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Busco piso compartido</span>
@@ -3030,6 +3089,13 @@
   <!-- FOTOS -->
   <div class="mb-5">
     <label class="text-sm font-medium mb-2 block">Fotos del inmueble <span class="i18n-auto text-zinc-400 font-normal">(máx. 10 fotos · 15 con Verificado + Destacado · JPG, PNG, WEBP · arrastra para reordenar)</span></label>
+    <div style="background:var(--accent-soft);border:1px solid rgba(0,168,120,0.25);padding:12px 16px;margin-bottom:12px;display:flex;align-items:start;gap:10px;">
+      <i class="fa-solid fa-lightbulb" style="color:var(--accent-dark);margin-top:2px;"></i>
+      <div style="font-size:12.5px;line-height:1.6;color:#1a3d33;">
+        <b>Sube al menos 8-10 fotos con luz natural</b> — los anuncios con más fotos reciben muchos más contactos. Empieza por el salón, luego cocina, dormitorios y baños, y deja el exterior para el final.
+        <a href="javascript:void(0)" onclick="openPublishGuideModal()" style="color:var(--accent-dark);font-weight:700;text-decoration:underline;white-space:nowrap;">Ver guía completa →</a>
+      </div>
+    </div>
     <input id="publish-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePublishPhotos(this)">
     <div id="publish-photos-preview" class="photo-strip"></div>
   </div>
@@ -3414,6 +3480,9 @@ async function deactivateRoommateProfile(id){
   if(error){ alert('No se ha podido desactivar el perfil.'); return; }
   loadRoommateSeeking();
 }
+
+function openPublishGuideModal(){ document.getElementById('publish-guide-modal').classList.remove('hidden'); }
+function closePublishGuideModal(){ document.getElementById('publish-guide-modal').classList.add('hidden'); }
 
 function openCreateRoommateProfileModal(){
   if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
