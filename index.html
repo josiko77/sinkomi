@@ -2591,6 +2591,23 @@
   </div>
 </div>
 
+<div id="add-to-list-modal" class="hidden fixed inset-0 bg-black/70 z-[160] flex items-center justify-center" style="padding:16px;">
+  <div class="bg-white shadow-2xl" style="width:100%;max-width:400px;max-height:85vh;overflow-y:auto;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Añadir a una lista</span>
+      <button onclick="closeAddToListModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <div id="add-to-list-items" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+        <div style="font-size:13px;color:#a1a1aa;">Cargando tus listas…</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="new-list-name-input" type="text" placeholder="Nombre de la nueva lista..." style="flex:1;border:1px solid rgba(0,0,0,0.1);padding:10px 14px;font-size:13px;">
+        <button onclick="createCustomList()" class="accent-btn" style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;">Crear</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="publish-guide-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center" style="padding:16px;">
   <div class="bg-white shadow-2xl" style="width:100%;max-width:720px;max-height:92vh;overflow-y:auto;">
     <div style="padding:24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
@@ -2720,6 +2737,7 @@
         <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
         <button onclick="toggleDiscardProperty()" id="property-modal-discard-btn" title="Descartar" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-trash-can"></i></button>
         <button onclick="openPropertyDirections()" id="property-modal-directions-btn" title="Calcular ruta" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-diamond-turn-right"></i></button>
+        <button onclick="openAddToListModal()" id="property-modal-list-btn" title="Añadir a una lista" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-bookmark"></i></button>
         <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
         <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em]">Contactar</button>
         <button onclick="closePropertyModal()" id="property-modal-close-btn" class="text-2xl hover:opacity-70">×</button>
@@ -2836,6 +2854,13 @@
               <span class="i18n-auto text-xs text-zinc-500">Suele responder rápido</span>
             </div>
             <div class="text-xs text-zinc-500 mb-4 flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> Publicado el <strong id="property-published" class="font-semibold text-zinc-700"></strong></div>
+
+            <!-- Estadísticas públicas (como Idealista): visitas, guardados, contactos -->
+            <div id="property-stats-box" class="mb-4 pb-4 border-b border-black/5 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-zinc-500">
+              <span><i class="fa-regular fa-eye mr-1"></i><strong id="property-stat-views" class="text-zinc-700">0</strong> visitas</span>
+              <span><i class="fa-regular fa-heart mr-1"></i><strong id="property-stat-favs" class="text-zinc-700">0</strong> guardados</span>
+              <span><i class="fa-regular fa-comment mr-1"></i><strong id="property-stat-contacts" class="text-zinc-700">0</strong> contactos</span>
+            </div>
 
             <!-- Aviso no verificado -->
             <div id="property-unverified-warning" class="hidden mb-4 flex items-start gap-2 px-4 py-3 border border-amber-200 bg-amber-50 text-[11px] text-amber-800 leading-relaxed">
@@ -4524,6 +4549,14 @@ async function openPropertyModal(id){
     if(mobileCallBtn) mobileCallBtn.classList.add('hidden');
   }
 
+  // Visitas reales: cada apertura de ficha suma 1 en Supabase (antes solo contaba en Destacados).
+  let visits = currentProperty.viewCount || 0;
+  try{
+    const { data: newCount, error: viewsError } = await supabase.rpc('increment_property_views', { property_id: currentProperty.id });
+    if(!viewsError && typeof newCount === 'number'){ visits = newCount; currentProperty.viewCount = newCount; }
+  }catch(e){ console.error('No se pudo registrar la visita:', e); }
+  loadPropertyStats(currentProperty.id, visits);
+
   if(tier === 3){
     // PREMIUM — fondo oscuro, borde naranja
     header.style.cssText = 'background:linear-gradient(135deg,#0A0F1E 0%,#0d1a2e 100%);border-bottom:2px solid var(--orange);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;';
@@ -4543,13 +4576,7 @@ async function openPropertyModal(id){
       tickerEl.id = 'property-modal-ticker';
       header.parentNode.insertBefore(tickerEl, body);
     }
-    // Visitas reales: cada apertura de una ficha Destacada suma 1 en Supabase
-    // mediante una función segura que solo toca ese contador (nada más).
-    let visits = currentProperty.viewCount || 0;
-    try{
-      const { data: newCount, error: viewsError } = await supabase.rpc('increment_property_views', { property_id: currentProperty.id });
-      if(!viewsError && typeof newCount === 'number'){ visits = newCount; currentProperty.viewCount = newCount; }
-    }catch(e){ console.error('No se pudo registrar la visita:', e); }
+    // Visitas reales ya se han contado arriba, antes de esta rama (se aplica a todos los niveles).
     tickerEl.style.cssText = 'overflow:hidden;background:linear-gradient(90deg,#050810,#0A0F1E,#050810);border-bottom:1px solid rgba(232,160,32,0.3);height:26px;display:flex;align-items:center;';
     const content = `<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--orange);padding:0 1.5rem;border-right:1px solid rgba(255,255,255,0.07);"><i class="fa-solid fa-fire"></i> DESTACADO</span><span style="display:inline-flex;align-items:center;gap:.4rem;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);padding:0 1.5rem;border-right:1px solid rgba(255,255,255,0.07);"><i class="fa-solid fa-shield-check"></i> VERIFICADO</span><span style="display:inline-flex;align-items:center;gap:.4rem;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,0.4);padding:0 1.5rem;border-right:1px solid rgba(255,255,255,0.07);"><i class="fa-solid fa-eye"></i> ${visits} ${visits===1?'visita':'visitas'}</span>`;
     tickerEl.innerHTML = `<div style="display:flex;white-space:nowrap;animation:cardTickerMove 10s linear infinite;">${content}${content}${content}${content}</div>`;
@@ -4850,6 +4877,25 @@ async function shareProperty(){
 /* ── DESCARTAR / RUTA / NOTA (comparativa con Idealista) ─────────────── */
 let discardedIdsCache = new Set();
 
+// Estadísticas públicas de un inmueble (visitas, veces guardado, contactos) — visibles para
+// cualquiera que abra la ficha, como en Idealista, no solo para el propietario.
+async function loadPropertyStats(propertyId, views){
+  const viewsEl = document.getElementById('property-stat-views');
+  const favsEl = document.getElementById('property-stat-favs');
+  const contactsEl = document.getElementById('property-stat-contacts');
+  if(viewsEl) viewsEl.textContent = views || 0;
+
+  const { count: favCount, error: favError } = await supabase.from('favourites').select('*', { count: 'exact', head: true }).eq('property_id', propertyId);
+  if(!favError && favsEl) favsEl.textContent = favCount || 0;
+
+  const { data: msgs, error: msgError } = await supabase.from('messages').select('sender_id').eq('property_id', propertyId);
+  if(!msgError && contactsEl){
+    const distinctSenders = new Set((msgs||[]).map(m => m.sender_id));
+    contactsEl.textContent = distinctSenders.size;
+  }
+}
+
+
 async function loadDiscardedIds(){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id) return;
@@ -4885,6 +4931,58 @@ function openPropertyDirections(){
   if(!currentProperty) return;
   const query = encodeURIComponent(`${currentProperty.nucleo ? currentProperty.nucleo + ', ' : ''}${currentProperty.municipality || ''} Baleares`);
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
+}
+
+/* ── LISTAS PERSONALIZADAS ────────────────────────────────────────────── */
+async function openAddToListModal(){
+  if(!currentProperty) return;
+  if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
+  document.getElementById('add-to-list-modal').classList.remove('hidden');
+  await renderAddToListItems();
+}
+function closeAddToListModal(){ document.getElementById('add-to-list-modal').classList.add('hidden'); }
+
+async function renderAddToListItems(){
+  const user = SinKomiAuth.getUser();
+  const wrap = document.getElementById('add-to-list-items');
+  const { data: lists, error } = await supabase.from('custom_lists').select('id,name').eq('user_id', user.supabase_id).order('created_at');
+  if(error){ wrap.innerHTML = '<div style="font-size:13px;color:#ef4444;">No se han podido cargar tus listas.</div>'; return; }
+  if(!lists || !lists.length){ wrap.innerHTML = '<div style="font-size:13px;color:#a1a1aa;">Todavía no tienes ninguna lista. Crea la primera abajo.</div>'; return; }
+
+  const { data: items } = await supabase.from('custom_list_items').select('list_id').eq('property_id', currentProperty.id).in('list_id', lists.map(l=>l.id));
+  const inLists = new Set((items||[]).map(i=>i.list_id));
+
+  wrap.innerHTML = lists.map(l => `
+    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;">
+      <input type="checkbox" onchange="toggleListItem('${l.id}', this.checked)" ${inLists.has(l.id) ? 'checked' : ''}>
+      <span>${escapeHtml(l.name)}</span>
+    </label>
+  `).join('');
+}
+
+async function toggleListItem(listId, checked){
+  const user = SinKomiAuth.getUser();
+  if(!user || !user.supabase_id || !currentProperty) return;
+  if(checked){
+    const { error } = await supabase.from('custom_list_items').insert({ list_id: listId, property_id: currentProperty.id });
+    if(error) console.error('Error añadiendo a la lista:', error);
+  } else {
+    const { error } = await supabase.from('custom_list_items').delete().eq('list_id', listId).eq('property_id', currentProperty.id);
+    if(error) console.error('Error quitando de la lista:', error);
+  }
+}
+
+async function createCustomList(){
+  const user = SinKomiAuth.getUser();
+  const input = document.getElementById('new-list-name-input');
+  const name = input.value.trim();
+  if(!name) return;
+  const { data, error } = await supabase.from('custom_lists').insert({ user_id: user.supabase_id, name }).select().single();
+  if(error){ console.error('Error creando la lista:', error); alert('No se ha podido crear la lista.'); return; }
+  input.value = '';
+  await renderAddToListItems();
+  // La marcamos ya con el inmueble actual, para no obligar a un segundo clic.
+  if(data){ await toggleListItem(data.id, true); await renderAddToListItems(); }
 }
 
 function togglePropertyNoteBox(){
@@ -8344,6 +8442,11 @@ function updateHeartBtn(id, btn){
     var icon = btn.querySelector('i');
     if(icon){
       icon.className = isFav ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+      // Los corazones grandes de la ficha (no los de las tarjetas) no usan la clase .heart-btn,
+      // así que aquí les damos directamente el rojo cuando están activos.
+      if(btn.id === 'property-fav-btn' || btn.id === 'property-mobile-fav-btn'){
+        icon.style.color = isFav ? '#e84c1e' : '';
+      }
     }
     // La ficha de inmueble tiene dos corazones (escritorio + barra fija móvil): mantenlos sincronizados.
     if(btn.id === 'property-fav-btn' || btn.id === 'property-mobile-fav-btn'){
