@@ -201,18 +201,31 @@
     .hero-zone-opt:last-child{padding-bottom:1.05rem;}
 
     /* ── MAPA: modo selección de municipios / dibujo por vértices / cerca de mí ── */
-    #map-mode-btns{position:absolute;top:12px;right:12px;z-index:500;display:flex;gap:.5rem;}
-    .map-mode-btn{background:white;border:2px solid var(--accent);color:var(--accent-dark);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;border-radius:999px;}
+    #map-top-controls{position:absolute;top:12px;right:12px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:.55rem;}
+    #map-mode-btns{display:flex;gap:.5rem;}
+    .map-mode-btn{background:white;border:2px solid var(--accent);color:var(--accent-dark);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;border-radius:999px;white-space:nowrap;}
     .map-mode-btn:hover{background:var(--accent);color:white;}
     .map-mode-btn.active{background:var(--accent);color:white;}
     #map-select-confirm{position:absolute;top:12px;left:12px;z-index:500;background:#0d1a14;color:white;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.55rem 1rem;cursor:pointer;display:none;align-items:center;gap:.5rem;box-shadow:0 4px 14px rgba(0,0,0,0.18);border-radius:999px;border:none;}
     #map-select-confirm .count-pill{background:var(--accent);color:#0d1a14;border-radius:999px;padding:.1rem .5rem;font-size:10px;}
     #map-select-hint,#map-draw-hint,#map-nearby-hint{position:absolute;top:12px;left:12px;z-index:499;background:rgba(13,26,20,0.88);color:white;font-size:11px;font-weight:700;padding:.5rem .9rem;border-radius:999px;display:none;align-items:center;gap:.5rem;max-width:min(80%,320px);}
-    #map-draw-finish,#map-draw-cancel{position:absolute;top:58px;right:12px;z-index:500;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:none;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:999px;border:none;}
+    #map-draw-actions{display:flex;gap:.5rem;}
+    #map-draw-finish,#map-draw-cancel{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:none;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:999px;border:none;white-space:nowrap;}
     #map-draw-finish{background:var(--accent);color:white;}
     #map-draw-cancel{background:white;color:#c0392b;border:2px solid #c0392b;}
+    #map-clear-btn{background:#f43f5e;border:2px solid #f43f5e;color:white;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.5rem .9rem;cursor:pointer;display:none;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:999px;white-space:nowrap;}
     #map-nearby-radius{position:absolute;bottom:0;left:0;right:0;z-index:500;background:rgba(13,26,20,0.92);backdrop-filter:blur(8px);padding:.7rem 1rem;display:none;align-items:center;justify-content:center;gap:.8rem;color:white;font-size:11.5px;font-weight:700;}
     #map-nearby-radius input[type=range]{width:140px;accent-color:var(--accent);}
+
+    /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
+    #map-fullscreen-overlay{position:fixed;inset:0;z-index:9998;background:#fff;display:none;flex-direction:column;}
+    #map-fullscreen-overlay.show{display:flex;}
+    #map-fullscreen-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.2rem;border-bottom:1px solid var(--line);background:#fff;}
+    #map-fullscreen-back{display:flex;align-items:center;gap:.5rem;background:none;border:none;font-size:12.5px;font-weight:800;color:var(--ink);cursor:pointer;padding:.4rem .3rem;}
+    #map-fullscreen-back:hover{color:var(--accent-dark);}
+    #map-fullscreen-title{font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);}
+    #map-fullscreen-content{flex:1;position:relative;min-height:0;}
+    #map-fullscreen-content #sinkomi-map-hero{height:100% !important;}
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <style>
@@ -2277,13 +2290,17 @@
     </div>
     <!-- Mapa -->
     <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
-      <div id="map-mode-btns">
-        <button id="map-select-mode-btn" class="map-mode-btn" onclick="activateZoneSelectMode()"><i class="fa-solid fa-map-location-dot"></i> Seleccionar zonas</button>
-        <button id="map-draw-btn" class="map-mode-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Dibujar zona</button>
+      <div id="map-top-controls">
+        <div id="map-mode-btns">
+          <button id="map-select-mode-btn" class="map-mode-btn" onclick="activateZoneSelectMode()"><i class="fa-solid fa-map-location-dot"></i> Seleccionar zonas</button>
+          <button id="map-draw-btn" class="map-mode-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Dibujar zona</button>
+        </div>
+        <div id="map-draw-actions">
+          <button id="map-draw-finish" onclick="finishDrawArea()"><i class="fa-solid fa-check"></i> Terminar</button>
+          <button id="map-draw-cancel" onclick="cancelDrawArea()"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+        </div>
+        <button id="map-clear-btn" onclick="clearDrawArea()"><i class="fa-solid fa-xmark"></i> Limpiar área</button>
       </div>
-      <button id="map-clear-btn" onclick="clearDrawArea()"><i class="fa-solid fa-xmark"></i> Limpiar área</button>
-      <button id="map-draw-finish" onclick="finishDrawArea()"><i class="fa-solid fa-check"></i> Terminar</button>
-      <button id="map-draw-cancel" onclick="cancelDrawArea()"><i class="fa-solid fa-xmark"></i> Cancelar</button>
       <button id="map-select-confirm" onclick="confirmZoneSelection()"><i class="fa-solid fa-check"></i> Confirmar selección <span class="count-pill" id="map-select-count">0</span></button>
       <div id="map-select-hint"><i class="fa-solid fa-hand-pointer"></i> Toca uno o varios municipios del mapa</div>
       <div id="map-draw-hint"><i class="fa-solid fa-pen"></i> Haz clic para ir marcando el contorno</div>
@@ -2300,6 +2317,16 @@
     </div>
   </div>
 </section>
+
+<!-- MAPA A PANTALLA COMPLETA — se abre directamente al elegir zona/dibujar/cerca de mí desde el buscador, sin scroll -->
+<div id="map-fullscreen-overlay">
+  <div id="map-fullscreen-header">
+    <button type="button" id="map-fullscreen-back" onclick="closeMapFullscreen()"><i class="fa-solid fa-arrow-left"></i> <span class="i18n-auto">Volver</span></button>
+    <span class="i18n-auto" id="map-fullscreen-title">Elige tu zona</span>
+    <span style="width:70px;" aria-hidden="true"></span>
+  </div>
+  <div id="map-fullscreen-content"></div>
+</div>
 
 <!-- TABS -->
 
@@ -5719,6 +5746,15 @@ function initMapHero(){
     sinkomMapHero.on('load', function(){
       sinkomMapHero.scrollZoom.disable();
       applyMapTouchGesture(sinkomMapHero, 'sinkomi-map-hero');
+      // Atenúa las fronteras administrativas del estilo base (país/región, a veces discontinuas)
+      // para que las líneas negras de municipio sean las únicas protagonistas del mapa.
+      try {
+        (sinkomMapHero.getStyle().layers || []).forEach(function(l){
+          if(/boundary|admin/i.test(l.id) && l.type==='line'){
+            try { sinkomMapHero.setPaintProperty(l.id, 'line-opacity', 0); } catch(e){}
+          }
+        });
+      } catch(e){}
       // ── Fronteras oficiales de los 67 municipios (Govern de les Illes Balears / IDEIB) ──
       // Se cargan como capa de relleno clicable: es la base del modo "Seleccionar zonas en el mapa".
       try {
@@ -5735,11 +5771,17 @@ function initMapHero(){
             });
             sinkomMapHero.addLayer({
               id:'municipios-limites-line', type:'line', source:'municipios-limites',
-              paint:{ 'line-color':'#0d1a14', 'line-width':1.6, 'line-opacity':0.55 }
+              paint:{
+                'line-color':'#000000',
+                'line-width':['interpolate',['linear'],['zoom'], 7,1.5, 10,2.3, 14,3.2],
+                'line-opacity':0.85
+              }
             });
             sinkomMapHero.on('click', 'municipios-fill', onMunicipioFillClick);
             sinkomMapHero.on('mouseenter', 'municipios-fill', function(){ if(zoneSelectModeActive) sinkomMapHero.getCanvas().style.cursor='pointer'; });
             sinkomMapHero.on('mouseleave', 'municipios-fill', function(){ sinkomMapHero.getCanvas().style.cursor=''; });
+            municipiosLayerReady = true;
+            if(zoneSelectModeActive) activateZoneSelectMode();
           })
           .catch(e => console.warn('Límites municipales no disponibles:', e));
       } catch(e){ console.warn('Límites municipales no disponibles:', e); }
@@ -5791,21 +5833,63 @@ function heroZoneOption(mode){
   hideHeroSuggestions();
   const input = document.getElementById('hero-search-input');
   if(input) input.blur();
-  const mapEl = document.getElementById('sinkomi-map-hero');
-  if(mapEl) mapEl.scrollIntoView({ behavior:'smooth', block:'center' });
   initMapHero();
+  const titles = { select:'Selecciona tus municipios', draw:'Dibuja tu zona', nearby:'Cerca de ti' };
+  const titleEl = document.getElementById('map-fullscreen-title');
+  if(titleEl) titleEl.textContent = titles[mode] || 'Elige tu zona';
+  openMapFullscreen();
   setTimeout(function(){
     if(mode==='select') activateZoneSelectMode();
     else if(mode==='draw') startDrawArea();
     else if(mode==='nearby') searchNearMe();
-  }, 480);
+  }, 380);
 }
+
+// ── MAPA A PANTALLA COMPLETA — mueve el mismo mapa (una sola instancia) dentro/fuera de un overlay, sin recargarlo ──
+var mapHeroOriginalParent = null;
+var mapHeroOriginalNextSibling = null;
+
+function openMapFullscreen(){
+  const mapEl = document.getElementById('sinkomi-map-hero');
+  const content = document.getElementById('map-fullscreen-content');
+  const overlay = document.getElementById('map-fullscreen-overlay');
+  if(!mapEl || !content || !overlay) return;
+  if(mapEl.parentElement !== content){
+    mapHeroOriginalParent = mapEl.parentElement;
+    mapHeroOriginalNextSibling = mapEl.nextElementSibling;
+    content.appendChild(mapEl);
+  }
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ if(sinkomMapHero) sinkomMapHero.resize(); }, 60);
+}
+
+function closeMapFullscreen(){
+  const overlay = document.getElementById('map-fullscreen-overlay');
+  if(overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
+  cancelDrawArea(true);
+  const mapEl = document.getElementById('sinkomi-map-hero');
+  if(mapHeroOriginalParent && mapEl){
+    if(mapHeroOriginalNextSibling) mapHeroOriginalParent.insertBefore(mapEl, mapHeroOriginalNextSibling);
+    else mapHeroOriginalParent.appendChild(mapEl);
+  }
+  setTimeout(function(){ if(sinkomMapHero) sinkomMapHero.resize(); }, 60);
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const overlay = document.getElementById('map-fullscreen-overlay');
+    if(overlay && overlay.classList.contains('show')) closeMapFullscreen();
+  }
+});
 
 // ── ZONA / DIBUJO / CERCA DE MÍ — estado compartido de los 3 modos de búsqueda ──
 var drawSourceAdded = false;
 var drawnLatLngs = null; // array de {lat,lng} de la zona ya dibujada
 var areaFilteredProps = [];
 var municipiosGeoJSON = null;
+var municipiosLayerReady = false;
 var zoneSelectModeActive = false;
 var selectedZoneMunicipios = new Set();
 var drawingActive = false;
@@ -5994,14 +6078,27 @@ function updateZoneSelectPaint(){
   if(clearBtn) clearBtn.style.display = list.length ? 'flex' : 'none';
 }
 
-function activateZoneSelectMode(){
-  if(!sinkomMapHero){ initMapHero(); setTimeout(activateZoneSelectMode, 600); return; }
+function activateZoneSelectMode(attempt){
+  attempt = attempt || 0;
+  if(!sinkomMapHero){ initMapHero(); setTimeout(function(){ activateZoneSelectMode(0); }, 600); return; }
   cancelDrawArea(true);
   exitNearbyMode();
   zoneSelectModeActive = true;
-  document.getElementById('map-select-mode-btn').classList.add('active');
-  document.getElementById('map-draw-btn').style.display='none';
-  document.getElementById('map-select-hint').style.display='flex';
+  const modeBtn = document.getElementById('map-select-mode-btn');
+  if(modeBtn) modeBtn.classList.add('active');
+  const drawBtn = document.getElementById('map-draw-btn');
+  if(drawBtn) drawBtn.style.display='none';
+  const hint = document.getElementById('map-select-hint');
+  if(!municipiosLayerReady){
+    if(attempt > 20){
+      if(hint){ hint.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> No se pudieron cargar los municipios. Prueba a "Dibujar tu zona".'; hint.style.display='flex'; }
+      return;
+    }
+    if(hint){ hint.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> Cargando municipios…'; hint.style.display='flex'; }
+    setTimeout(function(){ if(zoneSelectModeActive) activateZoneSelectMode(attempt+1); }, 350);
+    return;
+  }
+  if(hint){ hint.innerHTML='<i class="fa-solid fa-hand-pointer"></i> Toca uno o varios municipios del mapa'; hint.style.display='flex'; }
   updateZoneSelectPaint();
 }
 
@@ -6110,6 +6207,7 @@ function clearDrawArea(){
 
 function goToAreaResults(){
   if(areaFilteredProps.length===0) return;
+  closeMapFullscreen();
   // Scroll al grid de compra y filtra por municipios del área
   const municipiosEnArea = [...new Set(areaFilteredProps.map(p=>p.municipality))];
   // Activa tab compra y filtra
