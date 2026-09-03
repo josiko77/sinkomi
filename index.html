@@ -187,6 +187,32 @@
     .map-popup-count { font-size: 11px; font-weight: 700; color: #00a878; text-transform: uppercase; letter-spacing: .12em; }
     .map-popup-btn { display: block; width: 100%; margin-top: 10px; padding: 8px; background: #0d1a14; color: white; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em; text-align: center; border: none; cursor: pointer; }
     .map-popup-btn:hover { background: #00a878; }
+
+    /* ── DESPLEGABLE "CÓMO QUIERES BUSCAR" — buscador hero ── */
+    #hero-zone-menu{position:absolute;left:0;right:0;top:calc(100% + 10px);background:#fff;border-radius:20px;box-shadow:0 26px 60px -18px rgba(13,26,20,0.32),0 2px 12px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.06);z-index:70;overflow:hidden;opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;transition:opacity .16s ease,transform .16s ease;}
+    #hero-zone-menu.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+    .hero-zone-eyebrow{padding:.9rem 1.3rem .5rem;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .hero-zone-opt{display:flex;align-items:center;gap:.9rem;width:100%;padding:.85rem 1.3rem;background:none;border:none;text-align:left;cursor:pointer;transition:background .14s ease;}
+    .hero-zone-opt:hover,.hero-zone-opt:focus-visible{background:var(--accent-soft);outline:none;}
+    .hero-zone-opt+.hero-zone-opt{border-top:1px solid var(--line);}
+    .hero-zone-icon{width:2.5rem;height:2.5rem;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .hero-zone-label{font-size:13.5px;font-weight:800;color:var(--ink);display:block;}
+    .hero-zone-sub{font-size:11.5px;color:var(--muted);margin-top:.15rem;display:block;}
+    .hero-zone-opt:last-child{padding-bottom:1.05rem;}
+
+    /* ── MAPA: modo selección de municipios / dibujo por vértices / cerca de mí ── */
+    #map-mode-btns{position:absolute;top:12px;right:12px;z-index:500;display:flex;gap:.5rem;}
+    .map-mode-btn{background:white;border:2px solid var(--accent);color:var(--accent-dark);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);transition:all .2s;border-radius:999px;}
+    .map-mode-btn:hover{background:var(--accent);color:white;}
+    .map-mode-btn.active{background:var(--accent);color:white;}
+    #map-select-confirm{position:absolute;top:12px;left:12px;z-index:500;background:#0d1a14;color:white;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.55rem 1rem;cursor:pointer;display:none;align-items:center;gap:.5rem;box-shadow:0 4px 14px rgba(0,0,0,0.18);border-radius:999px;border:none;}
+    #map-select-confirm .count-pill{background:var(--accent);color:#0d1a14;border-radius:999px;padding:.1rem .5rem;font-size:10px;}
+    #map-select-hint,#map-draw-hint,#map-nearby-hint{position:absolute;top:12px;left:12px;z-index:499;background:rgba(13,26,20,0.88);color:white;font-size:11px;font-weight:700;padding:.5rem .9rem;border-radius:999px;display:none;align-items:center;gap:.5rem;max-width:min(80%,320px);}
+    #map-draw-finish,#map-draw-cancel{position:absolute;top:58px;right:12px;z-index:500;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .85rem;cursor:pointer;display:none;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:999px;border:none;}
+    #map-draw-finish{background:var(--accent);color:white;}
+    #map-draw-cancel{background:white;color:#c0392b;border:2px solid #c0392b;}
+    #map-nearby-radius{position:absolute;bottom:0;left:0;right:0;z-index:500;background:rgba(13,26,20,0.92);backdrop-filter:blur(8px);padding:.7rem 1rem;display:none;align-items:center;justify-content:center;gap:.8rem;color:white;font-size:11.5px;font-weight:700;}
+    #map-nearby-radius input[type=range]{width:140px;accent-color:var(--accent);}
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <style>
@@ -790,8 +816,23 @@
         </div>
         <div class="flex-1 relative flex items-center bg-white px-5 gap-2 rounded-full shadow-sm" id="hero-search-wrap">
           <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
-          <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="handleHeroSearchKeydown(event)">
+          <input id="hero-search-input" type="text" autocomplete="off" placeholder="Municipio, zona… (ej. Palma, Sóller, Ses Salines)" class="w-full py-3.5 md:py-0 outline-none text-[15px] font-medium bg-transparent" oninput="filterHeroSuggestions()" onkeydown="handleHeroSearchKeydown(event)" onfocus="showHeroZoneMenu()">
           <div id="hero-search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-black/8 shadow-2xl max-h-64 overflow-y-auto z-50 text-left rounded-2xl"></div>
+          <div id="hero-zone-menu">
+            <div class="hero-zone-eyebrow i18n-auto">Cómo quieres buscar</div>
+            <button type="button" class="hero-zone-opt" onclick="heroZoneOption('select')">
+              <span class="hero-zone-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+              <span class="flex-1"><span class="hero-zone-label i18n-auto">Seleccionar zonas en el mapa</span><span class="hero-zone-sub i18n-auto">Toca los municipios reales que te interesan</span></span>
+            </button>
+            <button type="button" class="hero-zone-opt" onclick="heroZoneOption('draw')">
+              <span class="hero-zone-icon"><i class="fa-solid fa-draw-polygon"></i></span>
+              <span class="flex-1"><span class="hero-zone-label i18n-auto">Dibujar tu zona</span><span class="hero-zone-sub i18n-auto">Marca el área exacta punto a punto</span></span>
+            </button>
+            <button type="button" class="hero-zone-opt" onclick="heroZoneOption('nearby')">
+              <span class="hero-zone-icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+              <span class="flex-1"><span class="hero-zone-label i18n-auto">Buscar a mi alrededor</span><span class="hero-zone-sub i18n-auto">Usamos tu ubicación actual</span></span>
+            </button>
+          </div>
         </div>
         <button type="button" onclick="runHeroSearch()" class="i18n-auto px-8 py-3.5 font-black uppercase tracking-[0.12em] text-[12px] shrink-0 transition-all rounded-full hover:-translate-y-0.5" style="background:#0d1a14;color:var(--accent);">Buscar</button>
       </div>
@@ -2236,8 +2277,22 @@
     </div>
     <!-- Mapa -->
     <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
-      <button id="map-draw-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona</button>
+      <div id="map-mode-btns">
+        <button id="map-select-mode-btn" class="map-mode-btn" onclick="activateZoneSelectMode()"><i class="fa-solid fa-map-location-dot"></i> Seleccionar zonas</button>
+        <button id="map-draw-btn" class="map-mode-btn" onclick="startDrawArea()"><i class="fa-solid fa-draw-polygon"></i> Dibujar zona</button>
+      </div>
       <button id="map-clear-btn" onclick="clearDrawArea()"><i class="fa-solid fa-xmark"></i> Limpiar área</button>
+      <button id="map-draw-finish" onclick="finishDrawArea()"><i class="fa-solid fa-check"></i> Terminar</button>
+      <button id="map-draw-cancel" onclick="cancelDrawArea()"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+      <button id="map-select-confirm" onclick="confirmZoneSelection()"><i class="fa-solid fa-check"></i> Confirmar selección <span class="count-pill" id="map-select-count">0</span></button>
+      <div id="map-select-hint"><i class="fa-solid fa-hand-pointer"></i> Toca uno o varios municipios del mapa</div>
+      <div id="map-draw-hint"><i class="fa-solid fa-pen"></i> Haz clic para ir marcando el contorno</div>
+      <div id="map-nearby-hint"><i class="fa-solid fa-circle-notch fa-spin"></i> Localizándote…</div>
+      <div id="map-nearby-radius">
+        <span>Radio de búsqueda</span>
+        <input type="range" id="map-nearby-slider" min="2" max="30" value="10" oninput="updateNearbyRadius(this.value)">
+        <span id="map-nearby-km">10 km</span>
+      </div>
       <div id="map-area-results">
         <span id="map-area-count"></span>
         <button onclick="goToAreaResults()">Ver inmuebles <i class="fa-solid fa-arrow-right"></i></button>
@@ -3652,7 +3707,8 @@ function filterHeroSuggestions(){
   if(!box) return;
   const q=normalizeSearchText(document.getElementById('hero-search-input').value);
   heroSuggestionIndex=-1;
-  if(!q){ hideHeroSuggestions(); return; }
+  if(!q){ hideHeroSuggestions(); showHeroZoneMenu(); return; }
+  hideHeroZoneMenu();
   const starts=heroSuggestionPool.filter(item=>normalizeSearchText(item.label).startsWith(q)||normalizeSearchText(item.nucleo).startsWith(q));
   const contains=heroSuggestionPool.filter(item=>!starts.includes(item)&&(normalizeSearchText(item.label).includes(q)||normalizeSearchText(item.nucleo).includes(q)));
   const matches=[...starts,...contains].slice(0,8);
@@ -3686,7 +3742,7 @@ function handleHeroSearchKeydown(event){
     runHeroSearch();
   }
 }
-document.addEventListener('click',e=>{ if(!e.target.closest('#hero-search-wrap')) hideHeroSuggestions(); });
+document.addEventListener('click',e=>{ if(!e.target.closest('#hero-search-wrap')){ hideHeroSuggestions(); hideHeroZoneMenu(); } });
 document.addEventListener('DOMContentLoaded',()=>{
   setHeroSearchType('Venta');
 });
@@ -5664,17 +5720,26 @@ function initMapHero(){
       sinkomMapHero.scrollZoom.disable();
       applyMapTouchGesture(sinkomMapHero, 'sinkomi-map-hero');
       // ── Fronteras oficiales de los 67 municipios (Govern de les Illes Balears / IDEIB) ──
+      // Se cargan como capa de relleno clicable: es la base del modo "Seleccionar zonas en el mapa".
       try {
         fetch('https://ideib.caib.es/geoserveis/rest/services/public/GOIB_Adreces_IB/MapServer/3/query?where=1%3D1&outFields=NOM&outSR=4326&f=geojson&maxAllowableOffset=0.0005')
           .then(r => r.ok ? r.json() : null)
           .then(geojson => {
             if(!geojson || !geojson.features || !geojson.features.length) return;
             if(sinkomMapHero.getSource('municipios-limites')) return;
+            municipiosGeoJSON = geojson;
             sinkomMapHero.addSource('municipios-limites', { type:'geojson', data: geojson });
+            sinkomMapHero.addLayer({
+              id:'municipios-fill', type:'fill', source:'municipios-limites',
+              paint:{ 'fill-color':'#00d98f', 'fill-opacity':0 }
+            });
             sinkomMapHero.addLayer({
               id:'municipios-limites-line', type:'line', source:'municipios-limites',
               paint:{ 'line-color':'#0d1a14', 'line-width':1.6, 'line-opacity':0.55 }
             });
+            sinkomMapHero.on('click', 'municipios-fill', onMunicipioFillClick);
+            sinkomMapHero.on('mouseenter', 'municipios-fill', function(){ if(zoneSelectModeActive) sinkomMapHero.getCanvas().style.cursor='pointer'; });
+            sinkomMapHero.on('mouseleave', 'municipios-fill', function(){ sinkomMapHero.getCanvas().style.cursor=''; });
           })
           .catch(e => console.warn('Límites municipales no disponibles:', e));
       } catch(e){ console.warn('Límites municipales no disponibles:', e); }
@@ -5710,93 +5775,153 @@ function renderMapMarkersHero(){
   });
 }
 
-// ── DRAW AREA FILTER ─────────────────────────────────────────────────────────
+// ── HERO ZONE MENU — desplegable "Cómo quieres buscar" del buscador principal ──
+function showHeroZoneMenu(){
+  const input = document.getElementById('hero-search-input');
+  if(input && input.value.trim()) return;
+  const menu = document.getElementById('hero-zone-menu');
+  if(menu) menu.classList.add('show');
+}
+function hideHeroZoneMenu(){
+  const menu = document.getElementById('hero-zone-menu');
+  if(menu) menu.classList.remove('show');
+}
+function heroZoneOption(mode){
+  hideHeroZoneMenu();
+  hideHeroSuggestions();
+  const input = document.getElementById('hero-search-input');
+  if(input) input.blur();
+  const mapEl = document.getElementById('sinkomi-map-hero');
+  if(mapEl) mapEl.scrollIntoView({ behavior:'smooth', block:'center' });
+  initMapHero();
+  setTimeout(function(){
+    if(mode==='select') activateZoneSelectMode();
+    else if(mode==='draw') startDrawArea();
+    else if(mode==='nearby') searchNearMe();
+  }, 480);
+}
+
+// ── ZONA / DIBUJO / CERCA DE MÍ — estado compartido de los 3 modos de búsqueda ──
 var drawSourceAdded = false;
 var drawnLatLngs = null; // array de {lat,lng} de la zona ya dibujada
 var areaFilteredProps = [];
+var municipiosGeoJSON = null;
+var zoneSelectModeActive = false;
+var selectedZoneMunicipios = new Set();
+var drawingActive = false;
+var drawVertices = [];
+
+function resolveMunicipioName(rawName){
+  if(!rawName) return null;
+  const norm = normalizeSearchText(rawName);
+  const exact = municipalityList.find(m=>normalizeSearchText(m)===norm);
+  if(exact) return exact;
+  const partial = municipalityList.find(m=>normalizeSearchText(m).includes(norm)||norm.includes(normalizeSearchText(m)));
+  return partial || rawName;
+}
 
 function ensureDrawSources(){
   if(drawSourceAdded || !sinkomMapHero) return;
   sinkomMapHero.addSource('draw-area', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
   sinkomMapHero.addLayer({ id:'draw-area-fill', type:'fill', source:'draw-area', paint:{ 'fill-color':'#00a878', 'fill-opacity':0.15 } });
   sinkomMapHero.addLayer({ id:'draw-area-line', type:'line', source:'draw-area', paint:{ 'line-color':'#00a878', 'line-width':2.5, 'line-dasharray':[2,1.5] } });
+  sinkomMapHero.addLayer({ id:'draw-area-points', type:'circle', source:'draw-area', filter:['==','$type','Point'], paint:{ 'circle-radius':5, 'circle-color':'#00a878', 'circle-stroke-color':'#fff', 'circle-stroke-width':2 } });
   drawSourceAdded = true;
 }
 
 function setDrawGeoJSON(latlngs, closed){
   if(!drawSourceAdded) return;
   const coords = latlngs.map(p => [p.lng, p.lat]);
-  if(closed && coords.length) coords.push(coords[0]);
-  const geometry = closed
-    ? { type:'Polygon', coordinates:[coords] }
-    : { type:'LineString', coordinates:coords };
-  sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features:[{ type:'Feature', geometry, properties:{} }] });
+  const features = [];
+  if(coords.length){
+    if(closed){
+      const ring = coords.slice();
+      ring.push(ring[0]);
+      features.push({ type:'Feature', geometry:{ type:'Polygon', coordinates:[ring] }, properties:{} });
+    } else if(coords.length > 1){
+      features.push({ type:'Feature', geometry:{ type:'LineString', coordinates: coords }, properties:{} });
+    }
+    coords.forEach(c => features.push({ type:'Feature', geometry:{ type:'Point', coordinates:c }, properties:{} }));
+  }
+  sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features: features });
 }
 
+// ── MODO "DIBUJAR TU ZONA" — clic para ir marcando el contorno, punto a punto ──
+// Más preciso e intuitivo que arrastrar sin soltar: funciona igual de bien con ratón,
+// trackpad o dedo, y siempre sabes exactamente qué forma estás trazando.
 function startDrawArea(){
   if(!sinkomMapHero) return;
+  exitZoneSelectMode();
+  exitNearbyMode();
   ensureDrawSources();
-  const btn = document.getElementById('map-draw-btn');
-  btn.classList.add('active');
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mantén pulsado y dibuja';
+  drawingActive = true;
+  drawVertices = [];
+  setDrawGeoJSON([], false);
 
-  sinkomMapHero.dragPan.disable();
+  document.getElementById('map-draw-btn').classList.add('active');
+  document.getElementById('map-select-mode-btn').style.display='none';
+  document.getElementById('map-draw-hint').style.display='flex';
+  document.getElementById('map-draw-finish').style.display='none';
+  document.getElementById('map-draw-cancel').style.display='flex';
+  document.getElementById('map-clear-btn').style.display='none';
 
-  const mapEl = document.getElementById('sinkomi-map-hero');
-  let drawing = false;
-  let latlngs = [];
+  sinkomMapHero.getCanvas().style.cursor = 'crosshair';
+  sinkomMapHero.on('click', onDrawMapClick);
+  sinkomMapHero.on('dblclick', onDrawMapDblClick);
+}
 
-  function onMouseDown(e){
-    if(e.button !== 0 && e.type !== 'touchstart') return;
-    drawing = true;
-    latlngs = [];
-    e.preventDefault();
+function onDrawMapClick(e){
+  if(!drawingActive) return;
+  drawVertices.push({ lat:e.lngLat.lat, lng:e.lngLat.lng });
+  setDrawGeoJSON(drawVertices, false);
+  if(drawVertices.length >= 3) document.getElementById('map-draw-finish').style.display='flex';
+}
+
+function onDrawMapDblClick(e){
+  if(!drawingActive) return;
+  if(e.preventDefault) e.preventDefault();
+  finishDrawArea();
+}
+
+function finishDrawArea(){
+  if(!drawingActive || drawVertices.length < 3) return;
+  drawingActive = false;
+  sinkomMapHero.getCanvas().style.cursor = '';
+  sinkomMapHero.off('click', onDrawMapClick);
+  sinkomMapHero.off('dblclick', onDrawMapDblClick);
+
+  drawnLatLngs = drawVertices;
+  setDrawGeoJSON(drawnLatLngs, true);
+  filterPropertiesByArea(drawnLatLngs);
+
+  document.getElementById('map-draw-btn').classList.remove('active');
+  document.getElementById('map-draw-btn').style.display='none';
+  document.getElementById('map-select-mode-btn').style.display='none';
+  document.getElementById('map-draw-hint').style.display='none';
+  document.getElementById('map-draw-finish').style.display='none';
+  document.getElementById('map-draw-cancel').style.display='none';
+  document.getElementById('map-clear-btn').style.display='flex';
+}
+
+function cancelDrawArea(silent){
+  drawingActive = false;
+  drawVertices = [];
+  if(sinkomMapHero){
+    sinkomMapHero.getCanvas().style.cursor = '';
+    sinkomMapHero.off('click', onDrawMapClick);
+    sinkomMapHero.off('dblclick', onDrawMapDblClick);
+    if(drawSourceAdded && !drawnLatLngs) setDrawGeoJSON([], false);
   }
-
-  function onMouseMove(e){
-    if(!drawing) return;
-    if(e.cancelable) e.preventDefault();
-    const rect = mapEl.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    if(clientX===undefined) return;
-    const ll = sinkomMapHero.unproject([clientX - rect.left, clientY - rect.top]);
-    latlngs.push({ lat: ll.lat, lng: ll.lng });
-    if(latlngs.length > 1) setDrawGeoJSON(latlngs, false);
-  }
-
-  function onMouseUp(){
-    if(!drawing) return;
-    drawing = false;
-    sinkomMapHero.dragPan.enable();
-    mapEl.removeEventListener('mousedown', onMouseDown);
-    mapEl.removeEventListener('mousemove', onMouseMove);
-    mapEl.removeEventListener('mouseup', onMouseUp);
-    mapEl.removeEventListener('touchstart', onMouseDown);
-    mapEl.removeEventListener('touchmove', onMouseMove);
-    mapEl.removeEventListener('touchend', onMouseUp);
-
-    if(latlngs.length < 3){
-      btn.classList.remove('active');
-      btn.innerHTML='<i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona';
-      sinkomMapHero.dragPan.enable();
-      return;
-    }
-
-    drawnLatLngs = latlngs;
-    setDrawGeoJSON(latlngs, true);
-
-    filterPropertiesByArea(drawnLatLngs);
-    document.getElementById('map-draw-btn').style.display='none';
-    document.getElementById('map-clear-btn').style.display='flex';
-  }
-
-  mapEl.addEventListener('mousedown', onMouseDown);
-  mapEl.addEventListener('mousemove', onMouseMove);
-  mapEl.addEventListener('mouseup', onMouseUp);
-  mapEl.addEventListener('touchstart', onMouseDown, {passive:false});
-  mapEl.addEventListener('touchmove', onMouseMove, {passive:false});
-  mapEl.addEventListener('touchend', onMouseUp);
+  const drawBtn = document.getElementById('map-draw-btn');
+  if(drawBtn){ drawBtn.classList.remove('active'); drawBtn.style.display='flex'; }
+  const selBtn = document.getElementById('map-select-mode-btn');
+  if(selBtn) selBtn.style.display='flex';
+  const hint = document.getElementById('map-draw-hint');
+  if(hint) hint.style.display='none';
+  const finishBtn = document.getElementById('map-draw-finish');
+  if(finishBtn) finishBtn.style.display='none';
+  const cancelBtn = document.getElementById('map-draw-cancel');
+  if(cancelBtn) cancelBtn.style.display='none';
 }
 
 function filterPropertiesByArea(latlngs){
@@ -5816,16 +5941,18 @@ function filterPropertiesByArea(latlngs){
   });
 
   areaFilteredProps = properties.filter(p => municipiosEnArea.includes(p.municipality));
+  showAreaResultsBanner();
+}
 
+function showAreaResultsBanner(){
   const banner = document.getElementById('map-area-results');
   const countEl = document.getElementById('map-area-count');
   if(areaFilteredProps.length > 0){
     countEl.textContent = `${areaFilteredProps.length} inmueble${areaFilteredProps.length!==1?'s':''} en esta zona`;
-    banner.style.display='flex';
   } else {
     countEl.textContent = 'Sin inmuebles en esta zona';
-    banner.style.display='flex';
   }
+  banner.style.display='flex';
 }
 
 // Algoritmo ray-casting para punto dentro de polígono
@@ -5841,16 +5968,144 @@ function pointInPolygon(point, vs){
   return inside;
 }
 
+// ── MODO "SELECCIONAR ZONAS EN EL MAPA" — municipios reales (IDEIB), un clic y listo ──
+function onMunicipioFillClick(e){
+  if(!zoneSelectModeActive) return;
+  if(!e.features || !e.features.length) return;
+  const name = resolveMunicipioName(e.features[0].properties.NOM);
+  if(!name) return;
+  if(selectedZoneMunicipios.has(name)) selectedZoneMunicipios.delete(name);
+  else selectedZoneMunicipios.add(name);
+  updateZoneSelectPaint();
+}
+
+function updateZoneSelectPaint(){
+  if(!sinkomMapHero || !sinkomMapHero.getLayer('municipios-fill')) return;
+  const list = Array.from(selectedZoneMunicipios);
+  const baseOpacity = zoneSelectModeActive ? 0.05 : 0;
+  sinkomMapHero.setPaintProperty('municipios-fill', 'fill-opacity',
+    list.length ? ['case', ['in', ['get','NOM'], ['literal', list]], 0.35, baseOpacity] : baseOpacity
+  );
+  const countEl = document.getElementById('map-select-count');
+  const confirmBtn = document.getElementById('map-select-confirm');
+  if(countEl) countEl.textContent = list.length;
+  if(confirmBtn) confirmBtn.style.display = list.length ? 'flex' : 'none';
+  const clearBtn = document.getElementById('map-clear-btn');
+  if(clearBtn) clearBtn.style.display = list.length ? 'flex' : 'none';
+}
+
+function activateZoneSelectMode(){
+  if(!sinkomMapHero){ initMapHero(); setTimeout(activateZoneSelectMode, 600); return; }
+  cancelDrawArea(true);
+  exitNearbyMode();
+  zoneSelectModeActive = true;
+  document.getElementById('map-select-mode-btn').classList.add('active');
+  document.getElementById('map-draw-btn').style.display='none';
+  document.getElementById('map-select-hint').style.display='flex';
+  updateZoneSelectPaint();
+}
+
+function exitZoneSelectMode(){
+  zoneSelectModeActive = false;
+  const btn = document.getElementById('map-select-mode-btn');
+  if(btn){ btn.classList.remove('active'); btn.style.display='flex'; }
+  const drawBtn = document.getElementById('map-draw-btn');
+  if(drawBtn) drawBtn.style.display='flex';
+  const hint = document.getElementById('map-select-hint');
+  if(hint) hint.style.display='none';
+  updateZoneSelectPaint();
+}
+
+function confirmZoneSelection(){
+  if(!selectedZoneMunicipios.size) return;
+  areaFilteredProps = properties.filter(p => selectedZoneMunicipios.has(p.municipality));
+  showAreaResultsBanner();
+  document.getElementById('map-select-confirm').style.display='none';
+}
+
+// ── MODO "BUSCAR A MI ALREDEDOR" — geolocalización del navegador + radio ajustable ──
+var nearbyUserLatLng = null;
+var nearbyMarker = null;
+var nearbyRadiusKm = 10;
+
+function haversineKm(lat1, lng1, lat2, lng2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function searchNearMe(){
+  if(!sinkomMapHero){ initMapHero(); setTimeout(searchNearMe, 600); return; }
+  cancelDrawArea(true);
+  exitZoneSelectMode();
+  if(!navigator.geolocation){
+    alert('Tu navegador no permite compartir tu ubicación. Prueba con "Dibujar tu zona" o "Seleccionar zonas en el mapa".');
+    return;
+  }
+  const hint = document.getElementById('map-nearby-hint');
+  hint.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Localizándote…';
+  hint.style.display = 'flex';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    nearbyUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    hint.style.display = 'none';
+    document.getElementById('map-nearby-radius').style.display = 'flex';
+    placeNearbyMarker();
+    sinkomMapHero.flyTo({ center:[nearbyUserLatLng.lng, nearbyUserLatLng.lat], zoom: 10.5 });
+    applyNearbyFilter();
+  }, function(){
+    hint.style.display = 'none';
+    alert('No hemos podido acceder a tu ubicación. Revisa los permisos de localización del navegador, o prueba con "Dibujar tu zona".');
+  }, { enableHighAccuracy:true, timeout:10000 });
+}
+
+function placeNearbyMarker(){
+  if(!nearbyUserLatLng) return;
+  if(nearbyMarker) nearbyMarker.remove();
+  const el = document.createElement('div');
+  el.style.cssText = 'width:20px;height:20px;background:#0d1a14;border:3px solid #00d98f;border-radius:50%;box-shadow:0 0 0 6px rgba(0,217,143,0.25);';
+  nearbyMarker = new maptilersdk.Marker({ element: el }).setLngLat([nearbyUserLatLng.lng, nearbyUserLatLng.lat]).addTo(sinkomMapHero);
+}
+
+function updateNearbyRadius(km){
+  nearbyRadiusKm = Number(km);
+  document.getElementById('map-nearby-km').textContent = `${nearbyRadiusKm} km`;
+  applyNearbyFilter();
+}
+
+function applyNearbyFilter(){
+  if(!nearbyUserLatLng) return;
+  const municipiosCerca = Object.keys(municipalityCoords).filter(name => {
+    const c = municipalityCoords[name];
+    return c && haversineKm(nearbyUserLatLng.lat, nearbyUserLatLng.lng, c[0], c[1]) <= nearbyRadiusKm;
+  });
+  areaFilteredProps = properties.filter(p => municipiosCerca.includes(p.municipality));
+  showAreaResultsBanner();
+  document.getElementById('map-clear-btn').style.display='flex';
+}
+
+function exitNearbyMode(){
+  nearbyUserLatLng = null;
+  if(nearbyMarker){ nearbyMarker.remove(); nearbyMarker = null; }
+  const radiusBox = document.getElementById('map-nearby-radius');
+  if(radiusBox) radiusBox.style.display='none';
+  const hint = document.getElementById('map-nearby-hint');
+  if(hint) hint.style.display='none';
+}
+
+// ── LIMPIAR — resetea cualquiera de los 3 modos y vuelve al estado inicial del mapa ──
 function clearDrawArea(){
-  if(drawSourceAdded) sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features:[] });
+  if(drawSourceAdded && sinkomMapHero) sinkomMapHero.getSource('draw-area').setData({ type:'FeatureCollection', features:[] });
   drawnLatLngs = null;
   areaFilteredProps = [];
+  selectedZoneMunicipios.clear();
+  updateZoneSelectPaint();
+  exitZoneSelectMode();
+  exitNearbyMode();
+  cancelDrawArea(true);
   document.getElementById('map-area-results').style.display='none';
   document.getElementById('map-clear-btn').style.display='none';
-  const btn = document.getElementById('map-draw-btn');
-  btn.style.display='flex';
-  btn.classList.remove('active');
-  btn.innerHTML='<i class="fa-solid fa-draw-polygon"></i> Buscar en esta zona';
 }
 
 function goToAreaResults(){
