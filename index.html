@@ -3146,6 +3146,9 @@
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700" id="publish-stepper"><button type="button" class="publish-step-tab active" data-step="1" onclick="goToPublishStep(1)">1 · Datos básicos</button><button type="button" class="publish-step-tab" data-step="2" onclick="goToPublishStep(2)">2 · Características</button><button type="button" class="publish-step-tab" data-step="3" onclick="goToPublishStep(3)">3 · Fotos y vídeo</button><button type="button" class="publish-step-tab" data-step="4" onclick="goToPublishStep(4)">4 · Contacto</button></div>
 <div id="publish-step-1">
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
+<div class="mt-4"><label class="text-sm font-medium mb-2 block">Dirección exacta (calle y número)</label><div class="relative" id="publish-address-wrap"><input id="publish-address-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe la calle y número… (opcional, mejora la precisión del mapa)" oninput="filterPublishAddressSuggestions()"><input id="publish-address-lat" type="hidden" value=""><input id="publish-address-lng" type="hidden" value=""><div id="publish-address-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div>
+<label class="flex items-center gap-2 mt-2 text-xs text-zinc-500"><input id="publish-show-exact-address" type="checkbox" class="accent-[var(--accent)]"> Mostrar esta ubicación exacta en el mapa público (si no la marcas, el inmueble solo se ubicará por municipio, como hasta ahora)</label>
+</div>
 <div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Operación</label><select id="publish-type" onchange="togglePublishSeasonality()" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Venta</option><option>Alquiler</option></select></div><div><label class="text-sm font-medium mb-2 block">Tipo de inmueble</label><select id="publish-category" onchange="toggleEtvField()" class="w-full border border-black/8 px-4 py-3 bg-white"></select></div><div><label class="text-sm font-medium mb-2 block">Precio</label><input id="publish-price" type="text" inputmode="numeric" oninput="formatPriceInput(this)" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="285.000"></div></div>
 <div id="publish-seasonality-wrap" class="hidden panel p-5" style="background:#f0fdf9;border:2px solid var(--accent);">
   <label class="text-sm font-black mb-1 block" style="color:var(--accent-dark);"><i class="fa-solid fa-calendar-days"></i> ¿Qué tipo de alquiler es?</label>
@@ -3896,7 +3899,10 @@ function mapDbRowToProperty(row){
     virtualTourUrl: row.virtual_tour_url || '',
     phone: row.phone || '',
     owner_id: row.owner_id,
-    status: row.status || 'Disponible'
+    status: row.status || 'Disponible',
+    addressFull: row.show_exact_address ? (row.address_full || null) : null,
+    lat: row.show_exact_address ? (row.lat ?? null) : null,
+    lng: row.show_exact_address ? (row.lng ?? null) : null
   };
 }
 
@@ -5015,6 +5021,10 @@ async function toggleDiscardProperty(){
 
 function openPropertyDirections(){
   if(!currentProperty) return;
+  if(currentProperty.lat != null && currentProperty.lng != null){
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentProperty.lat},${currentProperty.lng}`, '_blank');
+    return;
+  }
   const query = encodeURIComponent(`${currentProperty.nucleo ? currentProperty.nucleo + ', ' : ''}${currentProperty.municipality || ''} Baleares`);
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
 }
@@ -6104,9 +6114,8 @@ function activateZoneSelectMode(attempt){
     return;
   }
   if(attempt >= 6){
-    // El servicio oficial de límites tarda demasiado: pasamos al respaldo por nombre de municipio, que no depende de él.
+    // El servicio oficial de límites tarda demasiado: pasamos al respaldo por isla/municipio, que no depende de él.
     enableFallbackSelectMarkers();
-    if(hint){ hint.innerHTML='<i class="fa-solid fa-hand-pointer"></i> Toca el nombre de tu municipio'; hint.style.display='flex'; }
     updateSelectionUI();
     return;
   }
@@ -7434,6 +7443,10 @@ function openPublishModal(){
   publishedVideo = null;
   const locInput = document.getElementById('publish-location-search'); if(locInput) locInput.value = '';
   const locHidden = document.getElementById('publish-location'); if(locHidden) locHidden.value = '';
+  const addrInput = document.getElementById('publish-address-search'); if(addrInput) addrInput.value = '';
+  const addrLat = document.getElementById('publish-address-lat'); if(addrLat) addrLat.value = '';
+  const addrLng = document.getElementById('publish-address-lng'); if(addrLng) addrLng.value = '';
+  const addrShow = document.getElementById('publish-show-exact-address'); if(addrShow) addrShow.checked = false;
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
@@ -7971,6 +7984,12 @@ async function submitPublishForm(){
   const extras=getCheckedExtras();
   const ownerName=escapeHtml(document.getElementById('publish-owner-name').value.trim())||user.nombre||'Tu perfil';
 
+  const addressFull = (document.getElementById('publish-address-search').value || '').trim();
+  const addressLat = parseFloat(document.getElementById('publish-address-lat').value);
+  const addressLng = parseFloat(document.getElementById('publish-address-lng').value);
+  const hasExactCoords = addressFull && !isNaN(addressLat) && !isNaN(addressLng);
+  const showExactAddress = hasExactCoords && document.getElementById('publish-show-exact-address').checked;
+
   const isRoommateRoom = category === 'Habitación en vivienda compartida';
   const roommatesCount = isRoommateRoom ? (Number(document.getElementById('publish-roommates-count').value) || null) : null;
   const lookingFor = isRoommateRoom ? (document.getElementById('publish-looking-for').value || 'Indiferente') : null;
@@ -7991,7 +8010,11 @@ async function submitPublishForm(){
     verified, featured: isPremiumPlan(), phone: phone || null,
     seasonality, etv_number: etvNumber, rent_price: rentPrice, floor_plan_url: floorPlanUrl, virtual_tour_url: virtualTourUrl,
     roommates_count: roommatesCount, looking_for: lookingFor, move_in_date: moveInDate,
-    bills_included: billsIncluded, pets_allowed: petsAllowed, house_rules: houseRules
+    bills_included: billsIncluded, pets_allowed: petsAllowed, house_rules: houseRules,
+    address_full: hasExactCoords ? addressFull : null,
+    lat: hasExactCoords ? addressLat : null,
+    lng: hasExactCoords ? addressLng : null,
+    show_exact_address: showExactAddress
   };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
@@ -8480,6 +8503,10 @@ async function editPropertyListing(id){
   if(p.negotiable) document.getElementById('publish-negotiable').value = p.negotiable;
   document.getElementById('publish-phone').value = p.phone || '';
   document.getElementById('publish-description').value = p.description || '';
+  document.getElementById('publish-address-search').value = p.address_full || '';
+  document.getElementById('publish-address-lat').value = (p.lat != null) ? p.lat : '';
+  document.getElementById('publish-address-lng').value = (p.lng != null) ? p.lng : '';
+  document.getElementById('publish-show-exact-address').checked = !!p.show_exact_address;
   editingPropertyOriginalVerified = !!p.verified;
   document.getElementById('declare-particular').checked = true;
   togglePublishSeasonality();
@@ -9045,6 +9072,56 @@ function hidePublishLocationSuggestions(){
   if(box){ box.classList.add('hidden'); box.innerHTML=''; }
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('#publish-location-wrap')) hidePublishLocationSuggestions(); });
+
+// ── DIRECCIÓN EXACTA AL PUBLICAR — autocompletado con MapTiler Geocoding (mismo proveedor que el mapa, sin coste extra en volúmenes bajos) ──
+let publishAddressDebounce = null;
+function filterPublishAddressSuggestions(){
+  const input = document.getElementById('publish-address-search');
+  const box = document.getElementById('publish-address-suggestions');
+  if(!input || !box) return;
+  // Si el usuario sigue editando el texto, la dirección ya no es la que se había geocodificado.
+  document.getElementById('publish-address-lat').value = '';
+  document.getElementById('publish-address-lng').value = '';
+  const q = input.value.trim();
+  if(publishAddressDebounce) clearTimeout(publishAddressDebounce);
+  if(q.length < 4){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  publishAddressDebounce = setTimeout(function(){ fetchPublishAddressSuggestions(q); }, 350);
+}
+async function fetchPublishAddressSuggestions(q){
+  const box = document.getElementById('publish-address-suggestions');
+  if(!box) return;
+  try{
+    // bbox limitado a las Islas Baleares para no traer resultados fuera de la zona de SINKOMI
+    const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(q)}.json?key=qKDaFUqzya8NMOsfuDK0&language=es&country=es&bbox=1.1,38.6,4.4,40.15&limit=6`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('geocoding failed');
+    const data = await res.json();
+    const feats = (data && data.features) || [];
+    if(!feats.length){ box.innerHTML = '<div class="px-4 py-3 text-xs text-zinc-400">Sin resultados. Puedes seguir escribiendo o dejarlo solo con el municipio.</div>'; box.classList.remove('hidden'); return; }
+    box.innerHTML = feats.map(function(f, i){
+      const label = (f.place_name || f.text || '').replace(/'/g, "\\'");
+      const lng = f.center ? f.center[0] : '';
+      const lat = f.center ? f.center[1] : '';
+      return `<button type="button" onmousedown="event.preventDefault();selectPublishAddress('${label}',${lat},${lng})" class="w-full text-left px-4 py-3 text-[14px] font-semibold text-zinc-700 hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)] transition-colors border-b border-black/4 last:border-b-0 flex items-center gap-2"><i class="fa-solid fa-location-dot text-zinc-300 text-xs"></i> ${f.place_name || f.text}</button>`;
+    }).join('');
+    box.classList.remove('hidden');
+  } catch(e){
+    console.warn('No se pudieron obtener sugerencias de dirección:', e);
+    box.innerHTML = '<div class="px-4 py-3 text-xs text-zinc-400">No se pudo consultar el buscador de direcciones ahora mismo. Puedes dejarlo solo con el municipio.</div>';
+    box.classList.remove('hidden');
+  }
+}
+function selectPublishAddress(label, lat, lng){
+  document.getElementById('publish-address-search').value = label;
+  document.getElementById('publish-address-lat').value = lat;
+  document.getElementById('publish-address-lng').value = lng;
+  hidePublishAddressSuggestions();
+}
+function hidePublishAddressSuggestions(){
+  const box = document.getElementById('publish-address-suggestions');
+  if(box){ box.classList.add('hidden'); box.innerHTML=''; }
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('#publish-address-wrap')) hidePublishAddressSuggestions(); });
 
 window.onload=()=>{initScrollReveals();initTabs();renderMunicipalities();renderMunicipiosDropdown();renderTypesDropdown();renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderZoneOperationFilters();updateMunicipalityLabels();renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderTraspasosCards();populatePublishCategory();updatePublishTotal();populatePublishLocations();localStorage.removeItem('lang');localStorage.removeItem('langFlagKey');localStorage.removeItem('langCode');restoreLangVisual();applyLang('es');
   initHearts();
