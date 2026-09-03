@@ -212,6 +212,9 @@
     #map-clear-btn{background:#f43f5e;border:2px solid #f43f5e;color:white;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:.5rem .9rem;cursor:pointer;display:none;align-items:center;gap:.4rem;box-shadow:0 4px 14px rgba(0,0,0,0.12);border-radius:999px;white-space:nowrap;}
     #map-nearby-radius{position:absolute;bottom:0;left:0;right:0;z-index:500;background:rgba(13,26,20,0.92);backdrop-filter:blur(8px);padding:.7rem 1rem;display:none;align-items:center;justify-content:center;gap:.8rem;color:white;font-size:11.5px;font-weight:700;}
     #map-nearby-radius input[type=range]{width:140px;accent-color:var(--accent);}
+    .muni-fallback-pin{background:white;border:1.5px solid rgba(0,0,0,0.15);color:var(--ink);font-size:10.5px;font-weight:800;padding:.3rem .6rem;border-radius:999px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.18);white-space:nowrap;transition:all .15s ease;}
+    .muni-fallback-pin:hover{border-color:var(--accent);}
+    .muni-fallback-pin.selected{background:var(--accent);border-color:var(--accent-dark);color:white;}
 
     /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
     #map-fullscreen-overlay{position:fixed;inset:0;z-index:9998;background:#fff;display:none;flex-direction:column;}
@@ -5739,8 +5742,8 @@ function initMapHero(){
       center: [2.65, 39.35], // centrado para abarcar las cuatro islas
       zoom: 7.6,
       language: maptilersdk.Language.SPANISH,
-      navigationControl: 'top-left',
-      geolocateControl: 'top-left',
+      navigationControl: 'bottom-right',
+      geolocateControl: 'bottom-right',
       attributionControl: false
     });
     sinkomMapHero.on('load', function(){
@@ -5781,7 +5784,7 @@ function initMapHero(){
             sinkomMapHero.on('mouseenter', 'municipios-fill', function(){ if(zoneSelectModeActive) sinkomMapHero.getCanvas().style.cursor='pointer'; });
             sinkomMapHero.on('mouseleave', 'municipios-fill', function(){ sinkomMapHero.getCanvas().style.cursor=''; });
             municipiosLayerReady = true;
-            if(zoneSelectModeActive) activateZoneSelectMode();
+            if(zoneSelectModeActive) activateZoneSelectMode(0);
           })
           .catch(e => console.warn('Límites municipales no disponibles:', e));
       } catch(e){ console.warn('Límites municipales no disponibles:', e); }
@@ -6063,19 +6066,24 @@ function onMunicipioFillClick(e){
   updateZoneSelectPaint();
 }
 
-function updateZoneSelectPaint(){
-  if(!sinkomMapHero || !sinkomMapHero.getLayer('municipios-fill')) return;
+function updateSelectionUI(){
   const list = Array.from(selectedZoneMunicipios);
-  const baseOpacity = zoneSelectModeActive ? 0.05 : 0;
-  sinkomMapHero.setPaintProperty('municipios-fill', 'fill-opacity',
-    list.length ? ['case', ['in', ['get','NOM'], ['literal', list]], 0.35, baseOpacity] : baseOpacity
-  );
   const countEl = document.getElementById('map-select-count');
   const confirmBtn = document.getElementById('map-select-confirm');
   if(countEl) countEl.textContent = list.length;
   if(confirmBtn) confirmBtn.style.display = list.length ? 'flex' : 'none';
   const clearBtn = document.getElementById('map-clear-btn');
   if(clearBtn) clearBtn.style.display = list.length ? 'flex' : 'none';
+}
+
+function updateZoneSelectPaint(){
+  updateSelectionUI();
+  if(!sinkomMapHero || !sinkomMapHero.getLayer('municipios-fill')) return;
+  const list = Array.from(selectedZoneMunicipios);
+  const baseOpacity = zoneSelectModeActive ? 0.14 : 0;
+  sinkomMapHero.setPaintProperty('municipios-fill', 'fill-opacity',
+    list.length ? ['case', ['in', ['get','NOM'], ['literal', list]], 0.4, baseOpacity] : baseOpacity
+  );
 }
 
 function activateZoneSelectMode(attempt){
@@ -6089,17 +6097,62 @@ function activateZoneSelectMode(attempt){
   const drawBtn = document.getElementById('map-draw-btn');
   if(drawBtn) drawBtn.style.display='none';
   const hint = document.getElementById('map-select-hint');
-  if(!municipiosLayerReady){
-    if(attempt > 20){
-      if(hint){ hint.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> No se pudieron cargar los municipios. Prueba a "Dibujar tu zona".'; hint.style.display='flex'; }
-      return;
-    }
-    if(hint){ hint.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> Cargando municipios…'; hint.style.display='flex'; }
-    setTimeout(function(){ if(zoneSelectModeActive) activateZoneSelectMode(attempt+1); }, 350);
+  if(municipiosLayerReady){
+    disableFallbackSelectMarkers();
+    if(hint){ hint.innerHTML='<i class="fa-solid fa-hand-pointer"></i> Toca uno o varios municipios del mapa'; hint.style.display='flex'; }
+    updateZoneSelectPaint();
     return;
   }
-  if(hint){ hint.innerHTML='<i class="fa-solid fa-hand-pointer"></i> Toca uno o varios municipios del mapa'; hint.style.display='flex'; }
-  updateZoneSelectPaint();
+  if(attempt >= 6){
+    // El servicio oficial de límites tarda demasiado: pasamos al respaldo por nombre de municipio, que no depende de él.
+    enableFallbackSelectMarkers();
+    if(hint){ hint.innerHTML='<i class="fa-solid fa-hand-pointer"></i> Toca el nombre de tu municipio'; hint.style.display='flex'; }
+    updateSelectionUI();
+    return;
+  }
+  if(hint){ hint.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> Cargando municipios…'; hint.style.display='flex'; }
+  setTimeout(function(){ if(zoneSelectModeActive) activateZoneSelectMode(attempt+1); }, 350);
+}
+
+// ── RESPALDO SIN DEPENDER DE IDEIB — pines con el nombre de cada municipio, siempre disponibles ──
+var fallbackSelectMarkers = {};
+var fallbackSelectActive = false;
+
+function enableFallbackSelectMarkers(){
+  if(fallbackSelectActive) { updateFallbackMarkerStyles(); return; }
+  fallbackSelectActive = true;
+  municipalityList.forEach(function(name){
+    const coords = municipalityCoords[name];
+    if(!coords) return;
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'muni-fallback-pin';
+    el.textContent = name;
+    el.onclick = function(){
+      if(!zoneSelectModeActive) return;
+      if(selectedZoneMunicipios.has(name)) selectedZoneMunicipios.delete(name);
+      else selectedZoneMunicipios.add(name);
+      updateFallbackMarkerStyles();
+      updateSelectionUI();
+    };
+    const marker = new maptilersdk.Marker({ element: el }).setLngLat([coords[1], coords[0]]).addTo(sinkomMapHero);
+    fallbackSelectMarkers[name] = marker;
+  });
+  updateFallbackMarkerStyles();
+}
+
+function updateFallbackMarkerStyles(){
+  Object.keys(fallbackSelectMarkers).forEach(function(name){
+    const el = fallbackSelectMarkers[name].getElement();
+    if(!el) return;
+    el.classList.toggle('selected', selectedZoneMunicipios.has(name));
+  });
+}
+
+function disableFallbackSelectMarkers(){
+  Object.values(fallbackSelectMarkers).forEach(m=>m.remove());
+  fallbackSelectMarkers = {};
+  fallbackSelectActive = false;
 }
 
 function exitZoneSelectMode(){
@@ -6110,6 +6163,7 @@ function exitZoneSelectMode(){
   if(drawBtn) drawBtn.style.display='flex';
   const hint = document.getElementById('map-select-hint');
   if(hint) hint.style.display='none';
+  disableFallbackSelectMarkers();
   updateZoneSelectPaint();
 }
 
