@@ -216,10 +216,36 @@
     .muni-fallback-pin:hover{border-color:var(--accent);}
     .muni-fallback-pin.selected{background:var(--accent);border-color:var(--accent-dark);color:white;}
 
+    /* ── PINES INDIVIDUALES POR INMUEBLE (dirección exacta) ── */
+    .property-pin{width:2.1rem;height:2.1rem;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--accent);border:2.5px solid white;box-shadow:0 3px 10px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s ease;}
+    .property-pin i{transform:rotate(45deg);color:white;font-size:11px;}
+    .property-pin:hover{transform:rotate(-45deg) scale(1.15);z-index:10;}
+
+    /* ── CABECERA DEL MAPA A PANTALLA COMPLETA: contador, zonas y filtros ── */
+    #map-fullscreen-header-actions{display:flex;align-items:center;gap:.5rem;}
+    #map-zones-pill{display:none;align-items:center;gap:.4rem;background:var(--accent-soft);color:var(--accent-dark);font-size:10.5px;font-weight:800;padding:.4rem .7rem;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;}
+    #map-filters-btn{display:flex;align-items:center;gap:.4rem;background:#0d1a14;color:white;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:.45rem .8rem;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;}
+    #map-filters-btn .fcount{background:var(--accent);color:#0d1a14;border-radius:999px;padding:.05rem .4rem;font-size:9.5px;margin-left:.15rem;}
+    #map-total-count{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:498;background:#0d1a14;color:white;font-size:11px;font-weight:800;padding:.45rem 1rem;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,0.22);white-space:nowrap;}
+
+    #map-filters-panel{position:absolute;top:0;right:0;left:0;z-index:600;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 12px 30px rgba(0,0,0,0.12);display:none;padding:1rem 1.2rem 1.2rem;}
+    #map-filters-panel.show{display:block;}
+    .mf-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.9rem;}
+    .mf-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem;display:block;}
+    .mf-chip{background:white;border:1.5px solid var(--line);color:var(--ink);font-size:11px;font-weight:700;padding:.45rem .85rem;border-radius:999px;cursor:pointer;transition:all .15s ease;}
+    .mf-chip.active{background:var(--accent);border-color:var(--accent);color:white;}
+    .mf-select,.mf-input{border:1.5px solid var(--line);padding:.5rem .7rem;font-size:12px;border-radius:10px;background:white;color:var(--ink);}
+    .mf-input{width:6.5rem;}
+    #map-filters-panel-footer{display:flex;justify-content:space-between;align-items:center;gap:.6rem;}
+
+    /* ── ESTÁNDAR / SATÉLITE ── */
+    #map-satellite-toggle{position:absolute;bottom:12px;left:12px;z-index:500;background:white;border:2px solid var(--accent);color:var(--accent-dark);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .85rem;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.12);display:flex;align-items:center;gap:.4rem;}
+    #map-satellite-toggle:hover{background:var(--accent);color:white;}
+
     /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
     #map-fullscreen-overlay{position:fixed;inset:0;z-index:9998;background:#fff;display:none;flex-direction:column;}
     #map-fullscreen-overlay.show{display:flex;}
-    #map-fullscreen-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.2rem;border-bottom:1px solid var(--line);background:#fff;}
+    #map-fullscreen-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;padding:.9rem 1.2rem;border-bottom:1px solid var(--line);background:#fff;}
     #map-fullscreen-back{display:flex;align-items:center;gap:.5rem;background:none;border:none;font-size:12.5px;font-weight:800;color:var(--ink);cursor:pointer;padding:.4rem .3rem;}
     #map-fullscreen-back:hover{color:var(--accent-dark);}
     #map-fullscreen-title{font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);}
@@ -2297,6 +2323,8 @@
     </div>
     <!-- Mapa -->
     <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
+      <div id="map-total-count">— anuncios</div>
+      <button type="button" id="map-satellite-toggle" onclick="toggleMapSatellite()"><i class="fa-solid fa-satellite"></i> Satélite</button>
       <div id="map-top-controls">
         <div id="map-mode-btns">
           <button id="map-select-mode-btn" class="map-mode-btn" onclick="activateZoneSelectMode()"><i class="fa-solid fa-map-location-dot"></i> Seleccionar zonas</button>
@@ -2330,7 +2358,38 @@
   <div id="map-fullscreen-header">
     <button type="button" id="map-fullscreen-back" onclick="closeMapFullscreen()"><i class="fa-solid fa-arrow-left"></i> <span class="i18n-auto">Volver</span></button>
     <span class="i18n-auto" id="map-fullscreen-title">Elige tu zona</span>
-    <span style="width:70px;" aria-hidden="true"></span>
+    <div id="map-fullscreen-header-actions">
+      <button type="button" id="map-zones-pill" onclick="clearDrawArea()"><i class="fa-solid fa-map-pin"></i> <span id="map-zones-pill-text">Zonas (0)</span> <i class="fa-solid fa-xmark"></i></button>
+      <button type="button" id="map-filters-btn" onclick="toggleMapFiltersPanel()"><i class="fa-solid fa-sliders"></i> <span class="i18n-auto">Filtros</span><span class="fcount" id="map-filters-count" style="display:none;">0</span></button>
+    </div>
+  </div>
+  <div id="map-filters-panel">
+    <div class="mf-row">
+      <div>
+        <span class="mf-label i18n-auto">Operación</span>
+        <div style="display:flex;gap:.5rem;">
+          <button type="button" class="mf-chip active" id="mf-op-Todas" onclick="setMapFilterOperation('Todas')">Todas</button>
+          <button type="button" class="mf-chip" id="mf-op-Venta" onclick="setMapFilterOperation('Venta')">Comprar</button>
+          <button type="button" class="mf-chip" id="mf-op-Alquiler" onclick="setMapFilterOperation('Alquiler')">Alquilar</button>
+        </div>
+      </div>
+      <div>
+        <span class="mf-label i18n-auto">Tipo de inmueble</span>
+        <select id="mf-type-select" class="mf-select" onchange="setMapFilterType(this.value)"></select>
+      </div>
+      <div>
+        <span class="mf-label i18n-auto">Precio mín.</span>
+        <input type="number" id="mf-price-min" class="mf-input" placeholder="0" oninput="setMapFilterPrice()">
+      </div>
+      <div>
+        <span class="mf-label i18n-auto">Precio máx.</span>
+        <input type="number" id="mf-price-max" class="mf-input" placeholder="Sin límite" oninput="setMapFilterPrice()">
+      </div>
+    </div>
+    <div id="map-filters-panel-footer">
+      <button type="button" onclick="resetMapFilters()" style="font-size:11px;font-weight:700;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;">Limpiar filtros</button>
+      <button type="button" onclick="toggleMapFiltersPanel()" class="accent-btn" style="padding:.6rem 1.4rem;font-size:11px;">Ver en el mapa</button>
+    </div>
   </div>
   <div id="map-fullscreen-content">
     <button type="button" id="map-fullscreen-close-x" onclick="closeMapFullscreen()" aria-label="Cerrar mapa"><i class="fa-solid fa-xmark"></i></button>
@@ -5766,6 +5825,7 @@ function initMapHero(){
     sinkomMapHero.on('load', function(){
       sinkomMapHero.scrollZoom.disable();
       applyMapTouchGesture(sinkomMapHero, 'sinkomi-map-hero');
+      sinkomMapHero.on('zoomend', syncMapMarkerZoomVisibility);
       // Atenúa las fronteras administrativas del estilo base (país/región, a veces discontinuas)
       // para que las líneas negras de municipio sean las únicas protagonistas del mapa.
       try {
@@ -5816,10 +5876,11 @@ function renderMapMarkersHero(){
   if(!sinkomMapHero || !sinkomMapHero.loaded()) return;
   Object.values(mapMarkersHero).forEach(m=>m.remove());
   Object.keys(mapMarkersHero).forEach(k=>delete mapMarkersHero[k]);
+  const filtered = getMapFilteredProperties();
   municipalityList.forEach(name => {
     const coords = municipalityCoords[name];
     if(!coords) return;
-    const count = properties.filter(p=>p.municipality===name).length;
+    const count = filtered.filter(p=>p.municipality===name).length;
     if(count === 0) return;
     const el = createMarkerEl(count, false);
     const popup = new maptilersdk.Popup({ closeButton: false, maxWidth: '200px', offset: 20 }).setHTML(`
@@ -5835,6 +5896,149 @@ function renderMapMarkersHero(){
       .addTo(sinkomMapHero);
     mapMarkersHero[name] = marker;
   });
+  renderIndividualPropertyMarkers();
+}
+
+// ── PINES INDIVIDUALES POR INMUEBLE (dirección exacta) — se muestran al hacer zoom, con agregados por municipio por debajo ──
+var individualPropertyMarkers = {};
+var MAP_INDIVIDUAL_ZOOM_THRESHOLD = 11.3;
+
+function renderIndividualPropertyMarkers(){
+  if(!sinkomMapHero) return;
+  Object.values(individualPropertyMarkers).forEach(m=>m.remove());
+  individualPropertyMarkers = {};
+  getMapFilteredProperties().filter(p => p.lat != null && p.lng != null).forEach(function(p){
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'property-pin';
+    el.title = p.title || '';
+    el.innerHTML = '<i class="fa-solid fa-house"></i>';
+    el.onclick = function(){ openPropertyModal(p.id); };
+    const marker = new maptilersdk.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(sinkomMapHero);
+    individualPropertyMarkers[p.id] = marker;
+  });
+  syncMapMarkerZoomVisibility();
+  updateMapTotalCount();
+}
+
+function syncMapMarkerZoomVisibility(){
+  if(!sinkomMapHero) return;
+  const showIndividual = sinkomMapHero.getZoom() >= MAP_INDIVIDUAL_ZOOM_THRESHOLD;
+  Object.values(individualPropertyMarkers).forEach(function(m){ const el=m.getElement(); if(el) el.style.display = showIndividual ? 'flex' : 'none'; });
+  Object.values(mapMarkersHero).forEach(function(m){ const el=m.getElement(); if(el) el.style.display = showIndividual ? 'none' : 'flex'; });
+}
+
+// ── FILTROS DEL MAPA — operación, tipo y precio, integrados con la selección de zonas ──
+var mapFilterOperation = 'Todas';
+var mapFilterType = 'Todos';
+var mapFilterPriceMin = '';
+var mapFilterPriceMax = '';
+
+function getMapFilteredProperties(){
+  return properties.filter(function(p){
+    if(mapFilterOperation !== 'Todas' && p.type !== mapFilterOperation) return false;
+    if(!matchesCategory(p, mapFilterType)) return false;
+    const price = Number(p.price) || 0;
+    if(mapFilterPriceMin && price < Number(mapFilterPriceMin)) return false;
+    if(mapFilterPriceMax && price > Number(mapFilterPriceMax)) return false;
+    if(selectedZoneMunicipios.size && !selectedZoneMunicipios.has(p.municipality)) return false;
+    return true;
+  });
+}
+
+function updateMapTotalCount(){
+  const el = document.getElementById('map-total-count');
+  if(!el) return;
+  const n = getMapFilteredProperties().length;
+  el.textContent = n + (n===1 ? ' anuncio' : ' anuncios');
+}
+
+function populateMapTypeSelect(){
+  const sel = document.getElementById('mf-type-select');
+  if(!sel || sel.options.length) return;
+  propertyTypes.forEach(function(t){
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    sel.appendChild(opt);
+  });
+}
+
+function setMapFilterOperation(op){
+  mapFilterOperation = op;
+  ['Todas','Venta','Alquiler'].forEach(function(v){
+    const b = document.getElementById('mf-op-'+v);
+    if(b) b.classList.toggle('active', v===op);
+  });
+  onMapFiltersChanged();
+}
+function setMapFilterType(val){ mapFilterType = val; onMapFiltersChanged(); }
+function setMapFilterPrice(){
+  mapFilterPriceMin = document.getElementById('mf-price-min').value;
+  mapFilterPriceMax = document.getElementById('mf-price-max').value;
+  onMapFiltersChanged();
+}
+function resetMapFilters(){
+  mapFilterOperation='Todas'; mapFilterType='Todos'; mapFilterPriceMin=''; mapFilterPriceMax='';
+  setMapFilterOperation('Todas');
+  const sel=document.getElementById('mf-type-select'); if(sel) sel.value='Todos';
+  const pmin=document.getElementById('mf-price-min'); if(pmin) pmin.value='';
+  const pmax=document.getElementById('mf-price-max'); if(pmax) pmax.value='';
+  onMapFiltersChanged();
+}
+function onMapFiltersChanged(){
+  const active = (mapFilterOperation!=='Todas'?1:0) + (mapFilterType!=='Todos'?1:0) + (mapFilterPriceMin?1:0) + (mapFilterPriceMax?1:0);
+  const countEl = document.getElementById('map-filters-count');
+  if(countEl){ countEl.style.display = active ? 'inline-block' : 'none'; countEl.textContent = active; }
+  renderMapMarkersHero();
+}
+function toggleMapFiltersPanel(){
+  populateMapTypeSelect();
+  const p = document.getElementById('map-filters-panel');
+  if(p) p.classList.toggle('show');
+}
+function updateZonesPill(){
+  const pill = document.getElementById('map-zones-pill');
+  const text = document.getElementById('map-zones-pill-text');
+  if(!pill || !text) return;
+  const n = selectedZoneMunicipios.size;
+  pill.style.display = n ? 'flex' : 'none';
+  text.textContent = `Zonas (${n})`;
+}
+
+// ── ESTÁNDAR / SATÉLITE ──
+var mapIsSatellite = false;
+function toggleMapSatellite(){
+  if(!sinkomMapHero) return;
+  mapIsSatellite = !mapIsSatellite;
+  const btn = document.getElementById('map-satellite-toggle');
+  if(btn) btn.innerHTML = mapIsSatellite ? '<i class="fa-solid fa-map"></i> Estándar' : '<i class="fa-solid fa-satellite"></i> Satélite';
+  sinkomMapHero.setStyle(mapIsSatellite ? maptilersdk.MapStyle.HYBRID : maptilersdk.MapStyle.STREETS);
+  sinkomMapHero.once('styledata', function(){ setTimeout(reAddCustomMapLayers, 80); });
+}
+function dimBaseAdminBoundaries(){
+  try {
+    (sinkomMapHero.getStyle().layers || []).forEach(function(l){
+      if(/boundary|admin/i.test(l.id) && l.type==='line'){
+        try { sinkomMapHero.setPaintProperty(l.id, 'line-opacity', 0); } catch(e){}
+      }
+    });
+  } catch(e){}
+}
+function reAddCustomMapLayers(){
+  if(!sinkomMapHero) return;
+  dimBaseAdminBoundaries();
+  if(municipiosGeoJSON && !sinkomMapHero.getSource('municipios-limites')){
+    sinkomMapHero.addSource('municipios-limites', { type:'geojson', data: municipiosGeoJSON });
+    sinkomMapHero.addLayer({ id:'municipios-fill', type:'fill', source:'municipios-limites', paint:{ 'fill-color':'#00d98f', 'fill-opacity':0 } });
+    sinkomMapHero.addLayer({ id:'municipios-limites-line', type:'line', source:'municipios-limites', paint:{ 'line-color':'#000000', 'line-width':['interpolate',['linear'],['zoom'],7,1.5,10,2.3,14,3.2], 'line-opacity':0.85 } });
+    sinkomMapHero.on('click', 'municipios-fill', onMunicipioFillClick);
+    sinkomMapHero.on('mouseenter', 'municipios-fill', function(){ if(zoneSelectModeActive) sinkomMapHero.getCanvas().style.cursor='pointer'; });
+    sinkomMapHero.on('mouseleave', 'municipios-fill', function(){ sinkomMapHero.getCanvas().style.cursor=''; });
+    updateZoneSelectPaint();
+  }
+  drawSourceAdded = false;
+  ensureDrawSources();
+  if(drawnLatLngs) setDrawGeoJSON(drawnLatLngs, true);
 }
 
 // ── HERO ZONE MENU — desplegable "Cómo quieres buscar" del buscador principal ──
@@ -6091,6 +6295,8 @@ function updateSelectionUI(){
   if(confirmBtn) confirmBtn.style.display = list.length ? 'flex' : 'none';
   const clearBtn = document.getElementById('map-clear-btn');
   if(clearBtn) clearBtn.style.display = list.length ? 'flex' : 'none';
+  updateZonesPill();
+  updateMapTotalCount();
 }
 
 function updateZoneSelectPaint(){
@@ -6188,6 +6394,7 @@ function confirmZoneSelection(){
   areaFilteredProps = properties.filter(p => selectedZoneMunicipios.has(p.municipality));
   showAreaResultsBanner();
   document.getElementById('map-select-confirm').style.display='none';
+  renderMapMarkersHero();
 }
 
 // ── MODO "BUSCAR A MI ALREDEDOR" — geolocalización del navegador + radio ajustable ──
@@ -6273,6 +6480,7 @@ function clearDrawArea(){
   cancelDrawArea(true);
   document.getElementById('map-area-results').style.display='none';
   document.getElementById('map-clear-btn').style.display='none';
+  renderMapMarkersHero();
 }
 
 function goToAreaResults(){
