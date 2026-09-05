@@ -3004,7 +3004,7 @@
               <span class="text-zinc-400 text-xs">·</span>
               <span class="i18n-auto text-xs text-zinc-500">Suele responder rápido</span>
             </div>
-            <div class="text-xs text-zinc-500 mb-4 flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> Publicado el <strong id="property-published" class="font-semibold text-zinc-700"></strong></div>
+            <div class="text-xs text-zinc-500 mb-4 flex items-center gap-1.5 flex-wrap"><i class="fa-regular fa-calendar"></i> Publicado el <strong id="property-published" class="font-semibold text-zinc-700"></strong><span class="text-zinc-300">·</span><i class="fa-solid fa-hashtag"></i> Ref. <strong id="property-reference" class="font-semibold text-zinc-700"></strong></div>
 
             <!-- Estadísticas públicas (como Idealista): visitas, guardados, contactos -->
             <div id="property-stats-box" class="mb-4 pb-4 border-b border-black/5 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-zinc-500">
@@ -4781,6 +4781,8 @@ async function openPropertyModal(id){
   if(warn) warn.classList.toggle('hidden',!!currentProperty.verified);
   const _pubEl=document.getElementById('property-published');
   if(_pubEl){ const _d=new Date(Date.now()-(Number(currentProperty.daysAgo)||0)*86400000); _pubEl.textContent=_d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}); }
+  const _refEl=document.getElementById('property-reference');
+  if(_refEl) _refEl.textContent = formatPropertyRef(currentProperty.id);
   document.getElementById('property-surface').textContent = currentProperty.surface || tr('No especificado');
   document.getElementById('property-bedrooms').textContent = currentProperty.bedrooms || tr('No especificado');
   document.getElementById('property-bathrooms').textContent = currentProperty.bathrooms || tr('No especificado');
@@ -5034,6 +5036,13 @@ async function shareProperty(){
 
 /* ── DESCARTAR / RUTA / NOTA (comparativa con Idealista) ─────────────── */
 let discardedIdsCache = new Set();
+
+// Referencia visible del anuncio (tipo "Ref. 106660775" de Idealista), derivada del UUID
+// que ya genera Supabase para cada inmueble — no requiere ninguna columna ni dato nuevo.
+function formatPropertyRef(id){
+  if(!id) return '—';
+  return 'SK-' + String(id).replace(/-/g,'').slice(0,8).toUpperCase();
+}
 
 // Estadísticas públicas de un inmueble (visitas, veces guardado, contactos) — visibles para
 // cualquiera que abra la ficha, como en Idealista, no solo para el propietario.
