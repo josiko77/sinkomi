@@ -1617,6 +1617,7 @@
       <button onclick="openInfoTooltip()" style="font-size:10px;font-weight:800;color:rgba(0,0,0,0.35);background:none;border:1px solid rgba(0,0,0,0.12);padding:.3rem .6rem;cursor:pointer;letter-spacing:.08em;" class="i18n-auto">¿Por qué?</button>
       <button id="buy-verified-quick" onclick="toggleVerifiedQuick('buy','verified')" style="display:inline-flex;align-items:center;gap:.45rem;background:white;border:2px solid var(--accent);padding:.35rem .85rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);cursor:pointer;transition:all .2s;"><i class="fa-solid fa-shield-check"></i> Verificados</button>
       <button id="buy-featured-quick" onclick="toggleVerifiedQuick('buy','featured')" style="display:inline-flex;align-items:center;gap:.45rem;background:white;border:2px solid #e8a020;padding:.35rem .85rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#e8a020;cursor:pointer;transition:all .2s;"><i class="fa-solid fa-fire"></i> Destacados</button>
+      <button id="buy-hide-occupied-quick" onclick="toggleHideOccupied()" style="display:inline-flex;align-items:center;gap:.45rem;background:white;border:2px solid #c0392b;padding:.35rem .85rem;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#c0392b;cursor:pointer;transition:all .2s;"><i class="fa-solid fa-house-circle-check"></i> Solo libres</button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="buy-grid"></div>
     <button class="load-more-btn" id="buy-load-more" onclick="loadMore('buy')" style="display:none"><i class="fa-solid fa-plus"></i> Ver más inmuebles</button>
@@ -3019,6 +3020,12 @@
               <span class="i18n-auto">Recomendamos contactar con propietarios verificados para mayor seguridad.</span>
             </div>
 
+            <!-- Aviso de ocupación (okupas / alquilada con inquilino) -->
+            <div id="property-occupancy-warning" class="hidden mb-4 flex items-start gap-2 px-4 py-3 border text-[11px] leading-relaxed">
+              <i class="fa-solid fa-circle-info mt-0.5 shrink-0"></i>
+              <span id="property-occupancy-text"></span>
+            </div>
+
             <!-- Botones acción -->
             <div class="flex gap-3 mb-4">
               <button onclick="openChatFromProperty()" class="i18n-auto flex-1 contact-coral py-4 text-sm font-black uppercase tracking-[0.14em]" style="font-family:'Special Elite','Courier New',monospace;">Contactar con propietario/a</button>
@@ -3271,7 +3278,7 @@
     </div>
   </div>
 </div>
-<div class="panel p-5"><div class="i18n-auto section-label mb-3">Precio y gastos</div><div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Comunidad €/mes</label><input id="publish-community" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="85"></div><div><label class="text-sm font-medium mb-2 block">IBI anual</label><input id="publish-ibi" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div><div><label class="text-sm font-medium mb-2 block">Precio negociable</label><select id="publish-negotiable" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificado</option><option>Sí</option><option>No</option></select></div></div></div>
+<div class="panel p-5"><div class="i18n-auto section-label mb-3">Precio y gastos</div><div class="grid md:grid-cols-3 gap-4"><div><label class="text-sm font-medium mb-2 block">Comunidad €/mes</label><input id="publish-community" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="85"></div><div><label class="text-sm font-medium mb-2 block">IBI anual</label><input id="publish-ibi" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="450"></div><div><label class="text-sm font-medium mb-2 block">Precio negociable</label><select id="publish-negotiable" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificado</option><option>Sí</option><option>No</option></select></div></div><div id="publish-occupancy-wrap" class="mt-4 hidden"><label class="text-sm font-medium mb-2 block">Situación de ocupación</label><select id="publish-occupancy" class="w-full border border-black/8 px-4 py-3 bg-white"><option value="Libre">Libre (sin ocupantes)</option><option value="Ocupada (okupas)">Ocupada — okupas sin contrato</option><option value="Alquilada (con inquilino)">Alquilada — con inquilino y contrato vigente</option></select><p class="text-xs text-zinc-400 mt-1.5">Se muestra de forma visible en el anuncio, como hacen Idealista y Fotocasa. La transparencia aquí evita malentendidos y reclamaciones después.</p></div></div>
 </div>
 <div id="publish-step-3" class="hidden">
 <div class="panel p-5">
@@ -3505,6 +3512,17 @@
           <div>
             <div class="font-black text-sm text-[var(--accent)]"><i class="fa-solid fa-circle-check" style="margin-right:.35rem;"></i>Solo propietarios verificados</div>
             <p class="i18n-auto text-xs text-zinc-600 mt-0.5">Solo recibirás alertas de inmuebles con propietario verificado. Ninguna otra plataforma ofrece esto.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Excluir ocupados/alquilados -->
+      <div class="p-4 border border-red-200 bg-red-50">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input id="alert-hide-occupied" type="checkbox" class="mt-0.5 shrink-0">
+          <div>
+            <div class="font-black text-sm text-red-700"><i class="fa-solid fa-house-circle-check" style="margin-right:.35rem;"></i>Excluir inmuebles ocupados</div>
+            <p class="i18n-auto text-xs text-zinc-600 mt-0.5">No recibirás alertas de inmuebles ocupados por okupas o alquilados con inquilino vigente.</p>
           </div>
         </label>
       </div>
@@ -3968,7 +3986,8 @@ function mapDbRowToProperty(row){
     status: row.status || 'Disponible',
     addressFull: row.show_exact_address ? (row.address_full || null) : null,
     lat: row.show_exact_address ? (row.lat ?? null) : null,
-    lng: row.show_exact_address ? (row.lng ?? null) : null
+    lng: row.show_exact_address ? (row.lng ?? null) : null,
+    occupancySituation: row.occupancy_situation || 'Libre'
   };
 }
 
@@ -4526,7 +4545,7 @@ function buildPropertyCardEl(prop){
         <div class="prop-card-overlay"></div>
         ${tier===3 ? topBadge : ''}
         <div class="prop-card-price-overlay" style="z-index:11;">
-          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}${prop.etv_number?` · ${escapeHtml(prop.etv_number)}`:''}</div>`:''}
+          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}${prop.etv_number?` · ${escapeHtml(prop.etv_number)}`:''}</div>`:''}${prop.occupancySituation && prop.occupancySituation!=='Libre' ? `<div style="display:inline-block;background:${prop.occupancySituation==='Ocupada (okupas)'?'rgba(192,57,43,0.88)':'rgba(59,89,152,0.85)'};backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid ${prop.occupancySituation==='Ocupada (okupas)'?'fa-triangle-exclamation':'fa-key'}" style="font-size:8px;"></i> ${prop.occupancySituation==='Ocupada (okupas)'?tr('Ocupada'):tr('Alquilada')}</div>` : ''}
           <div class="prop-card-price">${formatPrice(prop)}</div>
           <div class="prop-card-location">${prop.location}</div>
         </div>
@@ -4779,6 +4798,21 @@ async function openPropertyModal(id){
   document.getElementById('property-verified').textContent=currentProperty.verified?'Verificado':'Sin verificar';
   const warn=document.getElementById('property-unverified-warning');
   if(warn) warn.classList.toggle('hidden',!!currentProperty.verified);
+  const occWarn=document.getElementById('property-occupancy-warning');
+  const occText=document.getElementById('property-occupancy-text');
+  if(occWarn && occText){
+    const occ=currentProperty.occupancySituation;
+    if(occ==='Ocupada (okupas)'){
+      occWarn.className='mb-4 flex items-start gap-2 px-4 py-3 border border-red-200 bg-red-50 text-[11px] text-red-800 leading-relaxed';
+      occText.textContent='Este inmueble está ocupado sin contrato (okupas). El comprador asume el proceso de desalojo, que puede llevar meses.';
+    } else if(occ==='Alquilada (con inquilino)'){
+      occWarn.className='mb-4 flex items-start gap-2 px-4 py-3 border border-blue-200 bg-blue-50 text-[11px] text-blue-800 leading-relaxed';
+      occText.textContent='Este inmueble tiene un inquilino con contrato de alquiler vigente, que el comprador debe respetar hasta su finalización.';
+    } else {
+      occWarn.classList.add('hidden');
+    }
+    if(occ==='Ocupada (okupas)'||occ==='Alquilada (con inquilino)') occWarn.classList.remove('hidden');
+  }
   const _pubEl=document.getElementById('property-published');
   if(_pubEl){ const _d=new Date(Date.now()-(Number(currentProperty.daysAgo)||0)*86400000); _pubEl.textContent=_d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}); }
   const _refEl=document.getElementById('property-reference');
@@ -7006,7 +7040,7 @@ function calcValuation(){ /* legacy — now handled by wizard */ }
 
 // ─────────────────────────────────────────────────────────────────────────────
 const advancedFilters = {
-  buy:  { priceMin:'', priceMax:'', m2Min:'', m2Max:'', beds:[], baths:[], condition:[], extras:[], verifiedOnly:false, featuredOnly:false, datePublished:'', seasonality:'' },
+  buy:  { priceMin:'', priceMax:'', m2Min:'', m2Max:'', beds:[], baths:[], condition:[], extras:[], verifiedOnly:false, featuredOnly:false, datePublished:'', seasonality:'', hideOccupied:false },
   rent: { priceMin:'', priceMax:'', m2Min:'', m2Max:'', beds:[], baths:[], condition:[], extras:[], verifiedOnly:false, featuredOnly:false, datePublished:'', seasonality:'' }
 };
 
@@ -7082,6 +7116,7 @@ function updateFilterBadge(tab){
   if(f.m2Min||f.m2Max) count++;
   count += f.beds.length + f.baths.length + f.condition.length + f.extras.length;
   if(f.verifiedOnly) count++;
+  if(f.hideOccupied) count++;
   if(f.datePublished) count++;
   if(f.seasonality) count++;
   const badge   = document.getElementById(tab+'-filter-badge');
@@ -7095,7 +7130,7 @@ function updateFilterBadge(tab){
 function clearAllFilters(tab){
   const f = advancedFilters[tab];
   f.priceMin=''; f.priceMax=''; f.m2Min=''; f.m2Max='';
-  f.beds=[]; f.baths=[]; f.condition=[]; f.extras=[]; f.verifiedOnly=false; f.featuredOnly=false; f.datePublished=''; f.seasonality='';
+  f.beds=[]; f.baths=[]; f.condition=[]; f.extras=[]; f.verifiedOnly=false; f.featuredOnly=false; f.datePublished=''; f.seasonality=''; if('hideOccupied' in f) f.hideOccupied=false;
   ['price-min','price-max','m2-min','m2-max'].forEach(id=>{
     const el=document.getElementById(tab+'-'+id); if(el) el.value='';
   });
@@ -7106,6 +7141,7 @@ function clearAllFilters(tab){
   if(vBtn){ vBtn.style.background='white'; vBtn.style.color='var(--accent)'; }
   const fBtn = document.getElementById(tab+'-featured-quick');
   if(fBtn){ fBtn.style.background='white'; fBtn.style.color='#e8a020'; }
+  if(tab==='buy'){ const oBtn=document.getElementById('buy-hide-occupied-quick'); if(oBtn){ oBtn.style.background='white'; oBtn.style.color='#c0392b'; } }
   applyAdvancedFilters(tab);
 }
 
@@ -7133,6 +7169,7 @@ function matchesAdvancedFilters(prop, tab){
   if(f.extras.length && !f.extras.every(e=>extras.includes(e))) return false;
   if(f.verifiedOnly && !prop.verified) return false;
   if(f.featuredOnly && !(prop.verified && prop.featured)) return false;
+  if(f.hideOccupied && prop.occupancySituation && prop.occupancySituation!=='Libre') return false;
   if(f.datePublished && (Number(prop.daysAgo)||0) > Number(f.datePublished)) return false;
   if(f.seasonality && prop.seasonality && prop.seasonality!==f.seasonality) return false;
   return true;
@@ -7671,6 +7708,7 @@ function openPublishModal(){
   const addrLat = document.getElementById('publish-address-lat'); if(addrLat) addrLat.value = '';
   const addrLng = document.getElementById('publish-address-lng'); if(addrLng) addrLng.value = '';
   const addrShow = document.getElementById('publish-show-exact-address'); if(addrShow) addrShow.checked = false;
+  const occReset = document.getElementById('publish-occupancy'); if(occReset) occReset.value = 'Libre';
   document.getElementById('publish-modal-title') && (document.getElementById('publish-modal-title').textContent = 'Publicar inmueble');
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Publicar inmueble';
@@ -8059,6 +8097,7 @@ function updateAlertSummary(){
   const priceMax     = document.getElementById('alert-price-max')?.value || '';
   const beds         = document.getElementById('alert-beds')?.value || '';
   const verifiedOnly = document.getElementById('alert-verified-only')?.checked || false;
+  const hideOccupied = document.getElementById('alert-hide-occupied')?.checked || false;
   const freqLabel    = alertFreq==='instant'?'al instante':alertFreq==='daily'?'diaria':'semanal';
 
   let parts = [];
@@ -8068,6 +8107,7 @@ function updateAlertSummary(){
   if(priceMax) parts.push('hasta '+Number(priceMax).toLocaleString('es-ES')+'€');
   if(beds) parts.push(beds+'+ hab.');
   if(verifiedOnly) parts.push('Solo verificados');
+  if(hideOccupied) parts.push('Sin ocupados');
   parts.push('Notificación '+freqLabel);
 
   const el = document.getElementById('alert-summary');
@@ -8091,6 +8131,7 @@ async function confirmAlert(){
     price_max: priceMaxRaw ? Number(priceMaxRaw) : null,
     bedrooms_min: bedsRaw ? Number(bedsRaw) : null,
     verified_only: document.getElementById('alert-verified-only')?.checked || false,
+    hide_occupied: document.getElementById('alert-hide-occupied')?.checked || false,
     frequency: alertFreq
   };
 
@@ -8117,6 +8158,7 @@ document.addEventListener('input', function(e){
 });
 document.addEventListener('change', function(e){
   if(e.target?.id === 'alert-verified-only') updateAlertSummary();
+  if(e.target?.id === 'alert-hide-occupied') updateAlertSummary();
 });
 function updatePublishTotal(){const el=document.getElementById('publish-total');if(el)el.textContent='0 €';}
 function getCheckedExtras(){const extras=[];[['extra-ascensor','Ascensor'],['extra-terraza','Terraza'],['extra-balcon','Balcón'],['extra-garaje','Garaje'],['extra-trastero','Trastero'],['extra-piscina','Piscina'],['extra-jardin','Jardín'],['extra-aire','Aire acondicionado'],['extra-accesible','Vivienda accesible'],['extra-plano','Con plano'],['extra-tour','Con visita virtual']].forEach(([id,label])=>{if(document.getElementById(id)?.checked)extras.push(label);});return extras.length?extras.join(' · '):'Consultar';}
@@ -8238,7 +8280,8 @@ async function submitPublishForm(){
     address_full: hasExactCoords ? addressFull : null,
     lat: hasExactCoords ? addressLat : null,
     lng: hasExactCoords ? addressLng : null,
-    show_exact_address: showExactAddress
+    show_exact_address: showExactAddress,
+    occupancy_situation: (document.getElementById('publish-type').value==='Venta') ? (document.getElementById('publish-occupancy').value || 'Libre') : null
   };
 
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
@@ -8731,6 +8774,7 @@ async function editPropertyListing(id){
   document.getElementById('publish-address-lat').value = (p.lat != null) ? p.lat : '';
   document.getElementById('publish-address-lng').value = (p.lng != null) ? p.lng : '';
   document.getElementById('publish-show-exact-address').checked = !!p.show_exact_address;
+  const occSel = document.getElementById('publish-occupancy'); if(occSel) occSel.value = p.occupancy_situation || 'Libre';
   editingPropertyOriginalVerified = !!p.verified;
   document.getElementById('declare-particular').checked = true;
   togglePublishSeasonality();
@@ -8781,7 +8825,7 @@ function setPublishSeasonality(value){
   }
   toggleEtvField();
 }
-function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } toggleEtvField();}
+function togglePublishSeasonality(){const type=document.getElementById('publish-type').value;const wrap=document.getElementById('publish-seasonality-wrap');if(wrap) wrap.classList.toggle('hidden', type!=='Alquiler');if(type==='Alquiler'){ const sel=document.getElementById('publish-seasonality'); setPublishSeasonality(sel?sel.value:'Todo el año'); } const occWrap=document.getElementById('publish-occupancy-wrap'); if(occWrap) occWrap.classList.toggle('hidden', type!=='Venta'); toggleEtvField();}
 // ── Aparición suave al hacer scroll (respeta "reducir movimiento" del sistema) ──
 function initScrollReveals(){
   const els=document.querySelectorAll('.sk-reveal');
@@ -9141,6 +9185,7 @@ function buildSearchFiltersSnapshot(tab){
     beds: f.beds || [], baths: f.baths || [],
     condition: f.condition || [], extras: f.extras || [],
     verifiedOnly: !!f.verifiedOnly, featuredOnly: !!f.featuredOnly,
+    hideOccupied: !!f.hideOccupied,
     seasonality: f.seasonality || ''
   };
 }
@@ -9184,6 +9229,7 @@ function propertyMatchesSavedFilters(prop, filters){
   if(filters.priceMax && price > Number(filters.priceMax)) return false;
   if(filters.verifiedOnly && !prop.verified) return false;
   if(filters.featuredOnly && !(prop.verified && prop.featured)) return false;
+  if(filters.hideOccupied && prop.occupancySituation && prop.occupancySituation!=='Libre') return false;
   return true;
 }
 
@@ -9836,6 +9882,19 @@ function executeContractDelivery(destino, tipoContrato){
 }
 
 // Alias de compatibilidad
+function toggleHideOccupied(){
+  const f = advancedFilters.buy;
+  f.hideOccupied = !f.hideOccupied;
+  const btn = document.getElementById('buy-hide-occupied-quick');
+  if(btn){
+    btn.style.background = f.hideOccupied ? '#c0392b' : 'white';
+    btn.style.color = f.hideOccupied ? 'white' : '#c0392b';
+  }
+  buyPage = 1;
+  renderPropertyCards('buy-grid','Venta');
+  updateFilterBadge('buy');
+}
+
 function toggleVerifiedQuick(tab, type){
   const f = advancedFilters[tab];
   if(type==='verified'){
