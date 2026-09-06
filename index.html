@@ -7494,50 +7494,131 @@ function renderIndividualPropertyMarkers(){
   updateMapTotalCount();
 }
 
-// ── QUÉ SE VE EN CADA NIVEL DE ZOOM ──────────────────────────────────────────
-//   <=8   burbujas de isla
-//   9-12  polígonos de municipio rellenos + chips con el nº de anuncios
-//   >=13  pines de precio de cada inmueble
+// ── QUÉ SE VE EN CADA MOMENTO ────────────────────────────────────────────────
+// No hay un zoom mágico a partir del cual aparecen los inmuebles. Un municipio
+// se "abre" en casitas cuando sus casitas caben en pantalla sin pisarse; si no
+// caben, se queda con su etiqueta y el número. Así funciona igual con un anuncio
+// que con cuatrocientos, y con un pueblo pequeño que con Palma.
 function syncMapMarkerZoomVisibility(){
   if(!sinkomMapHero) return;
   const z = sinkomMapHero.getZoom();
   const showIsland = z <= MAP_ZOOM_ISLAND_MAX;
-  const showPins   = z >= MAP_INDIVIDUAL_ZOOM_THRESHOLD;
-  const showMuni   = !showIsland && !showPins;
 
-  Object.values(islandBubbles).forEach(function(m){ if(m.el) m.el.style.display = showIsland ? '' : 'none'; });
-  Object.values(municipioPills).forEach(function(m){
-    if(!m.el) return;
-    m.el.style.display = (showMuni || zoneSelectModeActive) ? '' : 'none';
-    m.offsetY = -26;   // la etiqueta se separa hacia arriba: la casita nunca la tapa
+  Object.values(islandBubbles).forEach(function(m){
+    if(m.el) m.el.style.display = showIsland ? '' : 'none';
+  });
+
+  if(showIsland){
+    Object.values(municipioPills).forEach(function(m){ if(m.el) m.el.style.display = 'none'; });
+    Object.values(housePropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = 'none'; });
+    Object.keys(municipioShapes).forEach(function(name){
+      const s = municipioShapes[name];
+      s.lines.forEach(function(pl){ pl.setOptions({ strokeOpacity: 0.35 }); });
+    });
+    applyMapStyleForZoom(false);
+    return;
+  }
+
+  const abiertos = layoutMapMarkers();
+  applyMapStyleForZoom(Object.keys(abiertos).some(function(k){ return abiertos[k]; }));
+}
+
+function _boxesOverlap(a, b){
+  return !(a.r < b.l || b.r < a.l || a.b < b.t || b.b < a.t);
+}
+
+// Decide, municipio a municipio, si se muestra su etiqueta o sus casitas.
+// Devuelve {municipio: true/false} — true = abierto en casitas.
+function layoutMapMarkers(){
+  const ref = Object.values(municipioPills)[0] || Object.values(housePropertyMarkers)[0];
+  const proj = ref && ref.getProjection && ref.getProjection();
+
+  // Sin proyección todavía (el mapa aún no ha pintado): etiquetas y nada más.
+  if(!proj){
+    Object.values(municipioPills).forEach(function(m){ if(m.el) m.el.style.display = ''; });
+    Object.values(housePropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = 'none'; });
+    return {};
+  }
+
+  const R = 22;   // medio lado de la casita más un margen de respiro
+  const porMunicipio = {};
+  Object.values(housePropertyMarkers).forEach(function(m){
+    const p = proj.fromLatLngToDivPixel(m.getPosition());
+    if(!p) return;
+    const x = p.x + (m.offsetX || 0), y = p.y + (m.offsetY || 0);
+    const muni = m._muni || '—';
+    (porMunicipio[muni] = porMunicipio[muni] || []).push({
+      m: m, box: { l:x-R, r:x+R, t:y-R, b:y+R }
+    });
+  });
+
+  const colocadas = [];
+  const abiertos  = {};
+
+  // Un municipio no se abre hasta que ocupa algo en pantalla. Si no, con un solo
+  // anuncio verías una casita suelta en mitad de Mallorca, sin contexto: mientras
+  // el municipio sea una mota, dice más su etiqueta con el número.
+  const MIN_PX = 170;
+  function municipioSuficientementeGrande(name){
+    const s = municipioShapes[name];
+    if(!s || !s.bounds || s.bounds.isEmpty()) return true;   // sin límites, no bloqueamos
+    const ne = proj.fromLatLngToDivPixel(s.bounds.getNorthEast());
+    const sw = proj.fromLatLngToDivPixel(s.bounds.getSouthWest());
+    if(!ne || !sw) return true;
+    return Math.hypot(ne.x - sw.x, ne.y - sw.y) >= MIN_PX;
+  }
+
+  // Los municipios con menos anuncios se abren antes: son los que caben seguro.
+  Object.keys(porMunicipio).sort(function(a, b){
+    return porMunicipio[a].length - porMunicipio[b].length;
+  }).forEach(function(muni){
+    const items = porMunicipio[muni];
+    let caben = municipioSuficientementeGrande(muni);
+    for(let i = 0; i < items.length && caben; i++){
+      for(let j = i + 1; j < items.length; j++){
+        if(_boxesOverlap(items[i].box, items[j].box)){ caben = false; break; }
+      }
+      if(!caben) break;
+      for(let k = 0; k < colocadas.length; k++){
+        if(_boxesOverlap(items[i].box, colocadas[k])){ caben = false; break; }
+      }
+    }
+    abiertos[muni] = caben;
+    if(caben) items.forEach(function(it){ colocadas.push(it.box); });
+  });
+
+  // Casitas: sólo las de los municipios abiertos
+  Object.values(housePropertyMarkers).forEach(function(m){
+    if(m.el) m.el.style.display = abiertos[m._muni || '—'] ? '' : 'none';
+  });
+
+  // Etiquetas: sólo las de los municipios que siguen agrupados.
+  // En modo "seleccionar zonas" se mantienen todas, porque son el botón de selección.
+  Object.keys(municipioPills).forEach(function(name){
+    const m = municipioPills[name];
+    if(!m || !m.el) return;
+    m.el.style.display = (abiertos[name] && !zoneSelectModeActive) ? 'none' : '';
+    m.offsetY = -26;      // la etiqueta se separa hacia arriba de su punto
     m.draw();
   });
-  // Casitas: desde que dejas de ver las islas. Cuando estás lejos sólo se muestran
-  // unas pocas por municipio, para que el mapa no se llene; al acercarte, todas.
-  Object.values(housePropertyMarkers).forEach(function(m){
-    if(!m.el) return;
-    const demasiadas = !showPins && (m._muniRank || 0) >= MAP_HOUSE_MAX_PER_MUNI;
-    m.el.style.display = (showIsland || demasiadas) ? 'none' : '';
-  });
-  Object.values(individualPropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = 'none'; });
 
-  // Al hacer zoom fuerte el relleno se retira para no tapar las fotos/pines,
-  // pero el contorno de cada municipio se mantiene siempre visible.
-  const fillOn = !showPins || zoneSelectModeActive;
+  // El relleno del municipio se retira cuando ya se ven sus inmuebles: a partir
+  // de ahí lo que importa son las casitas, no la mancha de color.
   Object.keys(municipioShapes).forEach(function(name){
     const s   = municipioShapes[name];
     const sel = selectedZoneMunicipios.has(name);
+    const abierto = abiertos[name] && !zoneSelectModeActive;
     s.polys.forEach(function(pg){
-      if(fillOn) pg.setOptions(polyStyleFor(s.hasProps, sel, false));
-      else       pg.setOptions({ fillOpacity: sel ? 0.22 : 0 });
+      if(abierto) pg.setOptions({ fillOpacity: sel ? 0.22 : 0 });
+      else        pg.setOptions(polyStyleFor(s.hasProps, sel, false));
     });
     s.lines.forEach(function(pl){
-      pl.setOptions({ strokeOpacity: showIsland ? 0.35 : (s.hasProps ? 0.85 : 0.5) });
+      pl.setOptions({ strokeOpacity: s.hasProps ? 0.85 : 0.5 });
     });
   });
 
   declutterZonePills();
-  applyMapStyleForZoom(showPins);
+  return abiertos;
 }
 
 // Lejos: rótulos de negocio apagados para que se lean las zonas.
@@ -7566,7 +7647,6 @@ function declutterZonePills(){
     el.style.visibility = 'visible';
     const r = el.getBoundingClientRect();
     if(!r.width) return;
-    // Los chips que quedan fuera del mapa no compiten por sitio (ya están recortados)
     if(r.right < mr.left || r.left > mr.right || r.bottom < mr.top || r.top > mr.bottom) return;
     const box = { l:r.left - 5, t:r.top - 5, r:r.right + 5, b:r.bottom + 5 };
     const clash = placed.some(function(p){
