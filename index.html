@@ -6918,7 +6918,34 @@ function injectMapCSS(){
   .sk-house-pin .sk-hp-door{ fill:#0d1a14; }
   .sk-house-pin:hover .sk-hp-body{ fill:#0d1a14; stroke:#00d98f; }
   .sk-house-pin:hover .sk-hp-door{ fill:#00d98f; }
-  .sk-house-pin.fav .sk-hp-body{ fill:#e84c1e; }
+  .sk-house-pin:hover{ z-index:400 !important; }
+
+  /* Tarjeta que aparece al pasar el ratón, sin hacer clic */
+  .sk-house-card{
+    position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(4px);
+    width:212px; background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.26); border:1px solid rgba(0,0,0,0.07);
+    opacity:0; pointer-events:none; transition:opacity .13s ease, transform .13s ease;
+    font-family:'Plus Jakarta Sans',sans-serif; text-align:left; z-index:500;
+  }
+  .sk-house-pin:hover .sk-house-card{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .sk-house-card img{ width:100%; height:92px; object-fit:cover; display:block; background:#eef0ee; }
+  .sk-house-card .sk-hc-body{ padding:9px 11px 10px; }
+  .sk-house-card .sk-hc-price{ font-size:15px; font-weight:900; color:#0d1a14; letter-spacing:-.01em;
+    display:flex; align-items:center; gap:6px; }
+  .sk-house-card .sk-hc-fav{ font-size:12px; color:#e84c1e; }
+  .sk-house-card .sk-hc-title{ font-size:11.5px; font-weight:700; color:#4b4b4b; margin-top:1px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sk-house-card .sk-hc-specs{ font-size:10.5px; font-weight:700; color:#8a8a8a; margin-top:3px; }
+  .sk-house-card .sk-hc-loc{ display:flex; gap:5px; align-items:flex-start; margin-top:7px;
+    font-size:10px; line-height:1.4; color:#8a8a8a; font-weight:600; }
+  .sk-house-card .sk-hc-loc i{ margin-top:1px; color:#00a878; }
+  .sk-house-card .sk-hc-loc.aprox i{ color:#c98a00; }
+  .sk-house-card .sk-hc-loc.aprox span{ color:#a8791a; }
+  .sk-house-card .sk-hc-cta{ margin-top:9px; padding:6px 0; text-align:center; border-radius:6px;
+    background:#0d1a14; color:#00d98f; font-size:9.5px; font-weight:900;
+    text-transform:uppercase; letter-spacing:.12em; }
+  @media (max-width:640px){ .sk-house-card{ display:none; } }
 
   /* ── Burbuja de isla (zoom bajo) ── */
   .sk-island-bubble{
@@ -7024,6 +7051,8 @@ function defineCustomMarkerClass(){
     this.latlng  = opts.position;
     this.el      = opts.element;
     this.onClick = opts.onClick || null;
+    this.offsetX = opts.offsetX || 0;
+    this.offsetY = opts.offsetY || 0;
     this.setMap(opts.map || null);
   };
   CustomMarker.prototype = Object.create(google.maps.OverlayView.prototype);
@@ -7041,8 +7070,9 @@ function defineCustomMarkerClass(){
     if(!proj) return;
     const px = proj.fromLatLngToDivPixel(this.latlng);
     if(!px) return;
-    this.el.style.left = (px.x - this.el.offsetWidth  / 2) + 'px';
-    this.el.style.top  = (px.y - this.el.offsetHeight / 2) + 'px';
+    const ox = this.offsetX || 0, oy = this.offsetY || 0;
+    this.el.style.left = (px.x - this.el.offsetWidth  / 2 + ox) + 'px';
+    this.el.style.top  = (px.y - this.el.offsetHeight / 2 + oy) + 'px';
   };
   CustomMarker.prototype.onRemove = function(){
     if(this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
@@ -7092,49 +7122,77 @@ function createZonePillEl(name, count){
   return el;
 }
 
-// Dónde se dibuja un anuncio en el mapa, respetando siempre su privacidad:
-//   1. coordenada exacta, sólo si el propietario la ha publicado
-//   2. coordenada aproximada (rejilla de 500 m) si prefirió ocultarla
-//   3. centro de su municipio, si el anuncio no tiene ubicación guardada,
-//      con una dispersión fija por anuncio para que no se apilen unos sobre otros
+// Dónde se dibuja un anuncio en el mapa. Nunca se inventa un punto: si no
+// sabemos dónde está, se dice el pueblo y se avisa de que es aproximado.
 function propertyMapPosition(p){
   if(!window.google || !p) return null;
+  // 1) Dirección exacta, sólo si el propietario la ha publicado
   if(p.lat != null && p.lng != null) return new google.maps.LatLng(p.lat, p.lng);
+  // 2) Zona aproximada (rejilla de 500 m) si prefirió ocultarla
   if(p.approxLat != null && p.approxLng != null) return new google.maps.LatLng(p.approxLat, p.approxLng);
-
-  let base = null;
-  const muni = (typeof officialMunicipioOf === 'function') ? officialMunicipioOf(p) : p.municipality;
-  const shape = muni && typeof municipioShapes !== 'undefined' ? municipioShapes[muni] : null;
-  if(shape && shape.center) base = { lat: shape.center.lat(), lng: shape.center.lng() };
-  if(!base){
-    const c = municipalityCoords[p.municipality] || (muni && municipalityCoords[muni]);
-    if(c) base = { lat: c[0], lng: c[1] };
-  }
-  if(!base) return null;
-
-  let h = 0;
-  const id = String(p.id || '');
-  for(let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  const ang = (Math.abs(h) % 360) * Math.PI / 180;
-  const rad = 0.0022 + (Math.abs(h >> 9) % 100) / 100 * 0.0020;   // ~250-470 m
-  return new google.maps.LatLng(base.lat + rad * Math.sin(ang), base.lng + rad * Math.cos(ang) * 1.29);
+  // 3) Sin ubicación guardada: el núcleo del pueblo, tal cual. Nada de desplazar
+  //    el punto para que "quede repartido": eso sería señalar un sitio inventado.
+  const c = municipalityCoords[p.municipality]
+         || municipalityCoords[(typeof officialMunicipioOf === 'function') ? officialMunicipioOf(p) : ''];
+  return c ? new google.maps.LatLng(c[0], c[1]) : null;
 }
 
-// La casita SINKOMI — un anuncio real, dibujado donde está
+// Con qué precisión conocemos la ubicación de un anuncio
+function propertyLocationLevel(p){
+  if(p.lat != null && p.lng != null) return 'exacta';
+  if(p.approxLat != null && p.approxLng != null) return 'aproximada';
+  return 'municipio';
+}
+
+// La casita SINKOMI// La casita SINKOMI — un anuncio real, dibujado donde está
 function createHouseMarkerEl(prop){
   const el = document.createElement('div');
-  el.className = 'sk-house-pin' + (isPropFavourite(prop) ? ' fav' : '');
-  el.title = (prop.title || 'Inmueble')
-           + (Number(prop.price) ? ' · ' + Number(prop.price).toLocaleString('es-ES') + ' €' : '');
+  el.className = 'sk-house-pin';   // siempre verde SINKOMI, pase lo que pase
+
+  const card  = document.createElement('div');
+  card.className = 'sk-house-card';
+
+  const img = (prop.img || (prop.images && prop.images[0]) || '');
+  const specs = [prop.surface, prop.bedrooms, prop.bathrooms]
+    .filter(function(v){ return v && v !== 'No aplica'; }).join(' · ');
+  const level = propertyLocationLevel(prop);
+  const locNote = level === 'exacta'
+    ? (prop.addressFull || ((prop.nucleo ? prop.nucleo + ', ' : '') + (prop.municipality || '')))
+    : level === 'aproximada'
+      ? 'Zona aproximada de ' + (prop.municipality || 'este municipio')
+      : 'Ubicación aproximada — este anuncio no tiene dirección guardada';
+
+  card.innerHTML =
+    (img ? '<img alt="">' : '') +
+    '<div class="sk-hc-body">' +
+      '<div class="sk-hc-price">' +
+        (isPropFavourite(prop) ? '<i class="fa-solid fa-heart sk-hc-fav" title="En tus favoritos"></i>' : '') +
+        '<span></span>' +
+      '</div>' +
+      '<div class="sk-hc-title"></div>' +
+      (specs ? '<div class="sk-hc-specs"></div>' : '') +
+      '<div class="sk-hc-loc"><i class="fa-solid fa-location-dot"></i><span></span></div>' +
+      '<div class="sk-hc-cta">Ver ficha</div>' +
+    '</div>';
+
+  if(img) card.querySelector('img').src = img;
+  card.querySelector('.sk-hc-price span').textContent =
+    Number(prop.price) ? Number(prop.price).toLocaleString('es-ES') + ' €' : '';
+  card.querySelector('.sk-hc-title').textContent = prop.title || 'Inmueble';
+  if(specs) card.querySelector('.sk-hc-specs').textContent = specs;
+  card.querySelector('.sk-hc-loc span').textContent = locNote;
+  if(level !== 'exacta') card.querySelector('.sk-hc-loc').classList.add('aprox');
+
   el.innerHTML =
     '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path class="sk-hp-body" d="M12 2.6 1.9 11.2h2.9v9.4a1 1 0 0 0 1 1h12.4a1 1 0 0 0 1-1v-9.4h2.9z"/>' +
       '<path class="sk-hp-door" d="M10.1 21.6v-5.1a1.9 1.9 0 0 1 3.8 0v5.1z"/>' +
     '</svg>';
+  el.appendChild(card);
   return el;
 }
 
-// ── Burbuja de isla — se ve cuando estás muy alejado ──
+// ── Burbuja de isla// ── Burbuja de isla — se ve cuando estás muy alejado ──
 function createIslandBubbleEl(name, count){
   const el = document.createElement('div');
   el.className = 'sk-island-bubble';
@@ -7293,131 +7351,49 @@ function renderMapMarkersHero(){
 function renderHouseMarkers(filtered, countByMuni){
   Object.values(housePropertyMarkers).forEach(function(m){ m.setMap(null); });
   housePropertyMarkers = {};
+
+  // Agrupamos los anuncios que caen exactamente en el mismo punto (típico de los
+  // que no tienen dirección: todos van al núcleo del pueblo). No los movemos de
+  // sitio: los separamos unos píxeles al dibujarlos, que es otra cosa.
+  const groups = {};
+  const items  = [];
   filtered.forEach(function(p){
-    const muni = officialMunicipioOf(p);
-    if(muni && (countByMuni[muni] || 0) > MAP_HOUSE_MAX_PER_MUNI) return;
     const pos = propertyMapPosition(p);
     if(!pos) return;
-    housePropertyMarkers[p.id] = new CustomMarker({
-      position: pos,
-      element:  createHouseMarkerEl(p),
+    const key = pos.lat().toFixed(5) + ',' + pos.lng().toFixed(5);
+    groups[key] = (groups[key] || 0) + 1;
+    items.push({ p: p, pos: pos, key: key, idx: groups[key] - 1 });
+  });
+
+  const perMuni = {};
+  items.forEach(function(it){
+    const n    = groups[it.key];
+    const step = 17;
+    const ox   = (it.idx - (n - 1) / 2) * step;
+    const muni = officialMunicipioOf(it.p) || it.p.municipality || '—';
+    perMuni[muni] = (perMuni[muni] || 0) + 1;
+
+    const marker = new CustomMarker({
+      position: it.pos,
+      element:  createHouseMarkerEl(it.p),
       map:      sinkomMapHero,
-      onClick:  function(){ openPropertyModal(p.id); }
+      offsetX:  ox,
+      offsetY:  12,          // por debajo del punto, la etiqueta del municipio va arriba
+      onClick:  function(){ openPropertyModal(it.p.id); }
     });
+    marker._muni     = muni;
+    marker._muniRank = perMuni[muni] - 1;
+    housePropertyMarkers[it.p.id] = marker;
   });
 }
 
-// SINKOMI cubre +220 localidades, pero oficialmente hay 67 municipios. Esta función
-// averigua en qué municipio oficial cae cada anuncio para que el mapa se vea limpio,
-// con una sola etiqueta por municipio, igual que Idealista.
-var _muniOfProp = {};
-function officialMunicipioOf(p){
-  if(!p) return null;
-  if(_muniOfProp[p.id] !== undefined) return _muniOfProp[p.id];
-  let found = null;
-  if(p.municipality && municipioShapes[p.municipality]){
-    found = p.municipality;
-  } else if(p.lat != null && p.lng != null && window.google && google.maps.geometry && google.maps.geometry.poly){
-    const ll = new google.maps.LatLng(p.lat, p.lng);
-    for(const name in municipioShapes){
-      const s = municipioShapes[name];
-      if(s.bounds.isEmpty() || !s.bounds.contains(ll)) continue;
-      const hit = s.polys.some(function(pg){ return google.maps.geometry.poly.containsLocation(ll, pg); });
-      if(hit){ found = name; break; }
-    }
-  }
-  if(!found) found = p.municipality || null;
-  _muniOfProp[p.id] = found;
-  return found;
-}
-
-// Al pulsar un municipio: si estás seleccionando zonas lo marca; si no, hace zoom dentro
-// (igual que Idealista: entras en el municipio y aparecen los precios).
-function onZoneChipClick(name, pos){
-  if(zoneSelectModeActive){ onMunicipioFillClick(name); return; }
-  const s = municipioShapes[name];
-  if(s && s.bounds && !s.bounds.isEmpty()){
-    sinkomMapHero.fitBounds(s.bounds, 40);
-  } else {
-    sinkomMapHero.panTo(pos);
-    sinkomMapHero.setZoom(MAP_INDIVIDUAL_ZOOM_THRESHOLD + 1);
-  }
-}
-
-function onMunicipioPolygonClick(nom, ev){
-  // En modo dibujo, el clic sobre un municipio debe contar como vértice del trazo
-  if(drawingActive){
-    if(ev && ev.latLng){
-      drawVertices.push({ lat:ev.latLng.lat(), lng:ev.latLng.lng() });
-      setDrawGeoJSON(drawVertices, false);
-      if(drawVertices.length >= 3){
-        const fb = document.getElementById('map-draw-finish');
-        if(fb) fb.style.display = 'flex';
-      }
-    }
-    return;
-  }
-  if(zoneSelectModeActive){ onMunicipioFillClick(nom); return; }
-  const s = municipioShapes[nom];
-  if(s && s.bounds && !s.bounds.isEmpty()) sinkomMapHero.fitBounds(s.bounds, 40);
-}
-
-// ── Estilo de relleno de cada municipio según estado ──
-function polyStyleFor(hasProps, selected, hover){
-  if(selected) return { fillColor:'#00d98f', fillOpacity:0.42, strokeOpacity:0, strokeWeight:0 };
-  if(hover)    return { fillColor:'#00a878', fillOpacity:0.28, strokeOpacity:0, strokeWeight:0 };
-  if(hasProps) return { fillColor:'#00a878', fillOpacity:0.11, strokeOpacity:0, strokeWeight:0 };
-  return             { fillColor:'#8a9099', fillOpacity:0.035, strokeOpacity:0, strokeWeight:0 };
-}
-
-function paintMunicipioPolygons(countByMuni){
-  countByMuni = countByMuni || {};
-  Object.keys(municipioShapes).forEach(function(name){
-    const s   = municipioShapes[name];
-    const has = (countByMuni[name] || 0) > 0;
-    const sel = selectedZoneMunicipios.has(name);
-    s.hasProps = has;
-    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(has, sel, false)); });
-    s.lines.forEach(function(pl){
-      pl.setOptions({
-        strokeColor:   has ? '#00a878' : '#aab0b6',
-        strokeOpacity: has ? 0.85 : 0.5,
-        strokeWeight:  has ? 1.8 : 1.1
-      });
-    });
-  });
-}
-
-function highlightMunicipio(name, on){
-  const s = municipioShapes[name];
-  if(s){
-    const sel = selectedZoneMunicipios.has(name);
-    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(s.hasProps, sel, on)); });
-    s.lines.forEach(function(pl){ pl.setOptions({ strokeWeight: on ? 2.6 : (s.hasProps ? 1.8 : 1.1) }); });
-  }
-  const pill = municipioPills[name];
-  if(pill && pill.el) pill.el.classList.toggle('hover', !!on);
-}
-
-// ── PINES INDIVIDUALES (precio al estilo Idealista) — visibles a zoom alto ────
+// ── PINES INDIVIDUALES// ── PINES INDIVIDUALES (precio al estilo Idealista) — visibles a zoom alto ────
+// Los pines de precio ya no se usan en el mapa de búsqueda: ahora todo el mapa
+// habla el mismo idioma, la casita SINKOMI, y el precio sale en la tarjeta al
+// pasar el ratón. La función se conserva vacía por si algo la sigue llamando.
 function renderIndividualPropertyMarkers(){
-  if(!sinkomMapHero) return;
   Object.values(individualPropertyMarkers).forEach(function(m){ m.setMap(null); });
   individualPropertyMarkers = {};
-  getMapFilteredProperties().forEach(function(p){
-    // Antes sólo se dibujaban los anuncios con dirección exacta publicada, así que
-    // los que protegían su dirección desaparecían del mapa al hacer zoom.
-    const position = propertyMapPosition(p);
-    if(!position) return;
-    const el = createPricePinEl(p, false);
-    const marker = new CustomMarker({
-      position: position,
-      element:  el,
-      map:      sinkomMapHero,
-      onClick:  function(){ showPropertyPopup(p, position); }
-    });
-    individualPropertyMarkers[p.id] = marker;
-  });
   syncMapMarkerZoomVisibility();
   updateMapTotalCount();
 }
@@ -7434,11 +7410,20 @@ function syncMapMarkerZoomVisibility(){
   const showMuni   = !showIsland && !showPins;
 
   Object.values(islandBubbles).forEach(function(m){ if(m.el) m.el.style.display = showIsland ? '' : 'none'; });
-  Object.values(municipioPills).forEach(function(m){ if(m.el) m.el.style.display = (showMuni || zoneSelectModeActive) ? '' : 'none'; });
-  // Casitas: acompañan a las etiquetas de municipio. Al hacer zoom fuerte ceden
-  // el sitio al pin de precio, que dice más cuando ya estás mirando de cerca.
-  Object.values(housePropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = showMuni ? '' : 'none'; });
-  Object.values(individualPropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = showPins ? '' : 'none'; });
+  Object.values(municipioPills).forEach(function(m){
+    if(!m.el) return;
+    m.el.style.display = (showMuni || zoneSelectModeActive) ? '' : 'none';
+    m.offsetY = -26;   // la etiqueta se separa hacia arriba: la casita nunca la tapa
+    m.draw();
+  });
+  // Casitas: desde que dejas de ver las islas. Cuando estás lejos sólo se muestran
+  // unas pocas por municipio, para que el mapa no se llene; al acercarte, todas.
+  Object.values(housePropertyMarkers).forEach(function(m){
+    if(!m.el) return;
+    const demasiadas = !showPins && (m._muniRank || 0) >= MAP_HOUSE_MAX_PER_MUNI;
+    m.el.style.display = (showIsland || demasiadas) ? 'none' : '';
+  });
+  Object.values(individualPropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = 'none'; });
 
   // Al hacer zoom fuerte el relleno se retira para no tapar las fotos/pines,
   // pero el contorno de cada municipio se mantiene siempre visible.
