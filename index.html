@@ -242,6 +242,9 @@
     /* ── ESTÁNDAR / SATÉLITE ── */
     #map-satellite-toggle{position:absolute;bottom:12px;left:12px;z-index:500;background:white;border:2px solid var(--accent);color:var(--accent-dark);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .85rem;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.12);display:flex;align-items:center;gap:.4rem;}
     #map-satellite-toggle:hover{background:var(--accent);color:white;}
+    #map-favs-toggle{position:absolute;bottom:12px;left:132px;z-index:500;background:white;border:2px solid #e84c1e;color:#e84c1e;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .85rem;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.12);display:flex;align-items:center;gap:.4rem;}
+    #map-favs-toggle:hover,#map-favs-toggle.active{background:#e84c1e;color:white;}
+    @media (max-width:520px){ #map-favs-toggle{left:auto;right:12px;} }
 
     /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
     #map-fullscreen-overlay{position:fixed;inset:0;z-index:9998;background:#fff;display:none;flex-direction:column;}
@@ -2327,6 +2330,7 @@
     <div id="sinkomi-map-hero" style="height:420px;width:100%;position:relative;">
       <div id="map-total-count">— anuncios</div>
       <button type="button" id="map-satellite-toggle" onclick="toggleMapSatellite()"><i class="fa-solid fa-satellite"></i> Satélite</button>
+      <button type="button" id="map-favs-toggle" onclick="toggleMapFavourites()"><i class="fa-regular fa-heart"></i> Favoritos</button>
       <div id="map-top-controls">
         <div id="map-mode-btns">
           <button id="map-select-mode-btn" class="map-mode-btn" onclick="activateZoneSelectMode()"><i class="fa-solid fa-map-location-dot"></i> Seleccionar zonas</button>
@@ -5850,7 +5854,22 @@ var GOOGLE_MAPS_API_KEY = 'AIzaSyAsIbZcKmRnVcO1P1YcI7puDCTrtjfR0F4';
 var sinkomMapHero = null;
 var mapMarkersHero = {};       // clusters por municipio   {nombre: CustomMarker}
 var individualPropertyMarkers = {};  // pines individuales {id: CustomMarker}
-var MAP_INDIVIDUAL_ZOOM_THRESHOLD = 14;
+var MAP_INDIVIDUAL_ZOOM_THRESHOLD = 13;   // >=13 → pines de precio individuales
+var MAP_ZOOM_ISLAND_MAX = 8;              // <=8  → burbujas por isla
+// 9..12 → polígonos de municipio + chips con el nº de anuncios (estilo Idealista)
+
+// Centros aproximados de cada isla para las burbujas de zoom bajo
+var ISLAND_CENTERS = {
+  'Mallorca':   [39.62, 2.99],
+  'Menorca':    [39.95, 4.10],
+  'Eivissa':    [38.98, 1.43],
+  'Formentera': [38.70, 1.45]
+};
+function islandOf(lat, lng){
+  if(lng < 1.75) return lat < 38.76 ? 'Formentera' : 'Eivissa';
+  if(lng > 3.60) return 'Menorca';
+  return 'Mallorca';
+}
 
 // ─── ESTILO LIMPIO TIPO IDEALISTA ─────────────────────────────────────────────
 var SINKOMI_MAP_STYLE = [
@@ -5921,6 +5940,45 @@ function injectMapCSS(){
     box-shadow:0 2px 8px rgba(0,0,0,0.18);
   }
   .muni-fallback-pin.selected{ background:#00d98f; color:#fff; border-color:#00d98f; }
+
+  /* ── Chip de municipio (estilo Idealista: nombre + nº de anuncios) ── */
+  .sk-zone-pill{
+    display:flex; align-items:center; gap:6px;
+    background:#fff; border:1.5px solid rgba(0,168,120,0.35);
+    border-radius:999px; padding:4px 5px 4px 11px;
+    font:800 11.5px/1 'Plus Jakarta Sans',sans-serif; color:#0d1a14;
+    box-shadow:0 3px 12px rgba(0,0,0,0.16); cursor:pointer; white-space:nowrap;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .sk-zone-pill .sk-zp-count{
+    background:#00a878; color:#fff; border-radius:999px;
+    min-width:20px; height:20px; padding:0 6px;
+    display:flex; align-items:center; justify-content:center;
+    font:900 10.5px/1 'Plus Jakarta Sans',sans-serif;
+  }
+  .sk-zone-pill:hover, .sk-zone-pill.hover{
+    transform:scale(1.07); background:#0d1a14; color:#fff;
+    box-shadow:0 6px 20px rgba(0,0,0,0.28); border-color:#00d98f;
+  }
+  .sk-zone-pill:hover .sk-zp-count, .sk-zone-pill.hover .sk-zp-count{ background:#00d98f; color:#0d1a14; }
+  .sk-zone-pill.selected{ background:#00a878; color:#fff; border-color:#00d98f; }
+  .sk-zone-pill.selected .sk-zp-count{ background:#0d1a14; color:#00d98f; }
+
+  /* ── Burbuja de isla (zoom bajo) ── */
+  .sk-island-bubble{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    width:58px; height:58px; border-radius:50%;
+    background:rgba(0,168,120,0.92); border:3px solid #fff; color:#fff;
+    box-shadow:0 6px 20px rgba(0,0,0,0.28); cursor:pointer;
+    font-family:'Plus Jakarta Sans',sans-serif; transition:transform .12s ease;
+  }
+  .sk-island-bubble:hover{ transform:scale(1.1); background:#0d1a14; }
+  .sk-island-bubble b{ font-size:15px; font-weight:900; line-height:1; }
+  .sk-island-bubble span{ font-size:8px; font-weight:800; letter-spacing:.04em; margin-top:2px; opacity:.9; }
+
+  /* ── Pin de precio guardado en favoritos ── */
+  .sk-price-pin.fav{ background:#e84c1e; color:#fff; border-color:rgba(255,255,255,0.45); }
+  .sk-price-pin.fav:hover{ background:#c93d13; color:#fff; }
   `;
   document.head.appendChild(s);
 }
@@ -6002,8 +6060,34 @@ function createClusterEl(count, isSelected){
 
 function createPricePinEl(prop, isSelected){
   const el = document.createElement('div');
-  el.className = 'sk-price-pin' + (isSelected ? ' selected' : '');
-  el.innerHTML = '<i class="fa-solid fa-house" style="font-size:9px;opacity:.7;"></i>' + formatPriceShort(prop.price);
+  const isFav = isPropFavourite(prop);
+  el.className = 'sk-price-pin' + (isSelected ? ' selected' : '') + (isFav ? ' fav' : '');
+  el.innerHTML = '<i class="fa-solid ' + (isFav ? 'fa-heart' : 'fa-house') + '" style="font-size:9px;opacity:.75;"></i>' + formatPriceShort(prop.price);
+  return el;
+}
+
+function isPropFavourite(prop){
+  if(typeof favIdsCache === 'undefined' || !favIdsCache) return false;
+  return favIdsCache.indexOf(prop.id) >= 0 || favIdsCache.indexOf(String(prop.id)) >= 0;
+}
+
+// ── Chip de zona (municipio) — el equivalente SINKOMI a las etiquetas de Idealista ──
+function createZonePillEl(name, count){
+  const el = document.createElement('div');
+  el.className = 'sk-zone-pill';
+  el.innerHTML = '<span class="sk-zp-name"></span><span class="sk-zp-count"></span>';
+  el.querySelector('.sk-zp-name').textContent  = name;
+  el.querySelector('.sk-zp-count').textContent = count > 999 ? '999+' : count;
+  return el;
+}
+
+// ── Burbuja de isla — se ve cuando estás muy alejado ──
+function createIslandBubbleEl(name, count){
+  const el = document.createElement('div');
+  el.className = 'sk-island-bubble';
+  el.innerHTML = '<b></b><span></span>';
+  el.querySelector('b').textContent    = count > 999 ? '999+' : count;
+  el.querySelector('span').textContent = name.toUpperCase();
   return el;
 }
 
@@ -6033,6 +6117,7 @@ function initMapHeroGM(){
     // Limitar zoom mínimo para no salir de las islas
     sinkomMapHero.setOptions({ minZoom: 7, maxZoom: 18 });
     google.maps.event.addListener(sinkomMapHero, 'zoom_changed', syncMapMarkerZoomVisibility);
+    google.maps.event.addListener(sinkomMapHero, 'idle',          syncMapMarkerZoomVisibility);
     // Cargar límites oficiales municipales (IDEIB)
     loadMunicipiosGeoData();
     // Primer renderizado de marcadores
@@ -6081,34 +6166,169 @@ function showPropertyPopup(prop, position){
 // Se llama al cargar el mapa y de nuevo cada vez que llegan datos nuevos de Supabase.
 function renderMapMarkersHero(){
   if(!sinkomMapHero) return;
-  // Limpiar clusters
-  Object.values(mapMarkersHero).forEach(m=>m.setMap(null));
-  Object.keys(mapMarkersHero).forEach(k=>delete mapMarkersHero[k]);
+
+  // Limpiar todas las capas de marcadores
+  Object.values(mapMarkersHero).forEach(function(m){ m.setMap(null); });
+  mapMarkersHero = {};
+  Object.values(municipioPills).forEach(function(m){ m.setMap(null); });
+  municipioPills = {};
+  Object.values(islandBubbles).forEach(function(m){ m.setMap(null); });
+  islandBubbles = {};
+
   const filtered = getMapFilteredProperties();
-  municipalityList.forEach(function(name){
-    const coords = municipalityCoords[name];
-    if(!coords) return;
-    const count = filtered.filter(p=>p.municipality===name).length;
-    if(count === 0) return;
-    const position = new google.maps.LatLng(coords[0], coords[1]);
-    const el = createClusterEl(count, false);
-    const marker = new CustomMarker({
-      position: position,
-      element:  el,
-      map:      sinkomMapHero,
-      onClick:  function(){ showClusterPopup(name, count, position); }
-    });
-    mapMarkersHero[name] = marker;
+
+  // ── Nº de anuncios por municipio (agrupando pedanías en su municipio oficial) ──
+  const countByMuni = {};
+  filtered.forEach(function(p){
+    const muni = officialMunicipioOf(p);
+    if(!muni) return;
+    countByMuni[muni] = (countByMuni[muni] || 0) + 1;
   });
+
+  // ── Burbujas por isla (zoom bajo) ──
+  const countByIsland = {};
+  Object.keys(countByMuni).forEach(function(name){
+    const c = municipalityCoords[name];
+    if(!c) return;
+    const isl = islandOf(c[0], c[1]);
+    countByIsland[isl] = (countByIsland[isl] || 0) + countByMuni[name];
+  });
+  Object.keys(countByIsland).forEach(function(isl){
+    const cc = ISLAND_CENTERS[isl];
+    if(!cc) return;
+    const pos = new google.maps.LatLng(cc[0], cc[1]);
+    islandBubbles[isl] = new CustomMarker({
+      position: pos,
+      element:  createIslandBubbleEl(isl, countByIsland[isl]),
+      map:      sinkomMapHero,
+      onClick:  function(){ sinkomMapHero.panTo(pos); sinkomMapHero.setZoom(10); }
+    });
+  });
+
+  // ── Chips de municipio (zoom medio) ──
+  Object.keys(countByMuni).forEach(function(name){
+    const shape  = municipioShapes[name];
+    const coords = municipalityCoords[name];
+    let pos = null;
+    if(shape && shape.center)  pos = shape.center;
+    else if(coords)            pos = new google.maps.LatLng(coords[0], coords[1]);
+    if(!pos) return;
+    const count = countByMuni[name];
+    const el    = createZonePillEl(name, count);
+    el.addEventListener('mouseenter', function(){ highlightMunicipio(name, true);  });
+    el.addEventListener('mouseleave', function(){ highlightMunicipio(name, false); });
+    if(selectedZoneMunicipios.has(name)) el.classList.add('selected');
+    const marker = new CustomMarker({
+      position: pos, element: el, map: sinkomMapHero,
+      onClick:  function(){ onZoneChipClick(name, pos); }
+    });
+    marker._count = count;
+    municipioPills[name] = marker;
+    mapMarkersHero[name] = marker;   // compatibilidad con el resto del código
+  });
+
+  paintMunicipioPolygons(countByMuni);
   renderIndividualPropertyMarkers();
+}
+
+// SINKOMI cubre +220 localidades, pero oficialmente hay 67 municipios. Esta función
+// averigua en qué municipio oficial cae cada anuncio para que el mapa se vea limpio,
+// con una sola etiqueta por municipio, igual que Idealista.
+var _muniOfProp = {};
+function officialMunicipioOf(p){
+  if(!p) return null;
+  if(_muniOfProp[p.id] !== undefined) return _muniOfProp[p.id];
+  let found = null;
+  if(p.municipality && municipioShapes[p.municipality]){
+    found = p.municipality;
+  } else if(p.lat != null && p.lng != null && window.google && google.maps.geometry && google.maps.geometry.poly){
+    const ll = new google.maps.LatLng(p.lat, p.lng);
+    for(const name in municipioShapes){
+      const s = municipioShapes[name];
+      if(s.bounds.isEmpty() || !s.bounds.contains(ll)) continue;
+      const hit = s.polys.some(function(pg){ return google.maps.geometry.poly.containsLocation(ll, pg); });
+      if(hit){ found = name; break; }
+    }
+  }
+  if(!found) found = p.municipality || null;
+  _muniOfProp[p.id] = found;
+  return found;
+}
+
+// Al pulsar un municipio: si estás seleccionando zonas lo marca; si no, hace zoom dentro
+// (igual que Idealista: entras en el municipio y aparecen los precios).
+function onZoneChipClick(name, pos){
+  if(zoneSelectModeActive){ onMunicipioFillClick(name); return; }
+  const s = municipioShapes[name];
+  if(s && s.bounds && !s.bounds.isEmpty()){
+    sinkomMapHero.fitBounds(s.bounds, 40);
+  } else {
+    sinkomMapHero.panTo(pos);
+    sinkomMapHero.setZoom(MAP_INDIVIDUAL_ZOOM_THRESHOLD + 1);
+  }
+}
+
+function onMunicipioPolygonClick(nom, ev){
+  // En modo dibujo, el clic sobre un municipio debe contar como vértice del trazo
+  if(drawingActive){
+    if(ev && ev.latLng){
+      drawVertices.push({ lat:ev.latLng.lat(), lng:ev.latLng.lng() });
+      setDrawGeoJSON(drawVertices, false);
+      if(drawVertices.length >= 3){
+        const fb = document.getElementById('map-draw-finish');
+        if(fb) fb.style.display = 'flex';
+      }
+    }
+    return;
+  }
+  if(zoneSelectModeActive){ onMunicipioFillClick(nom); return; }
+  const s = municipioShapes[nom];
+  if(s && s.bounds && !s.bounds.isEmpty()) sinkomMapHero.fitBounds(s.bounds, 40);
+}
+
+// ── Estilo de relleno de cada municipio según estado ──
+function polyStyleFor(hasProps, selected, hover){
+  if(selected) return { fillColor:'#00d98f', fillOpacity:0.42, strokeOpacity:0, strokeWeight:0 };
+  if(hover)    return { fillColor:'#00a878', fillOpacity:0.28, strokeOpacity:0, strokeWeight:0 };
+  if(hasProps) return { fillColor:'#00a878', fillOpacity:0.11, strokeOpacity:0, strokeWeight:0 };
+  return             { fillColor:'#8a9099', fillOpacity:0.035, strokeOpacity:0, strokeWeight:0 };
+}
+
+function paintMunicipioPolygons(countByMuni){
+  countByMuni = countByMuni || {};
+  Object.keys(municipioShapes).forEach(function(name){
+    const s   = municipioShapes[name];
+    const has = (countByMuni[name] || 0) > 0;
+    const sel = selectedZoneMunicipios.has(name);
+    s.hasProps = has;
+    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(has, sel, false)); });
+    s.lines.forEach(function(pl){
+      pl.setOptions({
+        strokeColor:   has ? '#00a878' : '#aab0b6',
+        strokeOpacity: has ? 0.85 : 0.5,
+        strokeWeight:  has ? 1.8 : 1.1
+      });
+    });
+  });
+}
+
+function highlightMunicipio(name, on){
+  const s = municipioShapes[name];
+  if(s){
+    const sel = selectedZoneMunicipios.has(name);
+    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(s.hasProps, sel, on)); });
+    s.lines.forEach(function(pl){ pl.setOptions({ strokeWeight: on ? 2.6 : (s.hasProps ? 1.8 : 1.1) }); });
+  }
+  const pill = municipioPills[name];
+  if(pill && pill.el) pill.el.classList.toggle('hover', !!on);
 }
 
 // ── PINES INDIVIDUALES (precio al estilo Idealista) — visibles a zoom alto ────
 function renderIndividualPropertyMarkers(){
   if(!sinkomMapHero) return;
-  Object.values(individualPropertyMarkers).forEach(m=>m.setMap(null));
+  Object.values(individualPropertyMarkers).forEach(function(m){ m.setMap(null); });
   individualPropertyMarkers = {};
-  getMapFilteredProperties().filter(p => p.lat != null && p.lng != null).forEach(function(p){
+  getMapFilteredProperties().filter(function(p){ return p.lat != null && p.lng != null; }).forEach(function(p){
     const position = new google.maps.LatLng(p.lat, p.lng);
     const el = createPricePinEl(p, false);
     const marker = new CustomMarker({
@@ -6123,16 +6343,92 @@ function renderIndividualPropertyMarkers(){
   updateMapTotalCount();
 }
 
+// ── QUÉ SE VE EN CADA NIVEL DE ZOOM ──────────────────────────────────────────
+//   <=8   burbujas de isla
+//   9-12  polígonos de municipio rellenos + chips con el nº de anuncios
+//   >=13  pines de precio de cada inmueble
 function syncMapMarkerZoomVisibility(){
   if(!sinkomMapHero) return;
-  const zoom = sinkomMapHero.getZoom();
-  const showIndividual = zoom >= MAP_INDIVIDUAL_ZOOM_THRESHOLD;
-  Object.values(individualPropertyMarkers).forEach(function(m){
-    if(m.el) m.el.style.display = showIndividual ? '' : 'none';
+  const z = sinkomMapHero.getZoom();
+  const showIsland = z <= MAP_ZOOM_ISLAND_MAX;
+  const showPins   = z >= MAP_INDIVIDUAL_ZOOM_THRESHOLD;
+  const showMuni   = !showIsland && !showPins;
+
+  Object.values(islandBubbles).forEach(function(m){ if(m.el) m.el.style.display = showIsland ? '' : 'none'; });
+  Object.values(municipioPills).forEach(function(m){ if(m.el) m.el.style.display = (showMuni || zoneSelectModeActive) ? '' : 'none'; });
+  Object.values(individualPropertyMarkers).forEach(function(m){ if(m.el) m.el.style.display = showPins ? '' : 'none'; });
+
+  // Al hacer zoom fuerte el relleno se retira para no tapar las fotos/pines,
+  // pero el contorno de cada municipio se mantiene siempre visible.
+  const fillOn = !showPins || zoneSelectModeActive;
+  Object.keys(municipioShapes).forEach(function(name){
+    const s   = municipioShapes[name];
+    const sel = selectedZoneMunicipios.has(name);
+    s.polys.forEach(function(pg){
+      if(fillOn) pg.setOptions(polyStyleFor(s.hasProps, sel, false));
+      else       pg.setOptions({ fillOpacity: sel ? 0.22 : 0 });
+    });
+    s.lines.forEach(function(pl){
+      pl.setOptions({ strokeOpacity: showIsland ? 0.35 : (s.hasProps ? 0.85 : 0.5) });
+    });
   });
-  Object.values(mapMarkersHero).forEach(function(m){
-    if(m.el) m.el.style.display = showIndividual ? 'none' : '';
+
+  declutterZonePills();
+}
+
+// Igual que Idealista: si dos etiquetas de municipio se pisan, sólo se muestra
+// la del municipio con más anuncios. Al hacer zoom van apareciendo las demás.
+function declutterZonePills(){
+  const mapEl = sinkomMapHero && sinkomMapHero.getDiv();
+  if(!mapEl) return;
+  const mr = mapEl.getBoundingClientRect();
+  const list = Object.keys(municipioPills).map(function(n){ return municipioPills[n]; })
+    .filter(function(m){ return m && m.el && m.el.style.display !== 'none'; });
+  list.sort(function(a, b){ return (b._count || 0) - (a._count || 0); });
+  const placed = [];
+  list.forEach(function(m){
+    const el = m.el;
+    el.style.visibility = 'visible';
+    const r = el.getBoundingClientRect();
+    if(!r.width) return;
+    // Los chips que quedan fuera del mapa no compiten por sitio (ya están recortados)
+    if(r.right < mr.left || r.left > mr.right || r.bottom < mr.top || r.top > mr.bottom) return;
+    const box = { l:r.left - 5, t:r.top - 5, r:r.right + 5, b:r.bottom + 5 };
+    const clash = placed.some(function(p){
+      return !(box.r < p.l || box.l > p.r || box.b < p.t || box.t > p.b);
+    });
+    if(clash) el.style.visibility = 'hidden';
+    else placed.push(box);
   });
+}
+
+// ── MAPA DE FAVORITOS ────────────────────────────────────────────────────────
+var mapOnlyFavourites = false;
+function toggleMapFavourites(){
+  mapOnlyFavourites = !mapOnlyFavourites;
+  const btn = document.getElementById('map-favs-toggle');
+  if(btn){
+    btn.classList.toggle('active', mapOnlyFavourites);
+    btn.innerHTML = mapOnlyFavourites
+      ? '<i class="fa-solid fa-heart"></i> Solo favoritos'
+      : '<i class="fa-regular fa-heart"></i> Favoritos';
+  }
+  if(mapOnlyFavourites && (typeof favIdsCache === 'undefined' || !favIdsCache || !favIdsCache.length)){
+    if(typeof skAlert === 'function') skAlert('Aún no tienes inmuebles guardados. Pulsa el corazón de cualquier anuncio y aparecerán aquí en el mapa.');
+    else alert('Aún no tienes inmuebles guardados. Pulsa el corazón de cualquier anuncio y aparecerán aquí en el mapa.');
+  }
+  renderMapMarkersHero();
+  if(mapOnlyFavourites) zoomToFavourites();
+}
+
+function zoomToFavourites(){
+  if(!sinkomMapHero) return;
+  const favs = getMapFilteredProperties().filter(function(p){ return p.lat != null && p.lng != null; });
+  if(!favs.length) return;
+  const b = new google.maps.LatLngBounds();
+  favs.forEach(function(p){ b.extend(new google.maps.LatLng(p.lat, p.lng)); });
+  sinkomMapHero.fitBounds(b, 60);
+  if(favs.length === 1) setTimeout(function(){ sinkomMapHero.setZoom(15); }, 250);
 }
 
 // ── FILTROS DEL MAPA — operación, tipo y precio, integrados con la selección de zonas ──
@@ -6149,6 +6445,7 @@ function getMapFilteredProperties(){
     if(mapFilterPriceMin && price < Number(mapFilterPriceMin)) return false;
     if(mapFilterPriceMax && price > Number(mapFilterPriceMax)) return false;
     if(selectedZoneMunicipios.size && !selectedZoneMunicipios.has(p.municipality)) return false;
+    if(mapOnlyFavourites && !isPropFavourite(p)) return false;
     return true;
   });
 }
@@ -6309,52 +6606,110 @@ var municipiosGeoJSON     = null;
 var municipiosLayerReady  = false;
 var _municipiosPolygons   = [];   // google.maps.Polygon[] para highlight
 var _municipiosPolylines  = [];   // google.maps.Polyline[] para bordes
+var _municipiosLoading    = false;
+var municipioShapes       = {};   // nombre -> {polys, lines, bounds, center, hasProps}
+var municipioPills        = {};   // nombre -> CustomMarker (chip con nombre + nº)
+var islandBubbles         = {};   // isla   -> CustomMarker
 
 function loadMunicipiosGeoData(){
-  if(municipiosLayerReady || !sinkomMapHero) return;
-  fetch('https://ideib.caib.es/geoserveis/rest/services/public/GOIB_Adreces_IB/MapServer/3/query?where=1%3D1&outFields=NOM&outSR=4326&f=geojson&maxAllowableOffset=0.0005')
-    .then(function(r){ return r.ok ? r.json() : null; })
+  if(municipiosLayerReady || _municipiosLoading || !sinkomMapHero) return;
+  _municipiosLoading = true;
+
+  // El servicio devuelve los campos cualificados (IDEIB_SIG.UA_Municipi.NOM),
+  // por eso pedimos outFields=* y luego buscamos la clave que acaba en NOM.
+  const url = 'https://ideib.caib.es/geoserveis/rest/services/public/GOIB_Adreces_IB/MapServer/3/query'
+            + '?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson&maxAllowableOffset=0.0006';
+
+  fetch(url)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(geojson){
-      if(!geojson || !geojson.features || !geojson.features.length) return;
+      if(!geojson || !geojson.features || !geojson.features.length) throw new Error('sin features');
       municipiosGeoJSON = geojson;
-      // Dibujar bordes de municipio con Polyline + Polygon transparente clicable
+      const seen = {};
+
       geojson.features.forEach(function(feature){
-        const nom = feature.properties && feature.properties.NOM;
+        // El servicio hace un JOIN y repite cada municipio varias veces: nos quedamos con la primera.
+        const fid = (feature.id != null) ? feature.id : JSON.stringify(feature.properties);
+        if(seen[fid]) return;
+        seen[fid] = true;
+
+        const raw  = _featureNom(feature.properties);
         const geom = feature.geometry;
-        if(!geom) return;
-        const rings = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-        rings.forEach(function(polygon){
-          polygon.forEach(function(ring){
-            const gmPaths = ring.map(function(c){ return { lat:c[1], lng:c[0] }; });
-            // Borde negro visible
-            const pl = new google.maps.Polyline({
-              path: gmPaths, map: sinkomMapHero,
-              strokeColor: '#1a1a1a', strokeOpacity: 0.75, strokeWeight: 1.8
-            });
-            _municipiosPolylines.push(pl);
-            // Relleno transparente clicable
-            const pg = new google.maps.Polygon({
-              paths: gmPaths, map: sinkomMapHero,
-              fillOpacity: 0, strokeOpacity: 0
-            });
-            pg._municipioNom = nom;
-            google.maps.event.addListener(pg, 'click', function(){
-              onMunicipioFillClick(nom);
-            });
-            google.maps.event.addListener(pg, 'mouseover', function(){
-              if(zoneSelectModeActive) sinkomMapHero.getDiv().style.cursor = 'pointer';
-            });
-            google.maps.event.addListener(pg, 'mouseout', function(){
-              sinkomMapHero.getDiv().style.cursor = '';
-            });
-            _municipiosPolygons.push(pg);
+        if(!raw || !geom) return;
+        const nom = resolveMunicipioName(raw);
+        if(!nom) return;
+
+        const shape = municipioShapes[nom] || (municipioShapes[nom] = {
+          polys: [], lines: [], bounds: new google.maps.LatLngBounds(),
+          center: null, hasProps: false, raw: raw
+        });
+
+        const multi = (geom.type === 'Polygon') ? [geom.coordinates] : geom.coordinates;
+        multi.forEach(function(rings){
+          if(!rings || !rings.length) return;
+          const paths = rings.map(function(ring){
+            return ring.map(function(c){ return { lat: c[1], lng: c[0] }; });
           });
+          // Descarta los islotes de 3-4 puntos que ensucian el dataset
+          if(paths[0].length < 6) return;
+
+          const pg = new google.maps.Polygon({
+            paths: paths, map: sinkomMapHero, clickable: true, zIndex: 1
+          });
+          pg.setOptions(polyStyleFor(false, false, false));
+          pg._municipioNom = nom;
+          google.maps.event.addListener(pg, 'click', function(ev){ onMunicipioPolygonClick(nom, ev); });
+          google.maps.event.addListener(pg, 'mouseover', function(){
+            highlightMunicipio(nom, true);
+            if(!drawingActive) sinkomMapHero.getDiv().style.cursor = 'pointer';
+          });
+          google.maps.event.addListener(pg, 'mouseout', function(){
+            highlightMunicipio(nom, false);
+            if(!drawingActive) sinkomMapHero.getDiv().style.cursor = '';
+          });
+          shape.polys.push(pg);
+          _municipiosPolygons.push(pg);
+
+          // Contorno visible del municipio (lo que "separa" unos de otros)
+          const pl = new google.maps.Polyline({
+            path: paths[0], map: sinkomMapHero, clickable: false, zIndex: 2,
+            strokeColor: '#aab0b6', strokeOpacity: 0.5, strokeWeight: 1.1
+          });
+          shape.lines.push(pl);
+          _municipiosPolylines.push(pl);
+
+          paths[0].forEach(function(pt){ shape.bounds.extend(new google.maps.LatLng(pt.lat, pt.lng)); });
         });
       });
+
+      // Centro de cada municipio, para colocar el chip con el nº de anuncios
+      Object.keys(municipioShapes).forEach(function(n){
+        const s = municipioShapes[n];
+        if(!s.bounds.isEmpty()) s.center = s.bounds.getCenter();
+      });
+
       municipiosLayerReady = true;
+      _municipiosLoading   = false;
+      _muniOfProp          = {};   // recalcular ahora que ya hay polígonos
+      renderMapMarkersHero();
+      syncMapMarkerZoomVisibility();
       if(zoneSelectModeActive) activateZoneSelectMode(0);
     })
-    .catch(function(e){ console.warn('Límites municipales IDEIB no disponibles:', e); });
+    .catch(function(e){
+      _municipiosLoading = false;
+      console.warn('Límites municipales IDEIB no disponibles:', e);
+    });
+}
+
+// El servicio devuelve las columnas cualificadas ("IDEIB_SIG.UA_Municipi.NOM"),
+// así que aceptamos tanto NOM a secas como cualquier clave que termine en .NOM
+function _featureNom(props){
+  if(!props) return null;
+  if(props.NOM) return props.NOM;
+  for(var k in props){
+    if(/(^|\.)NOM$/i.test(k) && props[k]) return props[k];
+  }
+  return null;
 }
 
 // ── ZONA / DIBUJO / CERCA DE MÍ — estado compartido de los 3 modos ────────────
@@ -6555,14 +6910,17 @@ function updateSelectionUI(){
 function updateZoneSelectPaint(){
   updateSelectionUI();
   if(!sinkomMapHero) return;
-  // Pintar cada polígono según si está seleccionado o no
-  _municipiosPolygons.forEach(function(pg){
-    const nom = resolveMunicipioName(pg._municipioNom);
-    const sel = nom && selectedZoneMunicipios.has(nom);
-    const base = zoneSelectModeActive ? 0.08 : 0;
-    pg.setOptions({ fillOpacity: sel ? 0.38 : base, fillColor: sel ? '#00d98f' : '#00d98f' });
-    if(zoneSelectModeActive) pg.setOptions({ strokeOpacity: sel ? 0.5 : 0 });
+  Object.keys(municipioShapes).forEach(function(name){
+    const s   = municipioShapes[name];
+    const sel = selectedZoneMunicipios.has(name);
+    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(s.hasProps, sel, false)); });
+    s.lines.forEach(function(pl){ pl.setOptions({ strokeOpacity: sel ? 1 : (s.hasProps ? 0.85 : 0.5), strokeWeight: sel ? 2.4 : (s.hasProps ? 1.8 : 1.1) }); });
   });
+  Object.keys(municipioPills).forEach(function(name){
+    const m = municipioPills[name];
+    if(m && m.el) m.el.classList.toggle('selected', selectedZoneMunicipios.has(name));
+  });
+  syncMapMarkerZoomVisibility();
 }
 
 function activateZoneSelectMode(attempt){
