@@ -733,6 +733,30 @@
     .cm-table td.cm-best{color:var(--accent-dark);font-weight:900;}
     .cm-table .cm-photo img{width:100%;height:110px;object-fit:cover;border-radius:8px;}
     .cm-table .cm-photo{cursor:pointer;}
+    /* ── MAPA DE LA ZONA DEL INMUEBLE (pantalla completa) ── */
+    #prop-zone-overlay{position:fixed;inset:0;z-index:1450;background:#fff;display:none;flex-direction:column;}
+    #prop-zone-overlay.show{display:flex;}
+    #prop-zone-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--line);background:#fff;}
+    #prop-zone-header .pz-title{font-size:15px;font-weight:900;line-height:1.2;color:var(--ink);}
+    #prop-zone-header .pz-specs{font-size:12.5px;font-weight:700;color:#6b6b6b;margin-top:.15rem;}
+    #prop-zone-header .pz-specs b{color:var(--accent-dark);font-weight:900;font-size:14px;}
+    #prop-zone-header .pz-close{font-size:1.9rem;line-height:1;background:none;border:none;cursor:pointer;color:#6b6b6b;padding:0 .3rem;}
+    #prop-zone-header .pz-close:hover{color:var(--ink);}
+    #prop-zone-body{flex:1;position:relative;min-height:0;}
+    #prop-zone-map{position:absolute;inset:0;}
+    #pz-typectl{position:absolute;top:.9rem;left:.9rem;z-index:5;display:flex;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
+    #pz-typectl button{border:none;background:#fff;padding:.55rem 1.05rem;font-size:11.5px;font-weight:800;color:#5b5b5b;cursor:pointer;}
+    #pz-typectl button.active{background:var(--accent);color:#fff;}
+    #pz-streetview,#pz-directions{position:absolute;bottom:1.1rem;z-index:5;background:#fff;border:2px solid var(--accent);color:var(--accent-dark);border-radius:999px;padding:.6rem 1.1rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.16);display:flex;align-items:center;gap:.45rem;}
+    #pz-streetview{left:50%;transform:translateX(-50%);}
+    #pz-directions{right:.9rem;}
+    #pz-streetview:hover,#pz-directions:hover{background:var(--accent);color:#fff;}
+    #pz-legend{position:absolute;top:.9rem;right:.9rem;z-index:5;background:rgba(255,255,255,0.95);border-radius:8px;padding:.55rem .85rem;font-size:11px;font-weight:700;color:#5b5b5b;box-shadow:0 2px 10px rgba(0,0,0,0.14);max-width:230px;line-height:1.45;}
+    @media (max-width:640px){
+      #pz-legend{display:none;}
+      #pz-directions{right:.6rem;bottom:.8rem;padding:.5rem .8rem;font-size:10px;}
+      #pz-streetview{left:.6rem;transform:none;bottom:.8rem;padding:.5rem .8rem;font-size:10px;}
+    }
     /* ── HISTÓRICO DE PRECIO ── */
     #property-pricehist{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(0,0,0,0.05);}
     .ph-headline{display:inline-flex;align-items:center;gap:.45rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;padding:.35rem .75rem;border-radius:999px;width:fit-content;}
@@ -2930,6 +2954,27 @@
   </div>
 </div>
 
+<!-- MAPA DE LA ZONA DEL INMUEBLE — pantalla completa, al estilo de la pestaña /mapa de una ficha -->
+<div id="prop-zone-overlay">
+  <div id="prop-zone-header">
+    <div class="pz-info">
+      <div class="pz-title" id="pz-title"></div>
+      <div class="pz-specs" id="pz-specs"></div>
+    </div>
+    <button class="pz-close" onclick="closePropertyZoneMap()" title="Volver a la ficha">&times;</button>
+  </div>
+  <div id="prop-zone-body">
+    <div id="prop-zone-map"></div>
+    <div id="pz-typectl">
+      <button id="pz-btn-mapa"  class="active" onclick="setZoneMapType('roadmap')">Mapa</button>
+      <button id="pz-btn-sat"   onclick="setZoneMapType('hybrid')">Satélite</button>
+    </div>
+    <button id="pz-streetview" onclick="openPropertyStreetView()"><i class="fa-solid fa-street-view"></i> Street View</button>
+    <button id="pz-directions" onclick="openPropertyDirections()"><i class="fa-solid fa-diamond-turn-right"></i> Cómo llegar</button>
+    <div id="pz-legend"></div>
+  </div>
+</div>
+
 <!-- COMPARADOR — barra flotante + tabla enfrentada -->
 <div id="compare-bar">
   <div class="cb-thumbs" id="compare-thumbs"></div>
@@ -2963,7 +3008,7 @@
       <div class="flex items-center gap-3">
         <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
         <button onclick="toggleDiscardProperty()" id="property-modal-discard-btn" title="Descartar" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-trash-can"></i></button>
-        <button onclick="openPropertyDirections()" id="property-modal-directions-btn" title="Calcular ruta" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-diamond-turn-right"></i></button>
+        <button onclick="openPropertyZoneMap()" id="property-modal-directions-btn" title="Ver el mapa de la zona" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-map-location-dot"></i></button>
         <button onclick="openAddToListModal()" id="property-modal-list-btn" title="Añadir a una lista" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-bookmark"></i></button>
         <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
         <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em]">Contactar</button>
@@ -5628,6 +5673,109 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════════
+// MAPA DE LA ZONA A PANTALLA COMPLETA — la flechita de la cabecera de la ficha.
+// Mismo planteamiento que la pestaña /mapa de una ficha de Idealista: el mapa
+// completo de Google con sus negocios, playas y servicios, y el inmueble encima.
+// ══════════════════════════════════════════════════════════════════════════
+var _zoneMap = null, _zoneMarker = null, _zoneCircle = null, _zoneType = 'roadmap';
+
+function openPropertyZoneMap(){
+  if(!currentProperty) return;
+  if(!_propMapCoords){ renderPropertyLocationMap(); }
+  if(!_propMapCoords){
+    alert('Este anuncio todavía no tiene una ubicación guardada. Pregunta al propietario en el chat.');
+    return;
+  }
+  const p = currentProperty;
+
+  document.getElementById('pz-title').textContent =
+    (p.title || 'Inmueble') + (p.addressFull ? ' · ' + p.addressFull : '');
+
+  const specs = [];
+  if(Number(p.price)) specs.push('<b>' + Number(p.price).toLocaleString('es-ES') + ' €</b>');
+  if(p.surface)   specs.push(p.surface);
+  if(p.bedrooms && p.bedrooms !== 'No aplica')  specs.push(p.bedrooms);
+  if(p.bathrooms && p.bathrooms !== 'No aplica') specs.push(p.bathrooms);
+  specs.push((p.nucleo ? p.nucleo + ', ' : '') + (p.municipality || ''));
+  document.getElementById('pz-specs').innerHTML = specs.join(' &nbsp;|&nbsp; ');
+
+  const legend = document.getElementById('pz-legend');
+  legend.textContent = _propMapCoords.exact
+    ? 'Ubicación exacta facilitada por el propietario.'
+    : 'Zona aproximada: el inmueble está dentro del círculo. El propietario no ha publicado la dirección exacta.';
+
+  const sv = document.getElementById('pz-streetview');
+  if(sv) sv.style.display = _propMapCoords.exact ? 'flex' : 'none';
+
+  document.getElementById('prop-zone-overlay').classList.add('show');
+  injectMapCSS();
+  loadGoogleMapsAPI(buildZoneMap);
+}
+
+function buildZoneMap(){
+  const el = document.getElementById('prop-zone-map');
+  if(!el || !_propMapCoords) return;
+  const center = new google.maps.LatLng(_propMapCoords.lat, _propMapCoords.lng);
+  const zoom   = _propMapCoords.exact ? 16 : 14;
+
+  if(!_zoneMap){
+    _zoneMap = new google.maps.Map(el, {
+      center: center, zoom: zoom,
+      styles: SINKOMI_MAP_STYLE,          // Google al completo, como Idealista
+      mapTypeId: _zoneType,
+      gestureHandling: 'greedy',           // pantalla completa: se arrastra con un dedo
+      disableDefaultUI: true,
+      zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
+      mapTypeControl: false, fullscreenControl: false, streetViewControl: false
+    });
+  } else {
+    _zoneMap.setCenter(center);
+    _zoneMap.setZoom(zoom);
+  }
+
+  if(_zoneMarker){ _zoneMarker.setMap(null); _zoneMarker = null; }
+  if(_zoneCircle){ _zoneCircle.setMap(null); _zoneCircle = null; }
+
+  if(_propMapCoords.exact){
+    _zoneMarker = new CustomMarker({
+      position: center, element: createPricePinEl(currentProperty, false), map: _zoneMap
+    });
+  } else {
+    _zoneCircle = new google.maps.Circle({
+      map: _zoneMap, center: center, radius: 500, clickable: false,
+      fillColor: '#00a878', fillOpacity: 0.16,
+      strokeColor: '#00a878', strokeOpacity: 0.9, strokeWeight: 2
+    });
+  }
+
+  setTimeout(function(){
+    if(!_zoneMap) return;
+    google.maps.event.trigger(_zoneMap, 'resize');
+    _zoneMap.setCenter(center);
+  }, 200);
+}
+
+function setZoneMapType(t){
+  _zoneType = t;
+  document.getElementById('pz-btn-mapa').classList.toggle('active', t === 'roadmap');
+  document.getElementById('pz-btn-sat').classList.toggle('active',  t !== 'roadmap');
+  if(_zoneMap) _zoneMap.setMapTypeId(t);
+}
+
+function closePropertyZoneMap(){
+  const o = document.getElementById('prop-zone-overlay');
+  if(o) o.classList.remove('show');
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const o = document.getElementById('prop-zone-overlay');
+    if(o && o.classList.contains('show')) closePropertyZoneMap();
+  }
+});
+
 function openPropertyStreetView(){
   if(!_propMapCoords || !_propMapCoords.exact) return;
   window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + _propMapCoords.lat + ',' + _propMapCoords.lng, '_blank');
@@ -6591,17 +6739,21 @@ function islandOf(lat, lng){
 }
 
 // ─── ESTILO LIMPIO TIPO IDEALISTA ─────────────────────────────────────────────
-var SINKOMI_MAP_STYLE = [
-  { featureType:'all',          elementType:'labels.icon',       stylers:[{visibility:'off'}] },
-  { featureType:'transit',                                        stylers:[{visibility:'off'}] },
-  { featureType:'poi',                                            stylers:[{visibility:'off'}] },
-  { featureType:'administrative', elementType:'geometry.stroke',  stylers:[{color:'#b0b0b0'},{weight:1}] },
-  { featureType:'road',           elementType:'geometry',         stylers:[{color:'#f5f5f5'}] },
-  { featureType:'road.highway',   elementType:'geometry',         stylers:[{color:'#e8e8e8'}] },
-  { featureType:'road',           elementType:'labels.text.fill', stylers:[{color:'#999'}] },
-  { featureType:'water',          elementType:'geometry',         stylers:[{color:'#c8dff5'}] },
-  { featureType:'landscape',      elementType:'geometry',         stylers:[{color:'#f8f8f8'}] },
-  { featureType:'landscape.man_made', elementType:'geometry',     stylers:[{color:'#efefef'}] }
+// Idealista no usa un estilo propio: usa el de Google tal cual, con los negocios,
+// las playas, las farmacias y los supermercados visibles y en color. Es lo que hace
+// que el mapa de su ficha se lea como un mapa de verdad y no como un plano gris.
+// SINKOMI hace lo mismo — la personalidad la ponen nuestros pines y nuestras zonas,
+// no un filtro apagado encima del mapa.
+var SINKOMI_MAP_STYLE = [];
+
+// Versión discreta: sólo se usa en el mapa grande cuando estás lejos y lo que manda
+// son los municipios pintados. Apaga los rótulos de negocios para que no compitan
+// con las etiquetas de zona, pero conserva los colores de Google.
+var SINKOMI_MAP_STYLE_ZONAS = [
+  { featureType:'poi.business',   elementType:'labels',   stylers:[{visibility:'off'}] },
+  { featureType:'poi.attraction', elementType:'labels',   stylers:[{visibility:'off'}] },
+  { featureType:'transit',        elementType:'labels',   stylers:[{visibility:'off'}] },
+  { featureType:'road',           elementType:'labels.icon', stylers:[{visibility:'off'}] }
 ];
 
 // ─── CSS DEL MAPA (inyectado una sola vez) ────────────────────────────────────
@@ -7093,6 +7245,18 @@ function syncMapMarkerZoomVisibility(){
   });
 
   declutterZonePills();
+  applyMapStyleForZoom(showPins);
+}
+
+// Lejos: rótulos de negocio apagados para que se lean las zonas.
+// Cerca: mapa completo de Google, igual que la ficha de un inmueble en Idealista.
+var _mapStyleMode = null;
+function applyMapStyleForZoom(detallado){
+  if(!sinkomMapHero || mapIsSatellite) return;
+  const mode = detallado ? 'full' : 'zonas';
+  if(mode === _mapStyleMode) return;
+  _mapStyleMode = mode;
+  sinkomMapHero.setOptions({ styles: detallado ? SINKOMI_MAP_STYLE : SINKOMI_MAP_STYLE_ZONAS });
 }
 
 // Igual que Idealista: si dos etiquetas de municipio se pisan, sólo se muestra
@@ -7242,7 +7406,8 @@ function toggleMapSatellite(){
     sinkomMapHero.setOptions({ styles: [] });   // satélite no admite estilos custom
   } else {
     sinkomMapHero.setMapTypeId('roadmap');
-    sinkomMapHero.setOptions({ styles: SINKOMI_MAP_STYLE });
+    _mapStyleMode = null;
+    syncMapMarkerZoomVisibility();
   }
 }
 // Compatibilidad — no hace falta en Google Maps (capas GeoJSON persisten)
