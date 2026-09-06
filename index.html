@@ -244,6 +244,16 @@
     #map-satellite-toggle:hover{background:var(--accent);color:white;}
     #map-favs-toggle{position:absolute;bottom:12px;left:132px;z-index:500;background:white;border:2px solid #e84c1e;color:#e84c1e;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .85rem;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.12);display:flex;align-items:center;gap:.4rem;}
     #map-favs-toggle:hover,#map-favs-toggle.active{background:#e84c1e;color:white;}
+    /* ── Qué tienes cerca (ficha del inmueble) ── */
+    .sk-nearby-row{display:flex;align-items:center;gap:.85rem;padding:.7rem 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+    .sk-nearby-row:last-child{border-bottom:none;}
+    .sk-nb-icon{width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .sk-nb-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+    .sk-nb-name{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sk-nb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#a1a1aa;}
+    .sk-nb-dist{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:1px;}
+    .sk-nb-dist b{font-size:13.5px;font-weight:900;color:var(--accent-dark);}
+    .sk-nb-dist span{font-size:10px;font-weight:700;color:#a1a1aa;white-space:nowrap;}
     @media (max-width:520px){ #map-favs-toggle{left:auto;right:12px;} }
 
     /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
@@ -695,6 +705,46 @@
     .heart-btn i{font-size:13px;color:#ccc;transition:all .2s ease;}
     .heart-btn.active i{color:#e84c1e;font-weight:900;}
     .heart-btn.active{background:rgba(255,255,255,0.98);}
+    /* ── COMPARADOR ── */
+    .compare-btn{position:absolute;top:.7rem;right:3.1rem;z-index:10;width:2rem;height:2rem;background:rgba(255,255,255,0.92);border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;backdrop-filter:blur(4px);}
+    .compare-btn:hover{transform:scale(1.15);}
+    .compare-btn i{font-size:12px;color:#ccc;transition:all .2s ease;}
+    .compare-btn.active{background:var(--accent);}
+    .compare-btn.active i{color:#fff;}
+    #compare-bar{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:1.1rem;z-index:1250;background:#0d1a14;color:#fff;border-radius:999px;padding:.6rem .7rem .6rem 1.2rem;display:flex;align-items:center;gap:1rem;box-shadow:0 14px 40px rgba(0,0,0,0.35);transition:transform .28s cubic-bezier(.2,.9,.3,1);max-width:calc(100vw - 2rem);}
+    #compare-bar.show{transform:translateX(-50%) translateY(0);}
+    #compare-bar .cb-thumbs{display:flex;gap:.35rem;}
+    #compare-bar .cb-thumbs img{width:34px;height:34px;object-fit:cover;border-radius:8px;border:2px solid rgba(255,255,255,0.25);}
+    #compare-bar .cb-text{font-size:11.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap;}
+    #compare-bar .cb-go{background:var(--accent);color:#0d1a14;border:none;border-radius:999px;padding:.6rem 1.15rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;white-space:nowrap;}
+    #compare-bar .cb-go:disabled{opacity:.4;cursor:not-allowed;}
+    #compare-bar .cb-clear{background:none;border:none;color:rgba(255,255,255,0.5);font-size:16px;cursor:pointer;padding:0 .3rem;}
+    #compare-bar .cb-clear:hover{color:#fff;}
+    @media (max-width:640px){ #compare-bar{padding:.55rem .6rem .55rem .9rem;gap:.6rem;} #compare-bar .cb-text{display:none;} }
+    #compare-modal{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;padding:1rem;}
+    #compare-modal.show{display:flex;}
+    #compare-modal .cm-box{background:#fff;width:100%;max-width:60rem;max-height:92vh;display:flex;flex-direction:column;border-radius:var(--r-md);overflow:hidden;}
+    #compare-modal .cm-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border-bottom:1px solid var(--line);}
+    #compare-modal .cm-body{overflow:auto;padding:0;}
+    .cm-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .cm-table th,.cm-table td{padding:.7rem .9rem;text-align:left;border-bottom:1px solid rgba(0,0,0,0.05);vertical-align:top;}
+    .cm-table th{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:#a1a1aa;width:140px;background:#faf8f5;position:sticky;left:0;}
+    .cm-table td{font-weight:600;}
+    .cm-table td.cm-best{color:var(--accent-dark);font-weight:900;}
+    .cm-table .cm-photo img{width:100%;height:110px;object-fit:cover;border-radius:8px;}
+    .cm-table .cm-photo{cursor:pointer;}
+    /* ── HISTÓRICO DE PRECIO ── */
+    #property-pricehist{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(0,0,0,0.05);}
+    .ph-headline{display:inline-flex;align-items:center;gap:.45rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;padding:.35rem .75rem;border-radius:999px;width:fit-content;}
+    .ph-headline.down{background:rgba(0,168,120,0.12);color:var(--accent-dark);}
+    .ph-headline.up{background:rgba(232,76,30,0.10);color:#c93d13;}
+    .ph-headline.flat{background:rgba(0,0,0,0.045);color:#8a8a8a;}
+    .ph-sub{font-size:11px;color:#a1a1aa;margin-top:.45rem;line-height:1.5;}
+    .ph-list{margin-top:.6rem;display:none;flex-direction:column;gap:.3rem;}
+    .ph-list.show{display:flex;}
+    .ph-item{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#6b6b6b;}
+    .ph-item b{color:var(--ink);font-weight:900;}
+    .ph-toggle{background:none;border:none;padding:0;margin-top:.4rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--accent-dark);cursor:pointer;}
 
   </style>
 </head>
@@ -2880,6 +2930,26 @@
   </div>
 </div>
 
+<!-- COMPARADOR — barra flotante + tabla enfrentada -->
+<div id="compare-bar">
+  <div class="cb-thumbs" id="compare-thumbs"></div>
+  <span class="cb-text" id="compare-text"></span>
+  <button class="cb-go" id="compare-go" onclick="openCompareModal()">Comparar</button>
+  <button class="cb-clear" onclick="clearCompare()" title="Quitar todos">&times;</button>
+</div>
+<div id="compare-modal" onclick="if(event.target===this) closeCompareModal()">
+  <div class="cm-box">
+    <div class="cm-head">
+      <div>
+        <div class="section-label" style="color:var(--accent);">Comparador SINKOMI</div>
+        <div style="font-size:18px;font-weight:900;">Uno al lado del otro</div>
+      </div>
+      <button onclick="closeCompareModal()" style="font-size:1.6rem;background:none;border:none;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div class="cm-body"><table class="cm-table"><tbody id="compare-table-body"></tbody></table></div>
+  </div>
+</div>
+
 <div id="property-modal" class="hidden fixed inset-0 bg-black/80 z-[1300] flex items-center justify-center px-4 py-4">
   <div id="property-modal-container" class="bg-white w-full max-w-7xl h-[94vh] shadow-2xl flex flex-col" style="transition:all .3s ease;">
     <div id="property-modal-header" class="border-b border-black/6 px-6 py-4 flex items-center justify-between" style="transition:all .3s ease;">
@@ -2916,6 +2986,7 @@
         <button type="button" class="property-quicknav-btn" data-target="property-section-descripcion">Descripción</button>
         <button type="button" class="property-quicknav-btn" data-target="property-section-extras">Extras</button>
         <button type="button" class="property-quicknav-btn" data-target="property-section-ubicacion">Ubicación</button>
+        <button type="button" class="property-quicknav-btn" data-target="property-section-cerca">Cerca</button>
       </div>
       <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6">
         <div id="property-col1" class="space-y-4">
@@ -2955,6 +3026,14 @@
               <button id="property-location-streetview" onclick="openPropertyStreetView()" class="px-4 py-2.5 border border-black/10 text-[10px] font-black uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 transition-colors" style="display:none;"><i class="fa-solid fa-street-view"></i> <span class="i18n-auto">Ver la calle</span></button>
               <button onclick="openMunicipioFromProperty()" class="px-4 py-2.5 border border-black/10 text-[10px] font-black uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 transition-colors"><i class="fa-solid fa-map-location-dot"></i> <span class="i18n-auto">Ver la zona en el mapa</span></button>
             </div>
+          </div>
+
+          <!-- Qué tienes cerca — lo que de verdad importa en Baleares -->
+          <div id="property-section-cerca" class="panel p-6">
+            <div class="i18n-auto section-label mb-1">Qué tienes cerca</div>
+            <p class="i18n-auto text-[11px] text-zinc-500 mb-4">Distancias en línea recta desde el inmueble. Los tiempos son orientativos.</p>
+            <div id="property-nearby-list"></div>
+            <p class="i18n-auto text-[9.5px] text-zinc-300 mt-3">Fuente: IDEIB · Govern de les Illes Balears (Nomenclàtor Geogràfic, Zones Bàsiques de Salut i Xarxa de Transports).</p>
           </div>
           <div id="property-etv-notice" class="hidden panel p-5" style="background:var(--orange-soft);border-color:rgba(255,159,10,0.3);"></div>
 
@@ -3003,6 +3082,9 @@
               <span style="width:6px;height:6px;border-radius:999px;background:var(--accent);animation:pulseSoft 1.6s infinite;display:inline-block;flex-shrink:0;"></span>
               <span class="i18n-auto">🌐 Chat con traducción en vivo · 8 idiomas</span>
             </div>
+
+            <!-- Histórico de precio — como Idealista, pero diciendo qué hacer con el dato -->
+            <div id="property-pricehist" style="display:none;"></div>
 
             <!-- Rentabilidad del alquiler — solo para inmuebles en venta -->
             <div id="property-yield-box" class="hidden mb-4 pb-4 border-b border-black/5">
@@ -4026,11 +4108,35 @@ async function loadRealProperties(){
     const { data, error } = await supabase.from('properties').select('*').eq('active', true).order('created_at', { ascending:false });
     if(error){ console.error('Error cargando inmuebles reales:', error); return; }
     properties = (data||[]).map(mapDbRowToProperty);
+    await applyPriceDrops();
   }catch(e){
     console.error('Error de red cargando inmuebles reales:', e);
   }
   refreshAllPropertyViews();
   handleDeepLinkParams();
+}
+
+// Marca en las tarjetas del listado los anuncios que han bajado de precio.
+// Lee una vista agregada de la base de datos, así que es una sola consulta.
+async function applyPriceDrops(){
+  if(!properties.length) return;
+  try{
+    const { data, error } = await supabase
+      .from('property_price_summary')
+      .select('property_id,first_price,last_price,last_change')
+      .in('property_id', properties.map(function(p){ return p.id; }));
+    if(error || !data) return;
+    const byId = {};
+    data.forEach(function(r){ byId[r.property_id] = r; });
+    properties.forEach(function(p){
+      const r = byId[p.id];
+      if(!r) return;
+      const first = Number(r.first_price), last = Number(r.last_price);
+      p.priceDrop = (first > 0 && last < first) ? Math.round((first - last) / first * 100) : 0;
+      p.priceFirst = first;
+      p.priceLastChange = r.last_change;
+    });
+  }catch(e){ /* el listado funciona igual sin esto */ }
 }
 
 // Aplica lo que venga en la URL cuando alguien llega desde un enlace compartido
@@ -4570,6 +4676,7 @@ function buildPropertyCardEl(prop){
         ${tier===3 ? featuredCorner : ''}
         ${statusStampHtml}
         <button class="heart-btn" data-id="${prop.id}" onclick="toggleFavourite('${prop.id}',this,event)" title="Guardar en favoritos"><i class="fa-regular fa-heart"></i></button>
+        <button class="compare-btn${compareIds.indexOf(prop.id)>=0?' active':''}" data-compare-id="${prop.id}" onclick="toggleCompare('${prop.id}',this,event)" title="Comparar"><i class="fa-solid fa-code-compare"></i></button>
         <img src="${prop.img}" alt="${escapeHtml(prop.title)}" ${imgAttrs}>
         <div class="prop-card-overlay"></div>
         ${tier===3 ? topBadge : ''}
@@ -4954,6 +5061,96 @@ async function openPropertyModal(id){
   layoutPropertyModalForMobile();
   setupPropertyQuicknav();
   renderPropertyLocationMap();
+  loadPriceHistory(currentProperty.id);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// HISTÓRICO DE PRECIO — lo registra un disparador en la base de datos cada vez
+// que el propietario cambia el precio. Aquí solo se lee y se cuenta.
+// ══════════════════════════════════════════════════════════════════════════
+async function loadPriceHistory(propertyId){
+  const box = document.getElementById('property-pricehist');
+  if(!box) return;
+  box.style.display = 'none';
+  box.innerHTML = '';
+  try{
+    const { data, error } = await supabase
+      .from('price_history')
+      .select('price,changed_at')
+      .eq('property_id', propertyId)
+      .order('changed_at', { ascending: true });
+    if(error || !data || !data.length) return;
+    if(!currentProperty || currentProperty.id !== propertyId) return;   // se cambió de ficha mientras cargaba
+    renderPriceHistory(box, data);
+  }catch(e){ /* silencioso: el histórico nunca debe romper la ficha */ }
+}
+
+function humanAgo(dateStr){
+  const d = new Date(dateStr);
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if(days <= 0)  return 'hoy';
+  if(days === 1) return 'ayer';
+  if(days < 7)   return 'hace ' + days + ' días';
+  if(days < 31){ const w = Math.round(days/7); return 'hace ' + w + (w === 1 ? ' semana' : ' semanas'); }
+  if(days < 365){ const m = Math.round(days/30); return 'hace ' + m + (m === 1 ? ' mes' : ' meses'); }
+  const y = Math.round(days/365);
+  return 'hace ' + y + (y === 1 ? ' año' : ' años');
+}
+
+function renderPriceHistory(box, rows){
+  const eur = function(n){ return Number(n).toLocaleString('es-ES') + ' €'; };
+  const first = Number(rows[0].price);
+  const last  = Number(rows[rows.length - 1].price);
+  const changes = rows.length - 1;
+
+  let headClass, headIcon, headText, sub;
+
+  if(changes === 0){
+    headClass = 'flat'; headIcon = 'fa-equals';
+    headText  = 'Precio sin cambios';
+    sub = 'Publicado a ' + eur(first) + ' y no ha variado desde entonces (' + humanAgo(rows[0].changed_at) + ').';
+  } else {
+    const diff = last - first;
+    const pct  = first ? Math.abs(Math.round(diff / first * 100)) : 0;
+    const when = humanAgo(rows[rows.length - 1].changed_at);
+    if(diff < 0){
+      headClass = 'down'; headIcon = 'fa-arrow-trend-down';
+      headText  = 'Ha bajado un ' + pct + '%';
+      sub = 'De ' + eur(first) + ' a ' + eur(last) + ', último cambio ' + when + '. '
+          + 'Un propietario que ya ha ajustado el precio suele estar abierto a negociar — y aquí hablas con él directamente.';
+    } else if(diff > 0){
+      headClass = 'up'; headIcon = 'fa-arrow-trend-up';
+      headText  = 'Ha subido un ' + pct + '%';
+      sub = 'De ' + eur(first) + ' a ' + eur(last) + ', último cambio ' + when + '.';
+    } else {
+      headClass = 'flat'; headIcon = 'fa-arrows-left-right';
+      headText  = changes + (changes === 1 ? ' cambio de precio' : ' cambios de precio');
+      sub = 'Ha vuelto al precio inicial de ' + eur(first) + '. Último cambio ' + when + '.';
+    }
+  }
+
+  box.innerHTML =
+    '<div class="section-label" style="margin-bottom:.5rem;">Histórico de precio</div>' +
+    '<div class="ph-headline ' + headClass + '"><i class="fa-solid ' + headIcon + '"></i><span class="ph-h-text"></span></div>' +
+    '<div class="ph-sub"></div>' +
+    (changes > 0 ? '<button class="ph-toggle" onclick="this.nextElementSibling.classList.toggle(\'show\');this.textContent=this.nextElementSibling.classList.contains(\'show\')?\'Ocultar detalle\':\'Ver todos los cambios\';">Ver todos los cambios</button><div class="ph-list"></div>' : '');
+
+  box.querySelector('.ph-h-text').textContent = headText;
+  box.querySelector('.ph-sub').textContent    = sub;
+
+  const list = box.querySelector('.ph-list');
+  if(list){
+    rows.slice().reverse().forEach(function(r, i, arr){
+      const el = document.createElement('div');
+      el.className = 'ph-item';
+      const label = (i === arr.length - 1) ? 'Precio de salida' : 'Cambio';
+      el.innerHTML = '<span></span><b></b>';
+      el.children[0].textContent = label + ' · ' + new Date(r.changed_at).toLocaleDateString('es-ES');
+      el.children[1].textContent = eur(r.price);
+      list.appendChild(el);
+    });
+  }
+  box.style.display = '';
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -5007,6 +5204,8 @@ function renderPropertyLocationMap(){
     if(svBtn) svBtn.style.display = 'none';
   }
 
+  renderPropertyNearby(lat, lng);
+
   injectMapCSS();
   loadGoogleMapsAPI(function(){ buildPropertyLocationMap(lat, lng, exact, level); });
 }
@@ -5058,6 +5257,376 @@ function buildPropertyLocationMap(lat, lng, exact, level){
     if(_propMapCircle) _propMap.fitBounds(_propMapCircle.getBounds(), 24);
   }, 220);
 }
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUÉ TIENES CERCA — puntos de interés oficiales (IDEIB / Govern de les Illes Balears)
+// Lo que de verdad decide una compra en Baleares: la playa, el aeropuerto, el
+// hospital y el puerto. No es lo mismo que mide un portal peninsular.
+// Formato compacto: [nombre, lat, lng]
+// ══════════════════════════════════════════════════════════════════════════════
+var SK_POI = {
+  aeropuerto: [
+    ["Aeropuerto de Eivissa",38.8743,1.3725],
+    ["Aeropuerto de Menorca",39.8632,4.2211],
+    ["Aeropuerto de Palma (Son Sant Joan)",39.5510,2.7363]
+  ],
+  hospital: [
+    ["Hospital Can Misses",38.9162,1.4183],
+    ["Hospital Universitari Son Espases",39.6056,2.6461],
+    ["Hospital Comarcal d'Inca",39.7167,2.9225],
+    ["Hospital Son Llàtzer",39.5736,2.7042],
+    ["Hospital Comarcal de Manacor",39.5787,3.2073],
+    ["Hospital Joan March",39.6792,2.6887],
+    ["Hospital Verge del Toro",39.8893,4.2720],
+    ["Hospital Verge de la Salut",39.5877,2.6793],
+    ["Hospital Mateu Orfila",39.8808,4.2534],
+    ["Hospital General",39.5742,2.6468],
+    ["Hospital de Formentera",38.7076,1.4349]
+  ],
+  puerto: [
+    ["Port de Palma",39.5595,2.6320],["Port d'Alcúdia",39.8376,3.1365],
+    ["Port de Maó",39.8918,4.2667],["Port d'Eivissa",38.9129,1.4419],
+    ["Port de la Savina",38.7334,1.4176],["Port de Santa Eulària",38.9840,1.5394],
+    ["Port de Valldemossa",39.7182,2.5874],["Port de Sóller",39.7968,2.6936],
+    ["Port de Can Picafort",39.7657,3.1600],["Port de Campos",39.3156,2.9979],
+    ["Club Nàutic sa Ràpita",39.3615,2.9534],["Port de Sant Antoni",38.9779,1.3016],
+    ["Club Nàutic Colònia de Sant Pere",39.7373,3.2743],["Port de Ciutadella",40.0010,3.8338],
+    ["Port de Cala en Bosc",39.9282,3.8348],["Port de Fornells",40.0531,4.1304],
+    ["Port de Pollença",39.9044,3.0850],["Port de Bonaire",39.8660,3.1442],
+    ["Port de Manacor",39.5391,3.3336],["Port de Cala Bona",39.6144,3.3923],
+    ["Port de Cala Rajada",39.7105,3.4637],["Club Nàutic es Portitxol",39.5610,2.6690],
+    ["Club Marítim Molinar",39.5582,2.6751],["Cala Nova",39.5489,2.5984],
+    ["Club Nàutic Cala Gamba",39.5471,2.6946],["Port de Can Pastilla",39.5331,2.7155],
+    ["Port d'Andratx",39.5461,2.3845],["Club Nàutic s'Arenal",39.5009,2.7484],
+    ["Port de Santa Ponça",39.5109,2.4677],["Port Adriano",39.4891,2.4771],
+    ["Port Portals",39.5304,2.5682],["Port de Palmanova",39.5245,2.5417],
+    ["Club Nàutic s'Estanyol",39.3599,2.9187],["Port de Portocolom",39.4237,3.2631],
+    ["Portopetro",39.3618,3.2107],["Marina de Cala d'Or",39.3703,3.2243]
+  ],
+  salud: [
+    ["UB Canyamel",39.6564,3.4379],["UB Estellencs",39.6534,2.4820],["UB Costitx",39.6538,2.9485],
+    ["UB Ariany",39.6490,3.1118],["CS Santa Maria",39.6484,2.7786],["CS Es Pla - Sineu",39.6461,3.0151],
+    ["UB Sencelles",39.6452,2.8970],["UBS Biniali",39.6413,2.8579],["UB Establiments",39.6277,2.6214],
+    ["UB Sa Cabaneta",39.6222,2.7496],["UB Puigpunyent",39.6223,2.5271],["UB Santa Eugènia",39.6229,2.8394],
+    ["UB Son Sardina",39.6206,2.6572],["CS Llevant",39.6173,3.3613],["UB Lloret",39.6178,2.9757],
+    ["CS Son Ramonell (Marratxí)",39.6169,2.7161],["UB Sant Llorenç",39.6109,3.2881],["UB Galilea",39.6091,2.5058],
+    ["UB Petra",39.6086,3.1116],["UB Sa Indioteria",39.6071,2.6773],["UB Cala Millor",39.6033,3.3822],
+    ["CS Martí Serra (Marratxí)",39.6018,2.6876],["UB Pina",39.6004,2.9244],["CS Son Cladera",39.5995,2.6801],
+    ["UB Pla de na Tesa",39.5981,2.7082],["UB Sant Joan",39.5946,3.0387],["CS Camp Redó",39.5939,2.6475],
+    ["CS Son Serra - La Vileta",39.5929,2.6172],["CS Son Ferragut",39.5904,2.6600],["CS Rafal Nou",39.5869,2.6828],
+    ["UB Son Carrió",39.5849,3.3243],["CS S'Escorxador",39.5847,2.6502],["CS Arquitecte Bennàssar",39.5819,2.6609],
+    ["CS Valldargent",39.5767,2.6378],["CS Son Pisà",39.5797,2.6354],["UB Es Capdellà",39.5787,2.4701],
+    ["CS Son Gotleu",39.5791,2.6734],["UB S'Arracó",39.5778,2.3924],["CS Ponent - Andratx",39.5748,2.4256],
+    ["CS Son Ferriol",39.5750,2.7139],["CEM El Carme",39.5741,2.6498],["CS Santa Catalina",39.5730,2.6351],
+    ["CS Pere Garau",39.5730,2.6655],["CS Vilafranca",39.5703,3.0837],["UB Calvià",39.5674,2.5073],
+    ["CS Sa Torre - Manacor",39.5676,3.2028],["CS Na Camel·la",39.5673,3.2210],["CS Casa del Mar",39.5653,2.6427],
+    ["CS Escola Graduada",39.5701,2.6561],["UB Gènova",39.5637,2.6003],["UB El Molinar",39.5623,2.6730],
+    ["CS Emili Darder",39.5647,2.6679],["UB Algaida",39.5602,2.8984],["UB S'Illot",39.5588,3.3714],
+    ["CS Coll d'en Rabassa",39.5549,2.6941],["UB Sant Jordi",39.5551,2.7765],["UB El Terreno",39.5622,2.6254],
+    ["CS Sant Agustí - Cas Català",39.5521,2.6025],["UB Port d'Andratx",39.5425,2.3900],["CS Portocristo",39.5425,3.3356],
+    ["UB Bendinat",39.5419,2.5909],["UB S'Aranjassa",39.5414,2.7766],["UB Peguera",39.5391,2.4482],
+    ["CS Platja de Palma",39.5365,2.7176],["UB Es Pil·larí",39.5285,2.7550],["CS Palmanova",39.5267,2.5362],
+    ["CS Son Rutlan",39.5949,2.6837],["UBS Centre",39.5742,2.6468],["UBS Sa Penya",38.9091,1.4380],
+    ["UBS Sant Mateu",39.0390,1.3837],["UBS Santa Agnès de Corona",39.0386,1.3367],["UB Es Mercadal",39.9868,4.0926],
+    ["CS Ferreries",39.9841,4.0120],["UB Es Migjorn Gran",39.9492,4.0506],["CS Es Banyer",39.9335,4.1423],
+    ["UB Port de Pollença",39.9084,3.0795],["CS Dalt Sant Joan",39.8914,4.2542],["CS Verge del Toro",39.8892,4.2714],
+    ["UB Es Castell",39.8785,4.2919],["UB Cala en Porter",39.8739,4.1350],["UB Sant Climent",39.8717,4.2070],
+    ["CS Pollença",39.8747,3.0163],["CS Safrà - Alcúdia",39.8549,3.1251],["UB Sant Lluís",39.8477,4.2569],
+    ["UB Sa Calobra",39.8510,2.7994],["UB Port d'Alcúdia",39.8406,3.1383],["UB Escorca",39.8223,2.8838],
+    ["UB Port de Sóller",39.7978,2.6969],["UB Fornalutx",39.7834,2.7418],["CS Sa Pobla",39.7753,3.0244],
+    ["UB Campanet",39.7741,2.9667],["UB Caimari",39.7710,2.9040],["CS Serra Nord - Sóller",39.7669,2.7093],
+    ["UB Búger",39.7591,2.9825],["UB Can Picafort",39.7587,3.1596],["UB Selva",39.7567,2.8996],
+    ["UB Deià",39.7478,2.6485],["UB Mancor",39.7478,2.8725],["CS Marines - Muro",39.7378,3.0515],
+    ["UB Colònia de Sant Pere",39.7368,3.2770],["UBS Son Serra de Marina",39.7350,3.2251],["UB Biniamar",39.7309,2.8719],
+    ["CS So na Monda",39.7251,2.9154],["CS Es Blanquer - Inca",39.7202,2.9024],["UB Lloseta",39.7176,2.8665],
+    ["UB Cala Rajada",39.7123,3.4611],["UB Valldemossa",39.7109,2.6236],["UB Alaró",39.7056,2.7926],
+    ["CS Capdepera",39.7025,3.4313],["UB Santa Margalida",39.7014,3.1024],["UB Llubí",39.6987,3.0077],
+    ["UB Fornells",40.0566,4.1320],["UB Randa",39.5257,2.9169],["UB Galatzó",39.5237,2.4978],
+    ["CS Santa Ponça",39.5194,2.4876],["UB Porreres",39.5148,3.0223],["UB Son Macià",39.5144,3.2156],
+    ["UBS S'Arenal",39.5089,2.7547],["CS Trencadors - s'Arenal",39.4997,2.7546],["UB El Toro",39.4886,2.4810],
+    ["CS Migjorn - Llucmajor",39.4877,2.8893],["CS Felanitx",39.4750,3.1532],["UB Cales de Mallorca",39.4620,3.2776],
+    ["UB Badia Gran",39.4292,2.7526],["CS Xaloc - Campos",39.4282,3.0169],["UB Cas Concos",39.4170,3.1370],
+    ["UB Portocolom",39.4151,3.2586],["UB S'Horta",39.4065,3.2099],["UB Calonge",39.3993,3.2017],
+    ["UB Alqueria Blanca",39.3843,3.1663],["UB Cala d'Or",39.3760,3.2265],["UB Sa Ràpita",39.3666,2.9329],
+    ["CS Santanyí",39.3509,3.1342],["UB Es Llombards",39.3431,3.0966],["UB Ses Salines",39.3396,3.0575],
+    ["UB Colònia de Sant Jordi",39.3159,2.9955],["UB Sant Joan de Labritja",39.0776,1.5131],
+    ["UB Sant Miquel de Balansat",39.0562,1.4377],["UB Sant Carles",39.0329,1.5628],
+    ["UB Santa Gertrudis",38.9990,1.4288],["CS Santa Eulària",38.9879,1.5373],
+    ["CS Sant Antoni de Portmany",38.9818,1.3084],["UB Cala de Bou",38.9673,1.2905],
+    ["UB Sant Agustí",38.9380,1.2907],["UB Nostra Sra. de Jesús",38.9328,1.4488],
+    ["UB Puig d'en Valls",38.9286,1.4336],["CS Sant Josep de sa Talaia",38.9230,1.2962],
+    ["CS Can Misses",38.9169,1.4196],["CS de Vila",38.9168,1.4464],["CS Es Viver",38.9046,1.4167],
+    ["CS Sant Jordi de ses Salines",38.8927,1.3970],["CS de Formentera",38.7076,1.4349],
+    ["UB Moscari",39.7651,2.9329],["UB Banyalbufar",39.6879,2.5155],["UB Pòrtol",39.6176,2.7729],
+    ["UB Sa Coma",39.5812,3.3725],["UB Montuïri",39.5661,2.9793],["UB Son Ferrer",39.4995,2.5023],
+    ["UB Sant Rafel de la Creu",38.9626,1.3955],["CS Canal Salat",39.9991,3.8458],["UB Bunyola",39.6970,2.7003],
+    ["CS Nuredduna",39.6936,3.3513],["CS Es Raiguer - Binissalem",39.6861,2.8447],["UB Consell",39.6683,2.8144],
+    ["CS Tramuntana - Esporles",39.6662,2.5780],["UB Maria de la Salut",39.6652,3.0780],["UB Palmanyola",39.6617,2.6667]
+  ],
+  playa: null   // se carga bajo demanda desde el IDEIB (761 playas y calas oficiales)
+};
+
+// ── Playas: se piden una vez al IDEIB y se guardan en caché 30 días ───────────
+var _skPlayasPromise = null;
+var SK_PLAYAS_CACHE_KEY = 'sk_playas_v1';
+
+function loadPlayas(){
+  if(SK_POI.playa) return Promise.resolve(SK_POI.playa);
+  if(_skPlayasPromise) return _skPlayasPromise;
+
+  // 1) Caché del navegador
+  try{
+    const raw = localStorage.getItem(SK_PLAYAS_CACHE_KEY);
+    if(raw){
+      const c = JSON.parse(raw);
+      if(c && c.t && (Date.now() - c.t) < 30*24*3600*1000 && Array.isArray(c.d) && c.d.length){
+        SK_POI.playa = c.d;
+        return Promise.resolve(SK_POI.playa);
+      }
+    }
+  }catch(e){}
+
+  // 2) Servicio oficial del Nomenclàtor Geogràfic de les Illes Balears
+  const where = encodeURIComponent('TIPUS_LOCAL IN (3030,3031,3032,1253)');
+  const url = 'https://ideib.caib.es/geoserveis/rest/services/public/NGIB/MapServer/0/query'
+            + '?where=' + where + '&outFields=GRAFIA&returnGeometry=true&outSR=4326&f=json&resultRecordCount=1000';
+
+  _skPlayasPromise = fetch(url)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){
+      const list = [];
+      (j.features||[]).forEach(function(f){
+        if(!f.geometry || !f.attributes.GRAFIA) return;
+        list.push([f.attributes.GRAFIA, +f.geometry.y.toFixed(4), +f.geometry.x.toFixed(4)]);
+      });
+      if(!list.length) throw new Error('sin playas');
+      SK_POI.playa = list;
+      try{ localStorage.setItem(SK_PLAYAS_CACHE_KEY, JSON.stringify({t:Date.now(), d:list})); }catch(e){}
+      return list;
+    })
+    .catch(function(e){
+      console.warn('Playas del IDEIB no disponibles:', e);
+      _skPlayasPromise = null;
+      return null;
+    });
+  return _skPlayasPromise;
+}
+
+// ── Cálculo de distancias ────────────────────────────────────────────────────
+function nearestPOI(lat, lng, list){
+  if(!list || !list.length) return null;
+  let best = null, bestKm = Infinity;
+  for(let i=0; i<list.length; i++){
+    const km = haversineKm(lat, lng, list[i][1], list[i][2]);
+    if(km < bestKm){ bestKm = km; best = list[i]; }
+  }
+  return best ? { name: best[0], lat: best[1], lng: best[2], km: bestKm } : null;
+}
+
+// Tiempo orientativo en coche: la línea recta se corrige por el trazado real de
+// las carreteras de las islas (factor 1,35) y se aplica una velocidad media.
+function driveMinutes(km){
+  const road = km * 1.35;
+  const speed = road < 8 ? 38 : (road < 25 ? 55 : 70);
+  return Math.max(1, Math.round(road / speed * 60));
+}
+function walkMinutes(km){
+  return Math.max(1, Math.round(km * 1.25 / 4.6 * 60));
+}
+function fmtKm(km){
+  if(km < 1) return Math.round(km*1000) + ' m';
+  return km.toFixed(1).replace('.', ',') + ' km';
+}
+
+// ── Pintado del bloque "Qué tienes cerca" ────────────────────────────────────
+function renderPropertyNearby(lat, lng){
+  const wrap = document.getElementById('property-nearby-list');
+  const block = document.getElementById('property-section-cerca');
+  if(!wrap || !block) return;
+  if(lat == null || lng == null){ block.style.display = 'none'; return; }
+  block.style.display = '';
+
+  const rows = [
+    { key:'playa',      icon:'fa-umbrella-beach', label:'Playa o cala',      color:'#00a878' },
+    { key:'puerto',     icon:'fa-anchor',         label:'Puerto',            color:'#0d1a14' },
+    { key:'salud',      icon:'fa-house-medical',  label:'Centro de salud',   color:'#e84c1e' },
+    { key:'hospital',   icon:'fa-hospital',       label:'Hospital',          color:'#e84c1e' },
+    { key:'aeropuerto', icon:'fa-plane-departure',label:'Aeropuerto',        color:'#ff9f0a' }
+  ];
+
+  function paint(){
+    wrap.innerHTML = '';
+    rows.forEach(function(r){
+      const found = nearestPOI(lat, lng, SK_POI[r.key]);
+      if(!found) return;
+      const min = driveMinutes(found.km);
+      const walk = found.km < 1.6 ? walkMinutes(found.km) : null;
+      const el = document.createElement('div');
+      el.className = 'sk-nearby-row';
+      el.innerHTML =
+        '<span class="sk-nb-icon" style="background:' + r.color + '1a;color:' + r.color + ';"><i class="fa-solid ' + r.icon + '"></i></span>' +
+        '<span class="sk-nb-text"><b class="sk-nb-name"></b><span class="sk-nb-label"></span></span>' +
+        '<span class="sk-nb-dist"><b>' + fmtKm(found.km) + '</b><span>' +
+          (walk ? walk + ' min a pie' : '≈ ' + min + ' min en coche') + '</span></span>';
+      el.querySelector('.sk-nb-name').textContent  = found.name;
+      el.querySelector('.sk-nb-label').textContent = r.label;
+      wrap.appendChild(el);
+    });
+    if(!wrap.children.length) block.style.display = 'none';
+  }
+
+  paint();
+  if(!SK_POI.playa){
+    loadPlayas().then(function(l){ if(l) paint(); });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// COMPARADOR — hasta 3 inmuebles enfrentados. Lo que Fotocasa hace y a
+// Idealista le falta: cuando dudas entre dos, verlos juntos decide.
+// ══════════════════════════════════════════════════════════════════════════
+var compareIds = [];
+var COMPARE_MAX = 3;
+
+function toggleCompare(id, btn, ev){
+  if(ev) ev.stopPropagation();
+  const i = compareIds.indexOf(id);
+  if(i >= 0){
+    compareIds.splice(i, 1);
+  } else {
+    if(compareIds.length >= COMPARE_MAX){
+      alert('Puedes comparar hasta ' + COMPARE_MAX + ' inmuebles a la vez. Quita uno para añadir otro.');
+      return;
+    }
+    compareIds.push(id);
+  }
+  syncCompareButtons();
+  renderCompareBar();
+}
+
+function syncCompareButtons(){
+  document.querySelectorAll('[data-compare-id]').forEach(function(b){
+    b.classList.toggle('active', compareIds.indexOf(b.dataset.compareId) >= 0);
+  });
+}
+
+function clearCompare(){
+  compareIds = [];
+  syncCompareButtons();
+  renderCompareBar();
+}
+
+function renderCompareBar(){
+  const bar    = document.getElementById('compare-bar');
+  const thumbs = document.getElementById('compare-thumbs');
+  const text   = document.getElementById('compare-text');
+  const go     = document.getElementById('compare-go');
+  if(!bar) return;
+  bar.classList.toggle('show', compareIds.length > 0);
+  if(!compareIds.length) return;
+  thumbs.innerHTML = '';
+  compareIds.forEach(function(id){
+    const p = findProperty(id);
+    if(!p) return;
+    const img = document.createElement('img');
+    img.src = p.img || (p.images && p.images[0]) || '';
+    img.alt = '';
+    img.title = p.title || '';
+    thumbs.appendChild(img);
+  });
+  text.textContent = compareIds.length === 1
+    ? 'Añade otro para comparar'
+    : compareIds.length + ' inmuebles seleccionados';
+  go.disabled = compareIds.length < 2;
+}
+
+function closeCompareModal(){
+  const m = document.getElementById('compare-modal');
+  if(m) m.classList.remove('show');
+}
+
+function openCompareModal(){
+  if(compareIds.length < 2) return;
+  const props = compareIds.map(findProperty).filter(Boolean);
+  if(props.length < 2) return;
+  const tbody = document.getElementById('compare-table-body');
+  tbody.innerHTML = '';
+
+  function num(v){ const n = parseFloat(String(v).replace(/[^\d.,]/g,'').replace(',','.')); return isNaN(n) ? null : n; }
+  function pricePerM2(p){
+    const m = num(p.surface);
+    const pr = Number(p.price) || 0;
+    return (m && pr) ? Math.round(pr / m) : null;
+  }
+
+  const rows = [
+    { label:'', kind:'photo' },
+    { label:'Precio',        get:p => Number(p.price) ? Number(p.price).toLocaleString('es-ES') + ' €' : '—',
+      cmp:p => Number(p.price) || Infinity, best:'min' },
+    { label:'Precio por m²', get:p => pricePerM2(p) ? pricePerM2(p).toLocaleString('es-ES') + ' €/m²' : '—',
+      cmp:p => pricePerM2(p) || Infinity, best:'min' },
+    { label:'Superficie',    get:p => p.surface || '—',   cmp:p => num(p.surface) || 0,   best:'max' },
+    { label:'Dormitorios',   get:p => p.bedrooms || '—',  cmp:p => num(p.bedrooms) || 0,  best:'max' },
+    { label:'Baños',         get:p => p.bathrooms || '—', cmp:p => num(p.bathrooms) || 0, best:'max' },
+    { label:'Municipio',     get:p => (p.nucleo ? p.nucleo + ', ' : '') + (p.municipality || '—') },
+    { label:'Tipo',          get:p => (p.type || '') + (p.category ? ' · ' + p.category : '') },
+    { label:'Estado',        get:p => p.status || 'Disponible' },
+    { label:'Propietario',   get:p => p.verified ? '✓ Verificado' : 'Sin verificar' },
+    { label:'Te ahorras',    get:p => (p.type === 'Venta' && Number(p.price)) ? formatSaving(p) : '—' },
+    { label:'Publicado',     get:p => p.createdAt ? new Date(p.createdAt).toLocaleDateString('es-ES') : '—' }
+  ];
+
+  rows.forEach(function(r){
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = r.label;
+    tr.appendChild(th);
+
+    if(r.kind === 'photo'){
+      props.forEach(function(p){
+        const td = document.createElement('td');
+        td.className = 'cm-photo';
+        td.onclick = function(){ closeCompareModal(); openPropertyModal(p.id); };
+        const im = document.createElement('img');
+        im.src = p.img || (p.images && p.images[0]) || '';
+        im.alt = '';
+        const nm = document.createElement('div');
+        nm.style.cssText = 'font-size:12.5px;font-weight:900;margin-top:.45rem;line-height:1.25;';
+        nm.textContent = p.title || '';
+        td.appendChild(im); td.appendChild(nm);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+      return;
+    }
+
+    let bestVal = null;
+    if(r.cmp && props.length > 1){
+      const vals = props.map(r.cmp).filter(function(v){ return isFinite(v) && v > 0; });
+      if(vals.length > 1){
+        const uniq = Array.from(new Set(vals));
+        if(uniq.length > 1) bestVal = (r.best === 'min') ? Math.min.apply(null, vals) : Math.max.apply(null, vals);
+      }
+    }
+    props.forEach(function(p){
+      const td = document.createElement('td');
+      td.textContent = r.get(p);
+      if(bestVal !== null && r.cmp(p) === bestVal) td.className = 'cm-best';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('compare-modal').classList.add('show');
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const m = document.getElementById('compare-modal');
+    if(m && m.classList.contains('show')) closeCompareModal();
+  }
+});
 
 function openPropertyStreetView(){
   if(!_propMapCoords || !_propMapCoords.exact) return;
@@ -5180,7 +5749,7 @@ function setupPropertyQuicknav(){
     };
   });
   if(propertyScrollspyObserver) propertyScrollspyObserver.disconnect();
-  const sections = ['property-section-caracteristicas','property-section-gastos','property-section-descripcion','property-section-extras','property-section-ubicacion']
+  const sections = ['property-section-caracteristicas','property-section-gastos','property-section-descripcion','property-section-extras','property-section-ubicacion','property-section-cerca']
     .map(id=>document.getElementById(id)).filter(Boolean);
   propertyScrollspyObserver = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
