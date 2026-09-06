@@ -2915,6 +2915,7 @@
         <button type="button" class="property-quicknav-btn" data-target="property-section-gastos">Gastos</button>
         <button type="button" class="property-quicknav-btn" data-target="property-section-descripcion">Descripción</button>
         <button type="button" class="property-quicknav-btn" data-target="property-section-extras">Extras</button>
+        <button type="button" class="property-quicknav-btn" data-target="property-section-ubicacion">Ubicación</button>
       </div>
       <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6">
         <div id="property-col1" class="space-y-4">
@@ -2936,6 +2937,24 @@
           <div id="property-section-extras" class="panel p-6">
             <div class="i18n-auto section-label mb-3">Extras y equipamiento</div>
             <div id="property-extras-pills" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Ubicación — mapa dentro de la ficha, con zona aproximada si el propietario oculta la dirección -->
+          <div id="property-section-ubicacion" class="panel p-6">
+            <div class="flex items-start justify-between gap-3 flex-wrap mb-3">
+              <div>
+                <div class="i18n-auto section-label mb-1">Ubicación</div>
+                <div id="property-location-address" class="font-bold text-[15px] leading-snug"></div>
+              </div>
+              <span id="property-location-badge" class="text-[9px] font-black uppercase tracking-[0.12em] px-3 py-1.5 rounded-full whitespace-nowrap"></span>
+            </div>
+            <div id="property-location-map" style="width:100%;height:280px;border-radius:var(--r-md);overflow:hidden;background:#eef0ee;"></div>
+            <p id="property-location-note" class="text-[11px] text-zinc-500 mt-2.5 leading-relaxed"></p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button onclick="openPropertyDirections()" class="px-4 py-2.5 border border-black/10 text-[10px] font-black uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 transition-colors"><i class="fa-solid fa-diamond-turn-right"></i> <span class="i18n-auto">Cómo llegar</span></button>
+              <button id="property-location-streetview" onclick="openPropertyStreetView()" class="px-4 py-2.5 border border-black/10 text-[10px] font-black uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 transition-colors" style="display:none;"><i class="fa-solid fa-street-view"></i> <span class="i18n-auto">Ver la calle</span></button>
+              <button onclick="openMunicipioFromProperty()" class="px-4 py-2.5 border border-black/10 text-[10px] font-black uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 transition-colors"><i class="fa-solid fa-map-location-dot"></i> <span class="i18n-auto">Ver la zona en el mapa</span></button>
+            </div>
           </div>
           <div id="property-etv-notice" class="hidden panel p-5" style="background:var(--orange-soft);border-color:rgba(255,159,10,0.3);"></div>
 
@@ -3992,6 +4011,11 @@ function mapDbRowToProperty(row){
     addressFull: row.show_exact_address ? (row.address_full || null) : null,
     lat: row.show_exact_address ? (row.lat ?? null) : null,
     lng: row.show_exact_address ? (row.lng ?? null) : null,
+    // Zona aproximada: cuando el propietario NO comparte la dirección exacta seguimos
+    // pudiendo situar el inmueble en el mapa, pero redondeando la coordenada a una
+    // rejilla de ~500 m. Así el comprador ve la zona y el punto exacto no viaja al navegador.
+    approxLat: (!row.show_exact_address && row.lat != null) ? Math.round(row.lat / 0.0045) * 0.0045 : null,
+    approxLng: (!row.show_exact_address && row.lng != null) ? Math.round(row.lng / 0.0058) * 0.0058 : null,
     occupancySituation: row.occupancy_situation || 'Libre'
   };
 }
@@ -4929,6 +4953,132 @@ async function openPropertyModal(id){
   // y activa la navegación rápida con scrollspy.
   layoutPropertyModalForMobile();
   setupPropertyQuicknav();
+  renderPropertyLocationMap();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MAPA DE LA FICHA — como Idealista: pin exacto si el propietario comparte la
+// dirección, y círculo de zona aproximada si prefiere no darla.
+// ══════════════════════════════════════════════════════════════════════════
+var _propMap = null, _propMapCircle = null, _propMapMarker = null;
+var _propMapCoords = null;   // {lat, lng, exact} del inmueble abierto
+
+function renderPropertyLocationMap(){
+  const wrap = document.getElementById('property-section-ubicacion');
+  if(!wrap || !currentProperty) return;
+  const p = currentProperty;
+
+  let lat = null, lng = null, exact = false, level = 'municipio';
+  if(p.lat != null && p.lng != null){
+    lat = p.lat; lng = p.lng; exact = true; level = 'exacta';
+  } else if(p.approxLat != null && p.approxLng != null){
+    lat = p.approxLat; lng = p.approxLng; level = 'aproximada';
+  } else {
+    const c = municipalityCoords[p.municipality];
+    if(c){ lat = c[0]; lng = c[1]; }
+  }
+  if(lat == null){ wrap.style.display = 'none'; _propMapCoords = null; return; }
+  wrap.style.display = '';
+  _propMapCoords = { lat: lat, lng: lng, exact: exact };
+
+  const addrEl  = document.getElementById('property-location-address');
+  const noteEl  = document.getElementById('property-location-note');
+  const badgeEl = document.getElementById('property-location-badge');
+  const svBtn   = document.getElementById('property-location-streetview');
+  const zona    = (p.nucleo ? p.nucleo + ', ' : '') + (p.municipality || '') + ', Baleares';
+
+  if(exact){
+    addrEl.textContent  = p.addressFull || zona;
+    badgeEl.textContent = 'Dirección exacta';
+    badgeEl.style.cssText = 'background:var(--accent-soft);color:var(--accent-dark);';
+    noteEl.textContent  = 'El propietario ha compartido la dirección exacta de este inmueble.';
+    if(svBtn) svBtn.style.display = 'flex';
+  } else if(level === 'aproximada'){
+    addrEl.textContent  = zona;
+    badgeEl.textContent = 'Zona aproximada';
+    badgeEl.style.cssText = 'background:var(--orange-soft);color:#a86400;';
+    noteEl.textContent  = 'El inmueble está dentro de esta zona. El propietario ha preferido no publicar la dirección exacta — puedes pedírsela directamente en el chat, sin intermediarios.';
+    if(svBtn) svBtn.style.display = 'none';
+  } else {
+    addrEl.textContent  = zona;
+    badgeEl.textContent = 'Solo municipio';
+    badgeEl.style.cssText = 'background:rgba(0,0,0,0.05);color:#6b6b6b;';
+    noteEl.textContent  = 'Este anuncio no tiene una ubicación concreta guardada, así que mostramos el municipio. Pregunta al propietario en el chat por la zona exacta.';
+    if(svBtn) svBtn.style.display = 'none';
+  }
+
+  injectMapCSS();
+  loadGoogleMapsAPI(function(){ buildPropertyLocationMap(lat, lng, exact, level); });
+}
+
+function buildPropertyLocationMap(lat, lng, exact, level){
+  const el = document.getElementById('property-location-map');
+  if(!el) return;
+  const center = new google.maps.LatLng(lat, lng);
+
+  if(!_propMap){
+    _propMap = new google.maps.Map(el, {
+      center: center,
+      zoom: exact ? 16 : (level === 'aproximada' ? 14 : 12),
+      styles: SINKOMI_MAP_STYLE,
+      gestureHandling: 'cooperative',
+      disableDefaultUI: true,
+      zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+      mapTypeControl: false, fullscreenControl: false, streetViewControl: false
+    });
+  } else {
+    _propMap.setCenter(center);
+    _propMap.setZoom(exact ? 16 : (level === 'aproximada' ? 14 : 12));
+  }
+
+  if(_propMapCircle){ _propMapCircle.setMap(null); _propMapCircle = null; }
+  if(_propMapMarker){ _propMapMarker.setMap(null); _propMapMarker = null; }
+
+  if(exact){
+    _propMapMarker = new CustomMarker({
+      position: center,
+      element:  createPricePinEl(currentProperty, false),
+      map:      _propMap
+    });
+  } else {
+    const radius = (level === 'aproximada') ? 500 : 2200;
+    _propMapCircle = new google.maps.Circle({
+      map: _propMap, center: center, radius: radius, clickable: false,
+      fillColor: '#00a878', fillOpacity: 0.16,
+      strokeColor: '#00a878', strokeOpacity: 0.9, strokeWeight: 2
+    });
+  }
+
+  // El mapa nace dentro de un modal que acaba de abrirse: hay que recalcular su tamaño.
+  setTimeout(function(){
+    if(!_propMap) return;
+    google.maps.event.trigger(_propMap, 'resize');
+    _propMap.setCenter(center);
+    if(_propMapCircle) _propMap.fitBounds(_propMapCircle.getBounds(), 24);
+  }, 220);
+}
+
+function openPropertyStreetView(){
+  if(!_propMapCoords || !_propMapCoords.exact) return;
+  window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + _propMapCoords.lat + ',' + _propMapCoords.lng, '_blank');
+}
+
+// Cierra la ficha y lleva el mapa grande de la home a ese municipio
+function openMunicipioFromProperty(){
+  if(!currentProperty) return;
+  const muni = currentProperty.municipality;
+  closePropertyModal();
+  const sec = document.getElementById('sinkomi-map-hero');
+  if(sec) sec.scrollIntoView({ behavior:'smooth', block:'center' });
+  if(typeof initMapHero === 'function') initMapHero();
+  setTimeout(function(){
+    if(!sinkomMapHero) return;
+    const s = (typeof municipioShapes !== 'undefined') ? municipioShapes[muni] : null;
+    if(s && s.bounds && !s.bounds.isEmpty()){ sinkomMapHero.fitBounds(s.bounds, 40); return; }
+    const c = municipalityCoords[muni];
+    if(c){ sinkomMapHero.panTo(new google.maps.LatLng(c[0], c[1])); sinkomMapHero.setZoom(12); }
+  }, 900);
 }
 
 // Construye el carrusel swipe de fotos para móvil/tablet con puntos de posición.
@@ -5030,7 +5180,7 @@ function setupPropertyQuicknav(){
     };
   });
   if(propertyScrollspyObserver) propertyScrollspyObserver.disconnect();
-  const sections = ['property-section-caracteristicas','property-section-gastos','property-section-descripcion','property-section-extras']
+  const sections = ['property-section-caracteristicas','property-section-gastos','property-section-descripcion','property-section-extras','property-section-ubicacion']
     .map(id=>document.getElementById(id)).filter(Boolean);
   propertyScrollspyObserver = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
