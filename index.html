@@ -7348,6 +7348,102 @@ function renderMapMarkersHero(){
 // Casitas: se ven junto a la etiqueta del municipio, para que el mapa enseñe
 // dónde está cada anuncio y no sólo cuántos hay. En municipios con mucho volumen
 // se ocultan para no ensuciar: ahí ya manda la etiqueta y el zoom.
+// SINKOMI cubre +220 localidades, pero oficialmente hay 67 municipios. Esta función
+// averigua en qué municipio oficial cae cada anuncio para que el mapa se vea limpio,
+// con una sola etiqueta por municipio.
+var _muniOfProp = {};
+function officialMunicipioOf(p){
+  if(!p) return null;
+  if(_muniOfProp[p.id] !== undefined) return _muniOfProp[p.id];
+  let found = null;
+  if(p.municipality && municipioShapes[p.municipality]){
+    found = p.municipality;
+  } else if(p.lat != null && p.lng != null && window.google && google.maps.geometry && google.maps.geometry.poly){
+    const ll = new google.maps.LatLng(p.lat, p.lng);
+    for(const name in municipioShapes){
+      const s = municipioShapes[name];
+      if(s.bounds.isEmpty() || !s.bounds.contains(ll)) continue;
+      const hit = s.polys.some(function(pg){ return google.maps.geometry.poly.containsLocation(ll, pg); });
+      if(hit){ found = name; break; }
+    }
+  }
+  if(!found) found = p.municipality || null;
+  _muniOfProp[p.id] = found;
+  return found;
+}
+
+// Al pulsar la etiqueta de un municipio: si estás seleccionando zonas lo marca;
+// si no, hace zoom dentro de sus límites.
+function onZoneChipClick(name, pos){
+  if(zoneSelectModeActive){ onMunicipioFillClick(name); return; }
+  const s = municipioShapes[name];
+  if(s && s.bounds && !s.bounds.isEmpty()){
+    sinkomMapHero.fitBounds(s.bounds, 40);
+  } else {
+    sinkomMapHero.panTo(pos);
+    sinkomMapHero.setZoom(MAP_INDIVIDUAL_ZOOM_THRESHOLD + 1);
+  }
+}
+
+function onMunicipioPolygonClick(nom, ev){
+  // En modo dibujo, el clic sobre un municipio debe contar como vértice del trazo
+  if(drawingActive){
+    if(ev && ev.latLng){
+      drawVertices.push({ lat:ev.latLng.lat(), lng:ev.latLng.lng() });
+      setDrawGeoJSON(drawVertices, false);
+      if(drawVertices.length >= 3){
+        const fb = document.getElementById('map-draw-finish');
+        if(fb) fb.style.display = 'flex';
+      }
+    }
+    return;
+  }
+  if(zoneSelectModeActive){ onMunicipioFillClick(nom); return; }
+  const s = municipioShapes[nom];
+  if(s && s.bounds && !s.bounds.isEmpty()) sinkomMapHero.fitBounds(s.bounds, 40);
+}
+
+// ── Estilo de relleno de cada municipio según su estado ──
+// Ojo: strokeColor tiene que ir SIEMPRE, porque el valor por defecto de Google
+// para un polígono es negro. Si esta función falla, los municipios salen con un
+// contorno negro grueso.
+function polyStyleFor(hasProps, selected, hover){
+  const base = { strokeColor:'#00a878', strokeOpacity:0, strokeWeight:0 };
+  if(selected) return Object.assign({}, base, { fillColor:'#00d98f', fillOpacity:0.42 });
+  if(hover)    return Object.assign({}, base, { fillColor:'#00a878', fillOpacity:0.28 });
+  if(hasProps) return Object.assign({}, base, { fillColor:'#00a878', fillOpacity:0.11 });
+  return             Object.assign({}, base, { fillColor:'#8a9099', fillOpacity:0.035 });
+}
+
+function paintMunicipioPolygons(countByMuni){
+  countByMuni = countByMuni || {};
+  Object.keys(municipioShapes).forEach(function(name){
+    const s   = municipioShapes[name];
+    const has = (countByMuni[name] || 0) > 0;
+    const sel = selectedZoneMunicipios.has(name);
+    s.hasProps = has;
+    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(has, sel, false)); });
+    s.lines.forEach(function(pl){
+      pl.setOptions({
+        strokeColor:   has ? '#00a878' : '#aab0b6',
+        strokeOpacity: has ? 0.85 : 0.5,
+        strokeWeight:  has ? 1.8 : 1.1
+      });
+    });
+  });
+}
+
+function highlightMunicipio(name, on){
+  const s = municipioShapes[name];
+  if(s){
+    const sel = selectedZoneMunicipios.has(name);
+    s.polys.forEach(function(pg){ pg.setOptions(polyStyleFor(s.hasProps, sel, on)); });
+    s.lines.forEach(function(pl){ pl.setOptions({ strokeWeight: on ? 2.6 : (s.hasProps ? 1.8 : 1.1) }); });
+  }
+  const pill = municipioPills[name];
+  if(pill && pill.el) pill.el.classList.toggle('hover', !!on);
+}
+
 function renderHouseMarkers(filtered, countByMuni){
   Object.values(housePropertyMarkers).forEach(function(m){ m.setMap(null); });
   housePropertyMarkers = {};
