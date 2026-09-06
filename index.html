@@ -744,6 +744,19 @@
     #prop-zone-header .pz-close:hover{color:var(--ink);}
     #prop-zone-body{flex:1;position:relative;min-height:0;}
     #prop-zone-map{position:absolute;inset:0;}
+    /* ── Aviso de mapa sin consentimiento ── */
+    .sk-map-consent{position:absolute;inset:0;z-index:20;background:#eef1ef;display:flex;align-items:center;justify-content:center;padding:1.25rem;text-align:center;}
+    .sk-map-consent .sk-mc-inner{max-width:340px;}
+    .sk-map-consent i{font-size:26px;color:var(--accent);opacity:.7;}
+    .sk-map-consent .sk-mc-title{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);margin:.6rem 0 .4rem;}
+    .sk-map-consent p{font-size:11.5px;color:#6b6b6b;line-height:1.55;margin:0 0 .9rem;}
+    .sk-map-consent button{background:var(--accent);color:#fff;border:none;border-radius:999px;padding:.6rem 1.3rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;}
+    .sk-map-consent button:hover{background:var(--accent-dark);}
+    .sk-map-consent .sk-mc-link{display:block;margin:.6rem auto 0;background:none;color:#8a8a8a;text-decoration:underline;padding:0;font-size:10px;letter-spacing:.06em;}
+    .sk-map-consent .sk-mc-link:hover{background:none;color:var(--ink);}
+    /* ── Aviso legal al contactar ── */
+    .sk-contact-legal{font-size:10.5px;line-height:1.55;color:#8a8a8a;margin-top:-.35rem;margin-bottom:1rem;}
+    .sk-contact-legal button{background:none;border:none;padding:0;font-size:10.5px;color:var(--accent-dark);text-decoration:underline;cursor:pointer;font-weight:700;}
     #pz-typectl{position:absolute;top:.9rem;left:.9rem;z-index:5;display:flex;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
     #pz-typectl button{border:none;background:#fff;padding:.55rem 1.05rem;font-size:11.5px;font-weight:800;color:#5b5b5b;cursor:pointer;}
     #pz-typectl button.active{background:var(--accent);color:#fff;}
@@ -3182,6 +3195,7 @@
               <button onclick="openChatFromProperty()" class="i18n-auto flex-1 contact-coral py-4 text-sm font-black uppercase tracking-[0.14em]" style="font-family:'Special Elite','Courier New',monospace;">Contactar con propietario/a</button>
               <button id="property-fav-btn" onclick="toggleFavourite(currentProperty?.id, this, event)" class="w-14 border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"><i class="fa-regular fa-heart"></i></button>
             </div>
+            <p class="sk-contact-legal i18n-auto">Al contactar, tu nombre y tus mensajes se envían directamente al propietario del inmueble, que es un particular como tú. Los mensajes se traducen de forma automática si escribís en idiomas distintos. Aceptas la <button onclick="openLegal('privacidad')">política de privacidad</button> y el <button onclick="openLegal('aviso')">aviso legal</button> de SINKOMI.</p>
             <div class="text-center">
               <button onclick="reportProperty(currentProperty?.id)" class="text-[10px] font-black uppercase tracking-[0.12em] text-red-400 hover:text-red-600 transition-colors flex items-center justify-center gap-1 mx-auto">
                 <i class="fa-solid fa-triangle-exclamation"></i> Reportar anuncio
@@ -5252,7 +5266,7 @@ function renderPropertyLocationMap(){
   renderPropertyNearby(lat, lng);
 
   injectMapCSS();
-  loadGoogleMapsAPI(function(){ buildPropertyLocationMap(lat, lng, exact, level); });
+  loadGoogleMapsAPI(function(){ buildPropertyLocationMap(lat, lng, exact, level); }, 'property-location-map');
 }
 
 function buildPropertyLocationMap(lat, lng, exact, level){
@@ -5419,6 +5433,9 @@ var SK_PLAYAS_CACHE_KEY = 'sk_playas_v1';
 function loadPlayas(){
   if(SK_POI.playa) return Promise.resolve(SK_POI.playa);
   if(_skPlayasPromise) return _skPlayasPromise;
+  // El IDEIB es un servicio externo (Govern de les Illes Balears): mismo criterio
+  // que con Google Maps, no se consulta sin autorización del usuario.
+  if(!mapsConsentGiven()) return Promise.resolve(null);
 
   // 1) Caché del navegador
   try{
@@ -5710,7 +5727,7 @@ function openPropertyZoneMap(){
 
   document.getElementById('prop-zone-overlay').classList.add('show');
   injectMapCSS();
-  loadGoogleMapsAPI(buildZoneMap);
+  loadGoogleMapsAPI(buildZoneMap, 'prop-zone-map');
 }
 
 function buildZoneMap(){
@@ -6858,9 +6875,64 @@ function injectMapCSS(){
 var _gmapsLoading = false;
 var _gmapsReady   = false;
 var _gmapsCbs     = [];
+var _mapsPending  = [];   // cargas en espera de consentimiento
 
-function loadGoogleMapsAPI(cb){
+// ── CONSENTIMIENTO PARA MAPAS ────────────────────────────────────────────────
+// Google Maps es un tercero: al cargarlo, Google recibe la IP del visitante.
+// Por eso no se carga hasta que el usuario lo autoriza, ni siquiera el <script>.
+function mapsConsentGiven(){
+  try{ return localStorage.getItem('sinkomi_maps_consent') === 'yes'; }
+  catch(e){ return false; }
+}
+
+function allowMapsAndLoad(){
+  try{ localStorage.setItem('sinkomi_maps_consent', 'yes'); }catch(e){}
+  const pend = _mapsPending.slice();
+  _mapsPending = [];
+  pend.forEach(function(p){
+    clearMapConsentPlaceholder(p.containerId);
+    loadGoogleMapsAPI(p.cb, p.containerId);
+  });
+  if(typeof _skPlayasPromise !== 'undefined'){ _skPlayasPromise = null; }
+  if(typeof currentProperty !== 'undefined' && currentProperty && typeof renderPropertyLocationMap === 'function'){
+    renderPropertyLocationMap();
+  }
+}
+
+function showMapConsentPlaceholder(containerId){
+  if(!containerId) return;
+  const el = document.getElementById(containerId);
+  if(!el || el.querySelector('.sk-map-consent')) return;
+  // El aviso se posiciona sobre el hueco del mapa, sea cual sea el contenedor
+  try{ if(getComputedStyle(el).position === 'static') el.style.position = 'relative'; }catch(e){}
+  const box = document.createElement('div');
+  box.className = 'sk-map-consent';
+  box.innerHTML =
+    '<div class="sk-mc-inner">' +
+      '<i class="fa-solid fa-map-location-dot"></i>' +
+      '<div class="sk-mc-title">Mapa desactivado</div>' +
+      '<p>Para mostrar el mapa cargamos Google Maps, un servicio externo que recibirá tu dirección IP. Solo se carga si tú lo autorizas.</p>' +
+      '<button type="button" onclick="allowMapsAndLoad()">Cargar el mapa</button>' +
+      '<button type="button" class="sk-mc-link" onclick="openLegal(\'cookies\')">Ver política de cookies</button>' +
+    '</div>';
+  el.appendChild(box);
+}
+
+function clearMapConsentPlaceholder(containerId){
+  if(!containerId) return;
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const b = el.querySelector('.sk-map-consent');
+  if(b) b.remove();
+}
+
+function loadGoogleMapsAPI(cb, containerId){
   if(_gmapsReady){ cb && cb(); return; }
+  if(!mapsConsentGiven()){
+    _mapsPending.push({ cb: cb, containerId: containerId });
+    showMapConsentPlaceholder(containerId);
+    return;
+  }
   if(cb) _gmapsCbs.push(cb);
   if(_gmapsLoading) return;
   _gmapsLoading = true;
@@ -6965,7 +7037,7 @@ function createIslandBubbleEl(name, count){
 function initMapHero(){
   if(sinkomMapHero) return;
   injectMapCSS();
-  loadGoogleMapsAPI(initMapHeroGM);
+  loadGoogleMapsAPI(initMapHeroGM, 'sinkomi-map-hero');
 }
 
 function initMapHeroGM(){
@@ -12237,6 +12309,10 @@ const legalContent = {
 
       <h4 class="font-black text-black text-base mt-4">6. Encargados del tratamiento</h4>
       <p>Para poder prestar el servicio, SINKOMI se apoya en los siguientes proveedores, que actúan como encargados del tratamiento bajo sus propias garantías de seguridad: Supabase (alojamiento de la base de datos y almacenamiento de documentos), Stripe (procesamiento de pagos), y Sightengine (análisis automatizado antifraude de la fotografía de verificación). Ninguno de estos proveedores utiliza los datos para fines distintos a la prestación del servicio contratado por SINKOMI.</p>
+      <p class="mt-3">Además, si autorizas la carga de los mapas, tu dirección IP es recibida por <strong>Google Ireland Ltd.</strong> (Google Maps) y por el <strong>IDEIB — Govern de les Illes Balears</strong> (cartografía oficial). Esta carga no se produce sin tu autorización previa y puedes revocarla como se explica en la Política de Cookies.</p>
+
+      <h4 class="font-black text-black text-base mt-4">6 bis. Contacto entre usuarios</h4>
+      <p>SINKOMI es una plataforma de contacto directo entre particulares. Cuando escribes a un anunciante, tu nombre y el contenido de tus mensajes se transmiten a esa persona, que pasa a ser responsable del uso que haga de ellos. Los mensajes pueden traducirse de forma automática para permitir la conversación entre usuarios de distintos idiomas. SINKOMI no cede tus datos de contacto a agencias ni a terceros con fines comerciales.</p>
 
       <h4 class="font-black text-black text-base mt-4">7. Derechos del usuario</h4>
       <p>El usuario puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad enviando un email a info@sinkomi.es También tiene derecho a presentar reclamación ante la Agencia Española de Protección de Datos (aepd.es).</p>
@@ -12252,18 +12328,28 @@ const legalContent = {
       <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Permiten que el sitio recuerde tus preferencias y mejore tu experiencia de navegación.</p>
 
       <h4 class="font-black text-black text-base mt-4">2. Cookies que utiliza SINKOMI</h4>
-      <p>En su versión actual, SINKOMI utiliza únicamente cookies técnicas de preferencia propias:</p>
+      <p>SINKOMI no utiliza cookies de publicidad, de perfilado ni de analítica. Guardamos en tu propio navegador (almacenamiento local) los siguientes datos técnicos y de preferencia, que no salen de tu dispositivo:</p>
       <ul class="list-disc ml-5 space-y-1 mt-2">
-        <li><strong>lang</strong> — guarda el idioma seleccionado por el usuario</li>
-        <li><strong>langFlag / langCode</strong> — guardan la representación visual del idioma elegido</li>
+        <li><strong>lang, langFlag, langCode</strong> — el idioma que has elegido</li>
+        <li><strong>sinkomi_cookie_consent</strong> — tu respuesta al aviso de cookies</li>
+        <li><strong>sinkomi_maps_consent</strong> — si has autorizado la carga de los mapas</li>
+        <li><strong>sk_playas_v1</strong> — copia local del listado público de playas y calas, para no volver a descargarlo en cada visita</li>
+        <li><strong>Sesión de usuario</strong> — si inicias sesión, el testigo (token) que te mantiene identificado, gestionado por Supabase</li>
       </ul>
-      <p class="mt-3">Estas cookies son estrictamente necesarias para el funcionamiento básico del sitio y no requieren consentimiento previo según la normativa vigente.</p>
+      <p class="mt-3">Estos datos son estrictamente necesarios para el funcionamiento del sitio o responden a una elección tuya, y no se comparten con terceros con fines publicitarios.</p>
 
-      <h4 class="font-black text-black text-base mt-4">3. Cookies de terceros</h4>
-      <p>SINKOMI puede cargar fuentes tipográficas de Google Fonts y iconos de Font Awesome, servicios que pueden establecer sus propias cookies técnicas. No utilizamos cookies de publicidad ni de seguimiento de terceros.</p>
+      <h4 class="font-black text-black text-base mt-4">3. Servicios de terceros</h4>
+      <p>Para funcionar, SINKOMI carga contenido de los siguientes servicios externos. Al cargarse, estos servicios reciben tu dirección IP y pueden establecer sus propias cookies técnicas:</p>
+      <ul class="list-disc ml-5 space-y-1 mt-2">
+        <li><strong>Google Maps</strong> (Google Ireland Ltd.) — mapas de búsqueda y de cada inmueble. <em>Solo se carga si lo autorizas expresamente:</em> mientras no lo hagas, en lugar del mapa verás un aviso con un botón para activarlo.</li>
+        <li><strong>IDEIB — Govern de les Illes Balears</strong> — límites municipales oficiales y listado público de playas y calas. Se consulta bajo la misma autorización que los mapas.</li>
+        <li><strong>Supabase</strong> — base de datos, inicio de sesión y almacenamiento de las fotos de los anuncios.</li>
+        <li><strong>Stripe</strong> — pasarela de pago; solo interviene si contratas un servicio de pago.</li>
+        <li><strong>Google Fonts y Font Awesome</strong> — tipografías e iconos.</li>
+      </ul>
 
-      <h4 class="font-black text-black text-base mt-4">4. Cómo gestionar las cookies</h4>
-      <p>Puedes configurar tu navegador para bloquear o eliminar cookies. Ten en cuenta que desactivar las cookies técnicas puede afectar al funcionamiento del selector de idioma y otras preferencias guardadas.</p>
+      <h4 class="font-black text-black text-base mt-4">4. Cómo cambiar tu decisión</h4>
+      <p>Puedes revocar tu autorización en cualquier momento borrando los datos de sitio de sinkomi.es desde la configuración de tu navegador: volverás a ver el aviso de cookies y los mapas dejarán de cargarse hasta que los autorices de nuevo. También puedes configurar tu navegador para bloquear o eliminar cookies, teniendo en cuenta que desactivar las técnicas puede afectar al selector de idioma y a tu sesión iniciada.</p>
 
       <h4 class="font-black text-black text-base mt-4">5. Actualizaciones</h4>
       <p>Esta política puede actualizarse cuando se añadan nuevas funcionalidades a SINKOMI (como login, chat real o pagos). Te recomendamos revisarla periódicamente.</p>
@@ -12486,7 +12572,7 @@ function closeLegal() {
   <div style="max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;">
     <div style="flex:1;min-width:260px;">
       <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);margin-bottom:.35rem;">Cookies y privacidad</div>
-      <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;margin:0;">Usamos cookies técnicas propias para guardar tus preferencias de idioma y navegación. No usamos cookies de publicidad ni de seguimiento. <button onclick="openLegal('cookies')" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;text-decoration:underline;padding:0;" class="i18n-auto">Más información</button></p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;margin:0;">Usamos almacenamiento técnico propio para tu idioma y tu sesión. No usamos cookies de publicidad ni de seguimiento. Si aceptas, cargamos también los mapas de Google y la cartografía oficial del IDEIB, que recibirán tu IP; si eliges "Solo necesarias" no se cargarán y podrás activarlos después desde el propio mapa. <button onclick="openLegal('cookies')" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;text-decoration:underline;padding:0;" class="i18n-auto">Más información</button></p>
     </div>
     <div style="display:flex;gap:.75rem;flex-shrink:0;">
       <button onclick="rejectCookies()" style="padding:.6rem 1.2rem;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.5)'" class="i18n-auto">Solo necesarias</button>
@@ -12506,16 +12592,29 @@ function closeLegal() {
   }
 })();
 
-function acceptCookies(){
-  localStorage.setItem('sinkomi_cookie_consent', 'accepted');
+function _hideCookieBanner(){
   var banner = document.getElementById('cookie-banner');
   if(banner){ banner.style.opacity='0'; banner.style.transition='opacity .3s ease'; setTimeout(function(){ banner.style.display='none'; }, 300); }
 }
 
+// Aceptar: se autorizan también los mapas, y los que estuvieran esperando se cargan ya.
+function acceptCookies(){
+  try{
+    localStorage.setItem('sinkomi_cookie_consent', 'accepted');
+    localStorage.setItem('sinkomi_maps_consent', 'yes');
+  }catch(e){}
+  _hideCookieBanner();
+  if(typeof allowMapsAndLoad === 'function') allowMapsAndLoad();
+}
+
+// Solo necesarias: rechaza de verdad. Google Maps y el IDEIB no se cargan, y donde
+// tendría que ir un mapa aparece un aviso con un botón por si el usuario cambia de idea.
 function rejectCookies(){
-  localStorage.setItem('sinkomi_cookie_consent', 'rejected');
-  var banner = document.getElementById('cookie-banner');
-  if(banner){ banner.style.opacity='0'; banner.style.transition='opacity .3s ease'; setTimeout(function(){ banner.style.display='none'; }, 300); }
+  try{
+    localStorage.setItem('sinkomi_cookie_consent', 'rejected');
+    localStorage.setItem('sinkomi_maps_consent', 'no');
+  }catch(e){}
+  _hideCookieBanner();
 }
 </script>
 
