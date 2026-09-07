@@ -733,6 +733,33 @@
     .cm-table td.cm-best{color:var(--accent-dark);font-weight:900;}
     .cm-table .cm-photo img{width:100%;height:110px;object-fit:cover;border-radius:8px;}
     .cm-table .cm-photo{cursor:pointer;}
+    /* ── Barra de medios de la ficha ── */
+    #property-media-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;}
+    .sk-media-tab{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem .95rem;border:1.5px solid rgba(0,0,0,0.1);background:#fff;border-radius:999px;font-size:11.5px;font-weight:800;color:var(--ink);cursor:pointer;transition:all .15s ease;white-space:nowrap;}
+    .sk-media-tab:hover{border-color:var(--accent);color:var(--accent-dark);}
+    .sk-media-tab i{font-size:11px;opacity:.75;}
+    .sk-media-tab.primary{background:var(--dark);color:#fff;border-color:var(--dark);}
+    .sk-media-tab.primary i{opacity:1;color:var(--accent);}
+    /* ── Caja de oferta ── */
+    #sk-offer-overlay{position:fixed;inset:0;z-index:1500;background:rgba(13,26,20,0.6);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:1.25rem;}
+    #sk-offer-overlay.show{display:flex;}
+    #sk-offer-box{background:#fff;width:100%;max-width:26rem;border-radius:var(--r-md);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+    #sk-offer-box .so-head{padding:1.25rem 1.4rem .9rem;}
+    #sk-offer-box .so-head .so-kicker{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent-dark);}
+    #sk-offer-box .so-head h4{font-size:19px;font-weight:900;margin:.3rem 0 .2rem;line-height:1.2;}
+    #sk-offer-box .so-head p{font-size:12px;color:#6b6b6b;line-height:1.55;margin:0;}
+    #sk-offer-box .so-body{padding:0 1.4rem 1.1rem;}
+    #sk-offer-box .so-asking{font-size:11.5px;color:#8a8a8a;font-weight:700;margin-bottom:.5rem;}
+    #sk-offer-box .so-asking b{color:var(--ink);}
+    #sk-offer-input{width:100%;border:1.5px solid rgba(0,0,0,0.12);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:19px;font-weight:900;color:var(--ink);text-align:center;letter-spacing:-.01em;}
+    #sk-offer-input:focus{outline:none;border-color:var(--accent);}
+    #sk-offer-hint{font-size:11.5px;font-weight:800;margin-top:.6rem;min-height:1.2em;text-align:center;}
+    #sk-offer-box .so-foot{display:flex;gap:.6rem;padding:0 1.4rem 1.3rem;}
+    #sk-offer-box .so-foot button{flex:1;padding:.85rem 0;border-radius:var(--r-sm);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;border:none;}
+    #sk-offer-cancel{background:#fff;border:1.5px solid rgba(0,0,0,0.12) !important;color:#6b6b6b;}
+    #sk-offer-send{background:var(--accent);color:#fff;}
+    #sk-offer-send:hover{background:var(--accent-dark);}
+    #sk-offer-note{font-size:10.5px;color:#a1a1aa;line-height:1.5;padding:0 1.4rem 1.3rem;margin:0;text-align:center;}
     /* ── MAPA DE LA ZONA DEL INMUEBLE (pantalla completa) ── */
     #prop-zone-overlay{position:fixed;inset:0;z-index:1450;background:#fff;display:none;flex-direction:column;}
     #prop-zone-overlay.show{display:flex;}
@@ -2993,6 +3020,27 @@
   </div>
 </div>
 
+<!-- HACER UNA OFERTA — sustituye al prompt() del navegador -->
+<div id="sk-offer-overlay" onclick="if(event.target===this) closeOfferBox()">
+  <div id="sk-offer-box">
+    <div class="so-head">
+      <div class="so-kicker i18n-auto">Trato directo</div>
+      <h4 class="i18n-auto">Hacer una oferta</h4>
+      <p class="i18n-auto">Aquí no hay agencia por medio: tu oferta le llega al propietario, y te contesta él.</p>
+    </div>
+    <div class="so-body">
+      <div class="so-asking i18n-auto">Precio publicado: <b id="sk-offer-asking"></b></div>
+      <input id="sk-offer-input" type="text" inputmode="numeric" placeholder="0 €" oninput="onOfferInput(this)" onkeydown="if(event.key==='Enter') sendOfferToChat();">
+      <div id="sk-offer-hint"></div>
+    </div>
+    <div class="so-foot">
+      <button id="sk-offer-cancel" onclick="closeOfferBox()" class="i18n-auto">Cancelar</button>
+      <button id="sk-offer-send" onclick="sendOfferToChat()" class="i18n-auto">Escribir la oferta</button>
+    </div>
+    <p id="sk-offer-note" class="i18n-auto">No se envía nada todavía: el mensaje se escribe en el chat para que lo revises antes.</p>
+  </div>
+</div>
+
 <!-- MAPA DE LA ZONA DEL INMUEBLE — pantalla completa, al estilo de la pestaña /mapa de una ficha -->
 <div id="prop-zone-overlay">
   <div id="prop-zone-header">
@@ -3075,6 +3123,7 @@
       <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6">
         <div id="property-col1" class="space-y-4">
           <div id="property-gallery-block">
+            <div id="property-media-tabs"></div>
             <div id="property-image-frame" class="hidden xl:block overflow-hidden" style="border-radius:22px;border:12px solid var(--accent);transition:border-color .2s ease;box-shadow:0 14px 36px rgba(0,0,0,.08);"><img id="property-main-image" src="" alt="" class="w-full h-[420px] object-cover"></div>
             <!-- Galería swipe — solo móvil/tablet -->
             <div id="property-mobile-gallery" class="xl:hidden">
@@ -3221,6 +3270,7 @@
               <button onclick="openChatFromProperty()" class="i18n-auto flex-1 contact-coral py-4 text-sm font-black uppercase tracking-[0.14em]" style="font-family:'Special Elite','Courier New',monospace;">Contactar con propietario/a</button>
               <button id="property-fav-btn" onclick="toggleFavourite(currentProperty?.id, this, event)" class="w-14 border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"><i class="fa-regular fa-heart"></i></button>
             </div>
+            <button onclick="openOfferFromProperty()" class="i18n-auto w-full py-3 mb-3 text-[11px] font-black uppercase tracking-[0.14em] flex items-center justify-center gap-2 transition-all" style="border:1.5px solid var(--accent);color:var(--accent-dark);background:#fff;border-radius:var(--r-sm);"><i class="fa-solid fa-hand-holding-dollar"></i> Hacer una oferta</button>
             <p class="sk-contact-legal i18n-auto">Al contactar, tu nombre y tus mensajes se envían directamente al propietario del inmueble, que es un particular como tú. Los mensajes se traducen de forma automática si escribís en idiomas distintos. Aceptas la <button onclick="openLegal('privacidad')">política de privacidad</button> y el <button onclick="openLegal('aviso')">aviso legal</button> de SINKOMI.</p>
             <div class="text-center">
               <button onclick="reportProperty(currentProperty?.id)" class="text-[10px] font-black uppercase tracking-[0.12em] text-red-400 hover:text-red-600 transition-colors flex items-center justify-center gap-1 mx-auto">
@@ -4197,6 +4247,7 @@ function mapDbRowToProperty(row){
     rentPrice: row.rent_price || null,
     floorPlanUrl: row.floor_plan_url || '',
     virtualTourUrl: row.virtual_tour_url || '',
+    videoUrl: row.video_url || '',
     phone: row.phone || '',
     owner_id: row.owner_id,
     status: row.status || 'Disponible',
@@ -5170,6 +5221,7 @@ async function openPropertyModal(id){
   // y activa la navegación rápida con scrollspy.
   layoutPropertyModalForMobile();
   setupPropertyQuicknav();
+  renderPropertyMediaTabs();
   renderPropertyLocationMap();
   loadPriceHistory(currentProperty.id);
 }
@@ -6269,7 +6321,15 @@ async function openChat(id, otherUserId, otherUserName){
   document.getElementById('seller-name').textContent = headerName;
   document.getElementById('seller-avatar').textContent = (headerName||'?').trim().charAt(0).toUpperCase();
   document.getElementById('seller-status').textContent=currentProperty.verified?'Propietario verificado':'Propietario particular';
-  document.getElementById('chat-input').value='';
+  // Una caja en blanco da pereza: dejamos escrito un primer mensaje razonable
+  // para que la persona solo tenga que retocarlo y enviarlo. Si ya hay una
+  // conversación abierta, no tocamos nada.
+  const _chatInput = document.getElementById('chat-input');
+  if(_chatInput){
+    _chatInput.value = viewingExistingThread
+      ? ''
+      : 'Hola, me interesa este inmueble y me gustaría visitarlo. ¿Sigue disponible?';
+  }
 
   const messagesEl = document.getElementById('chat-messages');
   messagesEl.innerHTML = `<div class="text-center text-xs text-zinc-400 py-6">Cargando conversación…</div>`;
@@ -6601,7 +6661,105 @@ async function sendMessage(){
     loadChatThreads(currentChatPropertyId, currentChatRoommateId);
   }
 }
-function quickReply(text){ document.getElementById('chat-input').value = text; sendMessage(); }
+// Escribe el texto en la caja del chat y deja que la persona lo revise y lo envíe.
+// Antes lo mandaba de golpe: mal, sobre todo cuando lo que estás escribiendo es
+// una cifra de cientos de miles de euros.
+function quickReply(text){
+  const input = document.getElementById('chat-input');
+  if(!input) return;
+  input.value = text;
+  input.focus();
+  try{ input.setSelectionRange(text.length, text.length); }catch(e){}
+}
+
+// ── BARRA DE MEDIOS DE LA FICHA ──────────────────────────────────────────────
+function renderPropertyMediaTabs(){
+  const wrap = document.getElementById('property-media-tabs');
+  if(!wrap || !currentProperty) return;
+  const p = currentProperty;
+  wrap.innerHTML = '';
+
+  function tab(icon, label, onClick, primary){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sk-media-tab' + (primary ? ' primary' : '');
+    b.innerHTML = '<i class="fa-solid ' + icon + '"></i><span></span>';
+    b.querySelector('span').textContent = label;
+    b.onclick = onClick;
+    wrap.appendChild(b);
+  }
+
+  const nFotos = (p.images || []).length;
+  if(nFotos){
+    tab('fa-images', nFotos + (nFotos === 1 ? ' foto' : ' fotos'), function(){
+      const g = document.getElementById('property-gallery-block');
+      if(g) g.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, true);
+  }
+  if(p.videoUrl)       tab('fa-play',        'Vídeo',         function(){ window.open(p.videoUrl, '_blank', 'noopener'); });
+  if(p.floorPlanUrl)   tab('fa-ruler-combined', 'Plano',      function(){ window.open(p.floorPlanUrl, '_blank', 'noopener'); });
+  if(p.virtualTourUrl) tab('fa-vr-cardboard','Visita virtual',function(){ window.open(p.virtualTourUrl, '_blank', 'noopener'); });
+  tab('fa-location-dot', 'Mapa', function(){ openPropertyZoneMap(); });
+}
+
+// ── HACER UNA OFERTA ─────────────────────────────────────────────────────────
+function openOfferBox(){
+  if(!currentProperty) return;
+  const precio = Number(currentProperty.price) || 0;
+  document.getElementById('sk-offer-asking').textContent = precio ? precio.toLocaleString('es-ES') + ' €' : '—';
+  const input = document.getElementById('sk-offer-input');
+  input.value = '';
+  document.getElementById('sk-offer-hint').textContent = '';
+  document.getElementById('sk-offer-overlay').classList.add('show');
+  setTimeout(function(){ input.focus(); }, 80);
+}
+function closeOfferBox(){
+  const o = document.getElementById('sk-offer-overlay');
+  if(o) o.classList.remove('show');
+}
+function _offerAmount(){
+  const raw = (document.getElementById('sk-offer-input').value || '').replace(/[^\d]/g, '');
+  return Number(raw) || 0;
+}
+function onOfferInput(el){
+  const n = _offerAmount();
+  el.value = n ? n.toLocaleString('es-ES') + ' €' : '';
+  const precio = Number(currentProperty && currentProperty.price) || 0;
+  const hint = document.getElementById('sk-offer-hint');
+  if(!n || !precio){ hint.textContent = ''; return; }
+  const pct = Math.round((n - precio) / precio * 100);
+  if(pct === 0){       hint.textContent = 'Justo el precio publicado';        hint.style.color = '#8a8a8a'; }
+  else if(pct < 0){    hint.textContent = Math.abs(pct) + '% por debajo del precio publicado'; hint.style.color = 'var(--accent-dark)'; }
+  else {               hint.textContent = pct + '% por encima del precio publicado'; hint.style.color = '#c98a00'; }
+}
+
+// Desde la ficha: abre el chat con el propietario y, dentro, la caja de oferta.
+function openOfferFromProperty(){
+  if(!currentProperty) return;
+  const id = currentProperty.id;
+  openChatFromProperty();
+  setTimeout(function(){
+    const modal = document.getElementById('chat-modal');
+    if(modal && !modal.classList.contains('hidden')) openOfferBox();
+  }, 700);
+}
+
+// Escribe la oferta en el chat. No la envía: la deja lista para revisar.
+function sendOfferToChat(){
+  const n = _offerAmount();
+  if(!n){ alert('Escribe la cantidad que quieres ofrecer.'); return; }
+  const precio = Number(currentProperty && currentProperty.price) || 0;
+  let texto = 'Hola, me interesa tu inmueble. Mi oferta es de ' + n.toLocaleString('es-ES') + ' €';
+  if(precio){
+    const pct = Math.round((n - precio) / precio * 100);
+    if(pct < 0) texto += ' (un ' + Math.abs(pct) + '% por debajo de los ' + precio.toLocaleString('es-ES') + ' € publicados)';
+    else if(pct === 0) texto += ' (el precio que pides)';
+  }
+  texto += '. ¿Lo considerarías? Un saludo.';
+  closeOfferBox();
+  quickReply(texto);
+}
+function showOfferBox(){ openOfferBox(); }
 
 var chatAttachedFile = null;
 
@@ -6734,13 +6892,6 @@ async function loadChatThreads(activePropertyId, activeRoommateId){
 
 /* CHAT — acciones rápidas: mandan un mensaje real, el propietario responde de verdad por el chat */
 function showScheduleVisit(){ quickReply('Me gustaría agendar una visita. ¿Qué días y horas tienes disponibles?'); }
-function showOfferBox(){
-  const value = prompt('¿Cuál es tu oferta? (solo el número, en euros)');
-  if(!value) return;
-  const num = Number(value.replace(/[^\d]/g,''));
-  if(!num){ alert('Introduce una cantidad válida.'); return; }
-  quickReply(`Mi oferta es de ${num.toLocaleString('es-ES')} €`);
-}
 function showHelpMenu(){ quickReply('¿Me podrías recomendar algún abogado, arquitecto o asesor hipotecario de confianza para esta operación?'); }
 
 /* FAQ */
