@@ -226,7 +226,7 @@
     #map-fullscreen-header-actions{display:flex;align-items:center;gap:.5rem;}
     #map-zones-pill{display:none;align-items:center;gap:.4rem;background:var(--accent-soft);color:var(--accent-dark);font-size:10.5px;font-weight:800;padding:.4rem .7rem;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;}
     #map-filters-btn{display:flex;align-items:center;gap:.4rem;background:#0d1a14;color:white;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:.45rem .8rem;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;}
-    #map-filters-btn .fcount{background:var(--accent);color:#0d1a14;border-radius:999px;padding:.05rem .4rem;font-size:9.5px;margin-left:.15rem;}
+    #map-filters-btn .fcount{background:var(--accent);color:#0d1a14;border-radius:999px;padding:.05rem .4rem;font-size:10.5px;margin-left:.15rem;}
     #map-total-count{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:498;background:#0d1a14;color:white;font-size:11px;font-weight:800;padding:.45rem 1rem;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,0.22);white-space:nowrap;}
 
     #map-filters-panel{position:absolute;top:0;right:0;left:0;z-index:600;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 12px 30px rgba(0,0,0,0.12);display:none;padding:1rem 1.2rem 1.2rem;}
@@ -250,10 +250,10 @@
     .sk-nb-icon{width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
     .sk-nb-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
     .sk-nb-name{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .sk-nb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#a1a1aa;}
+    .sk-nb-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#6f6f78;}
     .sk-nb-dist{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:1px;}
     .sk-nb-dist b{font-size:13.5px;font-weight:900;color:var(--accent-dark);}
-    .sk-nb-dist span{font-size:10px;font-weight:700;color:#a1a1aa;white-space:nowrap;}
+    .sk-nb-dist span{font-size:10px;font-weight:700;color:#6f6f78;white-space:nowrap;}
     @media (max-width:520px){ #map-favs-toggle{left:auto;right:12px;} }
 
     /* ── MAPA A PANTALLA COMPLETA — se abre directamente al elegir una zona desde el buscador, sin hacer scroll ── */
@@ -267,6 +267,22 @@
     #map-fullscreen-close-x:hover{background:var(--accent-dark);}
     #map-fullscreen-content{flex:1;position:relative;min-height:0;}
     #map-fullscreen-content #sinkomi-map-hero{height:100% !important;}
+
+    /* ══════════════════════════════════════════════════════════════════════
+       LEGIBILIDAD EN PANTALLA GRANDE
+       Los grises claros de Tailwind se leen bien en un móvil OLED a tope de
+       brillo, pero se deslavazan en un portátil con luz ambiente. Aquí se
+       oscurecen un paso, manteniendo la jerarquía: cada nivel sigue siendo
+       más claro que el siguiente, pero todos legibles.
+         zinc-300  1,3 → 3,7      zinc-400  2,3 → 4,5
+         zinc-500  4,3 → 5,5      (600 y 700 se quedan como están)
+       ══════════════════════════════════════════════════════════════════════ */
+    .text-zinc-300{ color:#7c7c85 !important; }
+    .text-zinc-400{ color:#6f6f78 !important; }
+    .text-zinc-500{ color:#616168 !important; }
+    /* Nada informativo por debajo de 10,5 px: a ese tamaño, en un portátil,
+       el texto deja de leerse y pasa a ser textura. */
+    .text-\[9px\], .text-\[9\.5px\]{ font-size:10.5px !important; }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <style>
@@ -311,7 +327,7 @@
     body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
     .brand-title{font-family:'Helvetica Neue','Helvetica',Arial,sans-serif;font-weight:900;letter-spacing:-0.09em;line-height:0.88;text-transform:uppercase;}
     .serif{font-family:'Cormorant Garamond',serif;letter-spacing:-0.03em;font-weight:600;} p.serif,.slogan-text{font-weight:700;}
-    .section-label{font-size:0.62rem;font-weight:800;letter-spacing:0.25em;text-transform:uppercase;color:#8a8a8a;}
+    .section-label{font-size:0.62rem;font-weight:800;letter-spacing:0.25em;text-transform:uppercase;color:#616168;}
     .panel{background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow-lg);border-radius:var(--r-lg);}
     .soft-panel{background:#fbfaf8;border:1px solid var(--line);box-shadow:var(--shadow-sm);border-radius:var(--r-md);}
     .dark-panel{background:#0d1a14;color:white;border:1px solid rgba(255,255,255,0.06);}
@@ -348,7 +364,7 @@
     .photo-tile img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
     .photo-tile .principal-badge{position:absolute;top:0;left:0;background:var(--accent);color:#fff;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:3px 7px 3px 6px;border-bottom-right-radius:9px;pointer-events:none;}
     .photo-tile .remove-tile-btn{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:999px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;backdrop-filter:blur(2px);}
-    .photo-tile .drag-dots{position:absolute;bottom:4px;right:4px;width:20px;height:20px;background:rgba(255,255,255,0.88);border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#777;pointer-events:none;}
+    .photo-tile .drag-dots{position:absolute;bottom:4px;right:4px;width:20px;height:20px;background:rgba(255,255,255,0.88);border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#777;pointer-events:none;}
     .photo-tile .tile-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.22);}
     .photo-tile .tile-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
     .photo-tile .tile-error{position:absolute;bottom:0;left:0;right:0;background:rgba(200,40,40,0.9);color:white;font-size:8px;font-weight:800;text-align:center;padding:3px;letter-spacing:.04em;}
@@ -387,7 +403,7 @@
     .val-step.active{opacity:1;}.val-step.done{opacity:.7;}
     .val-step-num{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:white;flex-shrink:0;}
     .val-step.active .val-step-num{background:var(--accent);color:#0d1a14;}.val-step.done .val-step-num{background:rgba(0,217,143,0.3);}
-    .val-step-label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.8);white-space:nowrap;}
+    .val-step-label{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.8);white-space:nowrap;}
     .val-step-line{flex:1;height:1px;background:rgba(255,255,255,0.12);margin:0 .5rem;}
     .val-type-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1rem;border:2px solid rgba(0,0,0,0.1);border-radius:var(--r-md);font-weight:800;font-size:13px;cursor:pointer;transition:all .2s;background:white;}
     .val-type-btn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark);}
@@ -403,7 +419,7 @@
     .sk-horizon-mark svg{width:26px;height:14px;display:block;}
     .saving-badge-floating{position:absolute;top:.9rem;left:.9rem;z-index:4;max-width:calc(100% - 1.8rem);background:rgba(13,13,13,.88);color:white;padding:.55rem .75rem;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;line-height:1.35;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);}
     .demand-badge{display:inline-flex;align-items:center;gap:.45rem;background:var(--orange-soft);color:var(--orange);border:1px solid rgba(255,90,44,.22);padding:.45rem .7rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;}
-    .featured-badge{display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.4rem .75rem;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;box-shadow:0 4px 16px rgba(255,90,44,.35);animation:glowOrange 2.6s infinite ease-in-out;}
+    .featured-badge{display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.4rem .75rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;box-shadow:0 4px 16px rgba(255,90,44,.35);animation:glowOrange 2.6s infinite ease-in-out;}
     .featured-ring{border:2px solid var(--orange)!important;animation:borderGlow 2.4s infinite ease-in-out;}
     .activity-low{color:#6b7280;}
     .activity-mid{color:#f59e0b;}
@@ -498,7 +514,7 @@
     .vh-list button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.95rem 1rem;border-bottom:1px solid rgba(0,0,0,.05);text-align:left;transition:all .2s ease;cursor:pointer;}
     .vh-list button:hover{background:var(--accent-soft);}
     .vh-list strong{font-size:14px;display:flex;align-items:center;gap:.55rem;}
-    .vh-list span{font-size:11px;color:#8a8a8a;font-weight:800;text-transform:uppercase;letter-spacing:.12em;}
+    .vh-list span{font-size:11px;color:#616168;font-weight:800;text-transform:uppercase;letter-spacing:.12em;}
     .vh-list .group-title{padding:.9rem 1rem .45rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:#9a9a9a;background:#fbfaf8;border-bottom:1px solid rgba(0,0,0,.04);}
     .flag-senyera{width:20px;height:14px;border:1px solid rgba(0,0,0,.12);background:repeating-linear-gradient(to bottom,#f5d328 0,#f5d328 2px,#d71920 2px,#d71920 4px);display:inline-block;flex:0 0 auto;vertical-align:middle;}
     .flag-mini{font-size:20px;width:28px;display:inline-flex;justify-content:center;}
@@ -507,23 +523,23 @@
     .precios-panel a{display:flex;align-items:center;gap:.7rem;padding:.95rem 1.15rem;font-size:13px;font-weight:700;color:#333;border-bottom:1px solid rgba(0,0,0,.05);transition:all .16s ease;text-decoration:none;cursor:pointer;}
     .precios-panel a:hover{background:var(--accent-soft);color:var(--accent);}
     .precios-panel a:last-child{border-bottom:none;}
-    .precios-panel .ph-mini{padding:.75rem 1.15rem;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:#9a9a9a;background:#fbfaf8;border-bottom:1px solid rgba(0,0,0,.04);}
+    .precios-panel .ph-mini{padding:.75rem 1.15rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:#9a9a9a;background:#fbfaf8;border-bottom:1px solid rgba(0,0,0,.04);}
     
     .filter-advanced-panel{background:white;border:1px solid var(--line);padding:1.5rem;margin-bottom:1.5rem;animation:fadeUp .2s ease both;}
     .filter-advanced-panel.hidden{display:none;}
     .filter-range{display:flex;align-items:center;gap:.75rem;}
     .filter-range input{flex:1;border:1px solid var(--line);padding:.6rem .9rem;font-size:13px;font-weight:600;background:white;outline:none;transition:border-color .2s ease;}
     .filter-range input:focus{border-color:var(--accent);}
-    .filter-range span{font-size:12px;color:#999;font-weight:700;flex-shrink:0;}
+    .filter-range span{font-size:12px;color:#616168;font-weight:700;flex-shrink:0;}
     .filter-pill{padding:.45rem .9rem;border:1px solid var(--line);background:white;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;transition:all .2s ease;white-space:nowrap;}
     .filter-pill:hover{background:#f1efec;}
     .filter-pill.active{background:var(--dark);color:white;border-color:var(--dark);}
     .filter-pill.active-green{background:var(--accent);color:white;border-color:var(--accent);}
-    .filter-group-label{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#9a9a9a;margin-bottom:.6rem;display:block;}
+    .filter-group-label{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#9a9a9a;margin-bottom:.6rem;display:block;}
     .filter-toggle-btn{display:flex;align-items:center;gap:.5rem;padding:.55rem 1rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;border:1px solid var(--line);background:white;color:#666;transition:all .2s ease;cursor:pointer;}
     .filter-toggle-btn:hover{background:#f1efec;}
     .filter-toggle-btn.has-filters{background:var(--dark);color:white;border-color:var(--dark);}
-    .filter-badge{background:var(--accent);color:white;border-radius:999px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;}
+    .filter-badge{background:var(--accent);color:white;border-radius:999px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;}
     .extras-grid{display:flex;flex-wrap:wrap;gap:.5rem;}
     .sort-bar{display:flex;flex-direction:row;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
     .sort-btn{padding:.55rem 1rem;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;border:1px solid var(--line);background:white;color:#666;transition:all .2s ease;cursor:pointer;display:flex;align-items:center;gap:.4rem;}
@@ -547,11 +563,11 @@
     .prop-card-specs{display:flex;gap:1.2rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:.7rem;}
     .prop-card-spec{display:flex;align-items:center;gap:.35rem;font-size:11.5px;font-weight:600;color:#555;}
     .prop-card-spec i{font-size:10px;color:var(--accent);}
-    .prop-card-extras{font-size:10px;color:#aaa;font-weight:600;letter-spacing:.03em;margin-bottom:.65rem;line-height:1.4;}
+    .prop-card-extras{font-size:10px;color:#6f6f78;font-weight:600;letter-spacing:.03em;margin-bottom:.65rem;line-height:1.4;}
     .prop-card-saving{display:flex;align-items:center;gap:.45rem;font-size:11px;font-weight:900;color:#e84c1e;letter-spacing:.02em;margin-bottom:.7rem;animation:savingPulse 2.8s ease-in-out infinite;}
     .prop-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.65rem;border-top:1px solid var(--line);}
     .prop-card-verified{font-size:10px;font-weight:800;color:var(--accent);}
-    .prop-card-response{font-size:10px;color:#bbb;font-weight:600;display:flex;align-items:center;gap:.3rem;}
+    .prop-card-response{font-size:10px;color:#7c7c85;font-weight:600;display:flex;align-items:center;gap:.3rem;}
     /* ══════════════════════════════════
        NIVEL 3 — GRATIS
     ══════════════════════════════════ */
@@ -568,7 +584,7 @@
       display:inline-flex;align-items:center;gap:.35rem;
       background:rgba(20,20,20,0.65);
       color:rgba(255,255,255,0.45);
-      font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;
+      font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;
       padding:.3rem .65rem;
       border:1px solid rgba(255,255,255,0.08);
       backdrop-filter:blur(4px);
@@ -590,7 +606,7 @@
       display:inline-flex;align-items:center;gap:.4rem;
       background:var(--accent);
       color:white;
-      font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
+      font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
       padding:.38rem .9rem .38rem .75rem;
       clip-path:polygon(0 0,100% 0,calc(100% - 10px) 50%,100% 100%,0 100%);
     }
@@ -599,7 +615,7 @@
       display:inline-flex;align-items:center;gap:.4rem;
       background:var(--orange);
       color:#0A0F1E;
-      font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
+      font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;
       padding:.38rem .9rem .38rem .75rem;
       clip-path:polygon(0 0,100% 0,calc(100% - 10px) 50%,100% 100%,0 100%);
       box-shadow:0 4px 14px rgba(232,160,32,0.4);
@@ -685,12 +701,12 @@
     .contact-coral:hover{background:#e11d48;}
     .gallery-thumb{border-radius:12px;border:2px solid rgba(0,0,0,.06);cursor:pointer;transition:all .2s ease;}
     .gallery-thumb:hover{border-color:var(--accent);}
-    .prop-card-feat-badge{position:absolute;top:.7rem;left:.7rem;z-index:10;background:#e84c1e;color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.3rem .65rem;display:flex;align-items:center;gap:.35rem;}
+    .prop-card-feat-badge{position:absolute;top:.7rem;left:.7rem;z-index:10;background:#e84c1e;color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.3rem .65rem;display:flex;align-items:center;gap:.35rem;}
     
 
 
     
-    .info-btn{width:16px;height:16px;border-radius:999px;background:var(--accent);color:white;font-size:9px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;transition:all .2s ease;line-height:1;}
+    .info-btn{width:16px;height:16px;border-radius:999px;background:var(--accent);color:white;font-size:10.5px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;transition:all .2s ease;line-height:1;}
     .info-btn:hover{background:var(--accent-dark);transform:scale(1.1);}
     .info-btn-orange{background:#e84c1e;}
     .info-btn-orange:hover{background:#c93d14;}
@@ -702,13 +718,13 @@
   
     .heart-btn{position:absolute;top:.7rem;right:.7rem;z-index:10;width:2rem;height:2rem;background:rgba(255,255,255,0.92);border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;backdrop-filter:blur(4px);}
     .heart-btn:hover{transform:scale(1.15);}
-    .heart-btn i{font-size:13px;color:#ccc;transition:all .2s ease;}
+    .heart-btn i{font-size:13px;color:#7c7c85;transition:all .2s ease;}
     .heart-btn.active i{color:#e84c1e;font-weight:900;}
     .heart-btn.active{background:rgba(255,255,255,0.98);}
     /* ── COMPARADOR ── */
     .compare-btn{position:absolute;top:.7rem;right:3.1rem;z-index:10;width:2rem;height:2rem;background:rgba(255,255,255,0.92);border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;backdrop-filter:blur(4px);}
     .compare-btn:hover{transform:scale(1.15);}
-    .compare-btn i{font-size:12px;color:#ccc;transition:all .2s ease;}
+    .compare-btn i{font-size:12px;color:#7c7c85;transition:all .2s ease;}
     .compare-btn.active{background:var(--accent);}
     .compare-btn.active i{color:#fff;}
     #compare-bar{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:1.1rem;z-index:1250;background:#0d1a14;color:#fff;border-radius:999px;padding:.6rem .7rem .6rem 1.2rem;display:flex;align-items:center;gap:1rem;box-shadow:0 14px 40px rgba(0,0,0,0.35);transition:transform .28s cubic-bezier(.2,.9,.3,1);max-width:calc(100vw - 2rem);}
@@ -728,7 +744,7 @@
     #compare-modal .cm-body{overflow:auto;padding:0;}
     .cm-table{width:100%;border-collapse:collapse;font-size:13px;}
     .cm-table th,.cm-table td{padding:.7rem .9rem;text-align:left;border-bottom:1px solid rgba(0,0,0,0.05);vertical-align:top;}
-    .cm-table th{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:#a1a1aa;width:140px;background:#faf8f5;position:sticky;left:0;}
+    .cm-table th{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:#6f6f78;width:140px;background:#faf8f5;position:sticky;left:0;}
     .cm-table td{font-weight:600;}
     .cm-table td.cm-best{color:var(--accent-dark);font-weight:900;}
     .cm-table .cm-photo img{width:100%;height:110px;object-fit:cover;border-radius:8px;}
@@ -745,11 +761,11 @@
     #sk-offer-overlay.show{display:flex;}
     #sk-offer-box{background:#fff;width:100%;max-width:26rem;border-radius:var(--r-md);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
     #sk-offer-box .so-head{padding:1.25rem 1.4rem .9rem;}
-    #sk-offer-box .so-head .so-kicker{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent-dark);}
+    #sk-offer-box .so-head .so-kicker{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent-dark);}
     #sk-offer-box .so-head h4{font-size:19px;font-weight:900;margin:.3rem 0 .2rem;line-height:1.2;}
     #sk-offer-box .so-head p{font-size:12px;color:#6b6b6b;line-height:1.55;margin:0;}
     #sk-offer-box .so-body{padding:0 1.4rem 1.1rem;}
-    #sk-offer-box .so-asking{font-size:11.5px;color:#8a8a8a;font-weight:700;margin-bottom:.5rem;}
+    #sk-offer-box .so-asking{font-size:11.5px;color:#616168;font-weight:700;margin-bottom:.5rem;}
     #sk-offer-box .so-asking b{color:var(--ink);}
     #sk-offer-input{width:100%;border:1.5px solid rgba(0,0,0,0.12);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:19px;font-weight:900;color:var(--ink);text-align:center;letter-spacing:-.01em;}
     #sk-offer-input:focus{outline:none;border-color:var(--accent);}
@@ -759,7 +775,7 @@
     #sk-offer-cancel{background:#fff;border:1.5px solid rgba(0,0,0,0.12) !important;color:#6b6b6b;}
     #sk-offer-send{background:var(--accent);color:#fff;}
     #sk-offer-send:hover{background:var(--accent-dark);}
-    #sk-offer-note{font-size:10.5px;color:#a1a1aa;line-height:1.5;padding:0 1.4rem 1.3rem;margin:0;text-align:center;}
+    #sk-offer-note{font-size:10.5px;color:#6f6f78;line-height:1.5;padding:0 1.4rem 1.3rem;margin:0;text-align:center;}
     /* ── MAPA DE LA ZONA DEL INMUEBLE (pantalla completa) ── */
     #prop-zone-overlay{position:fixed;inset:0;z-index:1450;background:#fff;display:none;flex-direction:column;}
     #prop-zone-overlay.show{display:flex;}
@@ -779,10 +795,10 @@
     .sk-map-consent p{font-size:11.5px;color:#6b6b6b;line-height:1.55;margin:0 0 .9rem;}
     .sk-map-consent button{background:var(--accent);color:#fff;border:none;border-radius:999px;padding:.6rem 1.3rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;}
     .sk-map-consent button:hover{background:var(--accent-dark);}
-    .sk-map-consent .sk-mc-link{display:block;margin:.6rem auto 0;background:none;color:#8a8a8a;text-decoration:underline;padding:0;font-size:10px;letter-spacing:.06em;}
+    .sk-map-consent .sk-mc-link{display:block;margin:.6rem auto 0;background:none;color:#616168;text-decoration:underline;padding:0;font-size:10px;letter-spacing:.06em;}
     .sk-map-consent .sk-mc-link:hover{background:none;color:var(--ink);}
     /* ── Aviso legal al contactar ── */
-    .sk-contact-legal{font-size:10.5px;line-height:1.55;color:#8a8a8a;margin-top:-.35rem;margin-bottom:1rem;}
+    .sk-contact-legal{font-size:10.5px;line-height:1.55;color:#616168;margin-top:-.35rem;margin-bottom:1rem;}
     .sk-contact-legal button{background:none;border:none;padding:0;font-size:10.5px;color:var(--accent-dark);text-decoration:underline;cursor:pointer;font-weight:700;}
     /* ── Privacidad de la dirección (formulario de publicación) ── */
     .publish-privacy-opt{display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;padding:.75rem .85rem;border-radius:var(--r-sm);background:#fff;border:1px solid rgba(0,0,0,0.07);transition:border-color .15s ease;}
@@ -797,7 +813,7 @@
     .precios-privacy .pp-body{flex:1;min-width:260px;}
     .precios-privacy h4{font-size:18px;font-weight:900;color:var(--ink);margin:0 0 .3rem;line-height:1.25;}
     .precios-privacy p{font-size:13px;color:#5b5b5b;line-height:1.6;margin:0;}
-    .precios-privacy .pp-tag{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:#fff;background:var(--accent);padding:.4rem .9rem;border-radius:999px;white-space:nowrap;}
+    .precios-privacy .pp-tag{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:#fff;background:var(--accent);padding:.4rem .9rem;border-radius:999px;white-space:nowrap;}
     #pz-typectl{position:absolute;top:.9rem;left:.9rem;z-index:5;display:flex;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
     #pz-typectl button{border:none;background:#fff;padding:.55rem 1.05rem;font-size:11.5px;font-weight:800;color:#5b5b5b;cursor:pointer;}
     #pz-typectl button.active{background:var(--accent);color:#fff;}
@@ -816,8 +832,8 @@
     .ph-headline{display:inline-flex;align-items:center;gap:.45rem;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;padding:.35rem .75rem;border-radius:999px;width:fit-content;}
     .ph-headline.down{background:rgba(0,168,120,0.12);color:var(--accent-dark);}
     .ph-headline.up{background:rgba(232,76,30,0.10);color:#c93d13;}
-    .ph-headline.flat{background:rgba(0,0,0,0.045);color:#8a8a8a;}
-    .ph-sub{font-size:11px;color:#a1a1aa;margin-top:.45rem;line-height:1.5;}
+    .ph-headline.flat{background:rgba(0,0,0,0.045);color:#616168;}
+    .ph-sub{font-size:11px;color:#6f6f78;margin-top:.45rem;line-height:1.5;}
     .ph-list{margin-top:.6rem;display:none;flex-direction:column;gap:.3rem;}
     .ph-list.show{display:flex;}
     .ph-item{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#6b6b6b;}
@@ -947,7 +963,7 @@
         <button onclick="openChatsList()" class="hidden md:flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-600 hover:text-[var(--accent)] transition-colors" style="position:relative;">
           <span style="position:relative;display:inline-block;">
             <i class="fa-regular fa-comment-dots text-lg"></i>
-            <span id="chat-unread-badge" style="display:none;position:absolute;top:-6px;right:-9px;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px white;"></span>
+            <span id="chat-unread-badge" style="display:none;position:absolute;top:-6px;right:-9px;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:10.5px;font-weight:900;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px white;"></span>
           </span>
           <span class="i18n-auto text-[9.5px] font-black uppercase tracking-[0.08em]">Chat</span>
         </button>
@@ -965,7 +981,7 @@
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-house-laptop w-4 text-[var(--accent)]"></i> Tus anuncios</button>
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('account');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-bookmark w-4 text-[var(--accent)]"></i> Búsquedas guardadas</button>
               <button onclick="closeAllDropdowns();openUserPanel();switchUserTab('favs');" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-heart w-4 text-[var(--accent)]"></i> Favoritos</button>
-              <button onclick="closeAllDropdowns();openChatsList();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-comment-dots w-4 text-[var(--accent)]"></i> Chat <span id="chat-unread-badge-menu" style="display:none;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:9px;font-weight:900;align-items:center;justify-content:center;line-height:1;"></span></button>
+              <button onclick="closeAllDropdowns();openChatsList();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-comment-dots w-4 text-[var(--accent)]"></i> Chat <span id="chat-unread-badge-menu" style="display:none;min-width:16px;height:16px;padding:0 3px;background:#e8482c;color:white;border-radius:999px;font-size:10.5px;font-weight:900;align-items:center;justify-content:center;line-height:1;"></span></button>
               <div class="border-t border-black/6 mt-2 pt-2">
                 <button onclick="closeAllDropdowns();logoutSinkomi();" class="w-full text-left px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"><i class="fa-solid fa-right-from-bracket w-4"></i> Cerrar sesión</button>
               </div>
@@ -1131,7 +1147,7 @@
               Exclusivo · Propietario Verificado
             </span>
             <span style="display:inline-flex;align-items:center;gap:.45rem;background:var(--orange-soft);border:1px solid rgba(255,159,10,0.25);padding:.32rem .8rem;border-radius:999px;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#b9791a;">
-              <i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px;"></i>
+              <i class="fa-solid fa-wand-magic-sparkles" style="font-size:10.5px;"></i>
               Con IA · 5 usos gratis
             </span>
           </div>
@@ -1143,11 +1159,11 @@
           </p>
           <div class="flex flex-col gap-2 mb-5">
             <div class="flex items-start gap-2.5">
-              <span style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
+              <span style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
               <p class="i18n-auto text-sm text-zinc-600">🛋️ <b>Amuebla tu piso</b> — Nadie compra una habitación vacía. Muéstrala habitada en segundos.</p>
             </div>
             <div class="flex items-start gap-2.5">
-              <span style="width:20px;height:20px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
+              <span style="width:20px;height:20px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;font-weight:900;flex-shrink:0;">✓</span>
               <p class="i18n-auto text-sm text-zinc-600">🏚️ <b>Visualiza la reforma</b> — Tu casa de campo tiene potencial. Enséñalo antes de la visita.</p>
             </div>
           </div>
@@ -1241,7 +1257,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,0.06);">
             <div style="display:flex;align-items:center;gap:.5rem;">
               <div style="width:7px;height:7px;border-radius:999px;background:var(--accent);animation:pulseSoft 1.5s infinite;"></div>
-              <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,0.5);" class="i18n-auto">Chat P2P · Traducción activa</span>
+              <span style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,0.5);" class="i18n-auto">Chat P2P · Traducción activa</span>
             </div>
             <span id="lang-indicator" style="font-size:10px;font-weight:900;color:var(--accent);transition:all .35s ease;background:rgba(0,168,120,0.12);padding:.22rem .6rem;border:1px solid rgba(0,168,120,0.25);" class="i18n-auto">🇩🇪 Alemán</span>
           </div>
@@ -1349,7 +1365,7 @@
       <div>
         <div style="display:inline-flex;align-items:center;gap:.6rem;background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.3);padding:.4rem 1rem;margin-bottom:1.5rem;">
           <span style="width:7px;height:7px;border-radius:999px;background:var(--orange);animation:pulseSoft 2s infinite;display:inline-block;"></span>
-          <span style="font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.22em;color:var(--orange);" class="i18n-auto">Oferta de lanzamiento · Plazas limitadas</span>
+          <span style="font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.22em;color:var(--orange);" class="i18n-auto">Oferta de lanzamiento · Plazas limitadas</span>
         </div>
 
         <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.5rem);font-weight:700;font-style:italic;color:white;line-height:1.05;margin-bottom:1rem;">
@@ -1365,19 +1381,19 @@
         <!-- Beneficios -->
         <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem;">
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Verificación</span> <strong class="i18n-auto" style="color:white;">gratuita 6 meses</strong> — <span class="i18n-auto">valor</span> 53,94€</span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Badge de</span> <strong class="i18n-auto" style="color:white;">propietario verificado</strong> <span class="i18n-auto">visible en tu anuncio</span></span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Prioridad absoluta de</span> <strong class="i18n-auto" style="color:white;">visibilidad</strong> <span class="i18n-auto">en toda la isla</span></span>
           </div>
           <div style="display:flex;align-items:center;gap:.75rem;font-size:13px;color:rgba(255,255,255,0.8);">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;">✓</span>
             <span><span class="i18n-auto">Chat directo con compradores</span> <strong class="i18n-auto" style="color:white;">desde el primer día</strong></span>
           </div>
         </div>
@@ -2023,7 +2039,7 @@
               <p class="text-xs text-white/50">Valoración orientativa instantánea · Baleares 2026 · Informe PDF gratuito</p>
             </div>
             <div style="background:rgba(0,217,143,0.12);border:1px solid rgba(0,217,143,0.25);padding:.5rem 1rem;border-radius:999px;">
-              <span style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);">Gratuito · Sin registro</span>
+              <span style="font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);">Gratuito · Sin registro</span>
             </div>
           </div>
           <!-- Steps -->
@@ -2320,15 +2336,15 @@
         <h3 class="i18n-auto text-2xl font-black text-white leading-tight mb-4">Tú decides quién entra en tu inmueble</h3>
         <div class="space-y-4 text-white/70 text-sm leading-relaxed">
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Hablas directamente con los inquilinos interesados desde el primer mensaje, sin intermediarios que filtren o distorsionen la información.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Solicita las garantías y la documentación que consideres oportuna (contrato, nóminas) de forma directa a través del chat privado para tu total tranquilidad.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Publicas tu inmueble gratis y gestionas las visitas a tu ritmo. Tu inmueble, tus reglas.</p>
           </div>
         </div>
@@ -2341,15 +2357,15 @@
         <h3 class="i18n-auto text-2xl font-black text-white leading-tight mb-4">Genera confianza desde el primer mensaje</h3>
         <div class="space-y-4 text-white/70 text-sm leading-relaxed">
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Preséntate explicando tu situación laboral y personal directamente al dueño del inmueble. Sin agencias, sin esperas y sin comisiones de gestión.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Comparte tus documentos de forma segura adjuntándolos directamente en el chat privado cuando el propietario te los solicite para avanzar con el alquiler.</p>
           </div>
           <div class="flex gap-3">
-            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
+            <span style="width:1.4rem;height:1.4rem;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;flex-shrink:0;border-radius:50%;margin-top:2px;">✓</span>
             <p class="i18n-auto">Trato directo de persona a persona. Todo claro, legal y gestionado directamente entre vosotros.</p>
           </div>
         </div>
@@ -2569,7 +2585,7 @@
 
       <!-- BÁSICO -->
       <div class="soft-panel p-8 flex flex-col" style="border:1.5px solid rgba(0,0,0,0.08);">
-        <div class="i18n-auto section-label mb-4" style="color:#aaa;">Para empezar</div>
+        <div class="i18n-auto section-label mb-4" style="color:#6f6f78;">Para empezar</div>
         <h3 class="i18n-auto text-2xl font-black mb-2">Básico</h3>
         <p class="i18n-auto text-sm text-zinc-500 mb-6 leading-relaxed">Publicar en SINKOMI es gratis. Tu inmueble aparece en el catálogo y cualquier interesado puede contactarte por el chat.</p>
         <div class="flex items-end gap-2 mb-1">
@@ -2754,7 +2770,7 @@
       <div style="padding:clamp(1.75rem,5vw,3.5rem);max-width:640px;">
         <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);padding:.4rem .9rem;border-radius:999px;margin-bottom:1.1rem;">
           <span style="width:6px;height:6px;border-radius:999px;background:var(--accent);display:inline-block;"></span>
-          <span class="i18n-auto" style="font-size:9.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#fff;">Mallorca · Menorca · Ibiza · Formentera</span>
+          <span class="i18n-auto" style="font-size:10.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#fff;">Mallorca · Menorca · Ibiza · Formentera</span>
         </div>
         <h3 style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,4.5vw,3.1rem);font-style:italic;font-weight:600;color:#fff;line-height:1.15;margin-bottom:1rem;letter-spacing:-0.01em;" class="i18n-auto">
           Aquí las llaves<br>las tiene su dueño.
@@ -2890,12 +2906,12 @@
 <div id="add-to-list-modal" class="hidden fixed inset-0 bg-black/70 z-[160] flex items-center justify-center" style="padding:16px;">
   <div class="bg-white shadow-2xl" style="width:100%;max-width:400px;max-height:85vh;overflow-y:auto;">
     <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Añadir a una lista</span>
-      <button onclick="closeAddToListModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
+      <span style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#616168;">Añadir a una lista</span>
+      <button onclick="closeAddToListModal()" style="font-size:28px;color:#6f6f78;line-height:1;background:none;border:none;cursor:pointer;">×</button>
     </div>
     <div style="padding:20px 24px;">
       <div id="add-to-list-items" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-        <div style="font-size:13px;color:#a1a1aa;">Cargando tus listas…</div>
+        <div style="font-size:13px;color:#6f6f78;">Cargando tus listas…</div>
       </div>
       <div style="display:flex;gap:8px;">
         <input id="new-list-name-input" type="text" placeholder="Nombre de la nueva lista..." style="flex:1;border:1px solid rgba(0,0,0,0.1);padding:10px 14px;font-size:13px;">
@@ -2907,12 +2923,12 @@
 <div id="publish-guide-modal" class="hidden fixed inset-0 bg-black/70 z-[150] flex items-center justify-center" style="padding:16px;">
   <div class="bg-white shadow-2xl" style="width:100%;max-width:720px;max-height:92vh;overflow-y:auto;">
     <div style="padding:24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
-      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Guía · SINKOMI</span>
-      <button onclick="closePublishGuideModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
+      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#616168;">Guía · SINKOMI</span>
+      <button onclick="closePublishGuideModal()" style="font-size:28px;color:#6f6f78;line-height:1;background:none;border:none;cursor:pointer;">×</button>
     </div>
     <div style="padding:32px 28px;">
       <h2 class="i18n-auto" style="font-size:26px;font-weight:800;color:#111;line-height:1.3;margin-bottom:8px;">¿Te lías al publicar? Aquí te lo explicamos paso a paso</h2>
-      <p class="i18n-auto" style="font-size:14px;color:#71717a;line-height:1.6;margin-bottom:28px;">No hace falta que seas fotógrafo ni que sepas de tecnología. Sigue estos 5 pasos y tu anuncio quedará tan bien como el de cualquier profesional.</p>
+      <p class="i18n-auto" style="font-size:14px;color:#616168;line-height:1.6;margin-bottom:28px;">No hace falta que seas fotógrafo ni que sepas de tecnología. Sigue estos 5 pasos y tu anuncio quedará tan bien como el de cualquier profesional.</p>
 
       <div style="display:flex;flex-direction:column;gap:20px;">
 
@@ -2966,11 +2982,11 @@
 <div id="roommate-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[140] flex items-center justify-center px-4 py-4">
   <div class="bg-white shadow-2xl" style="width:100%;max-width:420px;max-height:92vh;overflow-y:auto;border-radius:var(--r-md);">
     <div style="padding:20px 24px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;">
-      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#71717a;">Busco piso compartido</span>
-      <button onclick="closeCreateRoommateProfileModal()" style="font-size:28px;color:#a1a1aa;line-height:1;background:none;border:none;cursor:pointer;">×</button>
+      <span class="i18n-auto" style="font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#616168;">Busco piso compartido</span>
+      <button onclick="closeCreateRoommateProfileModal()" style="font-size:28px;color:#6f6f78;line-height:1;background:none;border:none;cursor:pointer;">×</button>
     </div>
     <div style="padding:24px;display:flex;flex-direction:column;gap:22px;">
-      <p style="font-size:12px;color:#71717a;line-height:1.6;">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
+      <p style="font-size:12px;color:#616168;line-height:1.6;">Tu perfil es gratis y lo verá cualquiera que tenga una habitación libre. Puedes desactivarlo cuando quieras desde "Tus anuncios".</p>
       <div>
         <label style="font-size:14px;font-weight:500;margin-bottom:10px;display:block;">Foto de perfil (opcional, pero ayuda mucho)</label>
         <div style="display:flex;align-items:center;gap:16px;">
@@ -3419,7 +3435,7 @@
         <div class="px-6 py-3 flex items-center gap-3 flex-wrap" style="background:#0d1a14;border-bottom:1px solid rgba(255,255,255,0.06);">
           <div class="flex items-center gap-2 shrink-0">
             <span style="width:7px;height:7px;border-radius:999px;background:#5ee6b0;animation:pulseSoft 1.6s infinite;display:inline-block;box-shadow:0 0 8px rgba(94,230,176,0.7);"></span>
-            <span style="color:#5ee6b0;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;" class="i18n-auto">Traducción en vivo</span>
+            <span style="color:#5ee6b0;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;" class="i18n-auto">Traducción en vivo</span>
           </div>
           <div class="flex items-center gap-2 flex-wrap ml-auto">
             <select id="chat-my-lang" onchange="onChatLangChange()" class="chat-lang-pill"><option value="Español">🇪🇸 Español</option><option value="Catalán">Catalán</option><option value="Alemán">🇩🇪 Alemán</option><option value="Inglés">🇬🇧 Inglés</option><option value="Francés">🇫🇷 Francés</option><option value="Sueco">🇸🇪 Sueco</option><option value="Italiano">🇮🇹 Italiano</option><option value="Árabe">🇦🇪 Árabe</option><option value="Ruso">🇷🇺 Ruso</option></select>
@@ -4811,16 +4827,16 @@ function buildPropertyCardEl(prop){
       _facts.push(`<span class="card-ticker-item featured"><i class="fa-solid fa-key"></i> ${tr('Trato directo con el propietario')}</span>`);
       const tickerContent = _facts.join('');
       topBadge = `<div class="card-featured-ribbon"><div class="card-ticker-track">${tickerContent}${tickerContent}</div></div>`;
-      featuredCorner = `<div class="card-featured-badge"><i class="fa-solid fa-fire" style="font-size:9px;"></i> ${tr('Verificado + Destacado')}</div>`;
+      featuredCorner = `<div class="card-featured-badge"><i class="fa-solid fa-fire" style="font-size:10.5px;"></i> ${tr('Verificado + Destacado')}</div>`;
     } else if(tier===2){
-      topBadge = `<div class="card-verified-badge"><i class="fa-solid fa-shield-check" style="font-size:9px;"></i> ${tr('Propietario verificado')}</div>`;
+      topBadge = `<div class="card-verified-badge"><i class="fa-solid fa-shield-check" style="font-size:10.5px;"></i> ${tr('Propietario verificado')}</div>`;
     } else {
-      topBadge = `<div class="card-unverified-badge"><i class="fa-solid fa-circle-question" style="font-size:9px;"></i> ${tr('Propietario sin verificar')}</div>`;
+      topBadge = `<div class="card-unverified-badge"><i class="fa-solid fa-circle-question" style="font-size:10.5px;"></i> ${tr('Propietario sin verificar')}</div>`;
     }
 
     const verifiedFooter = isVerified
       ? `<span class="prop-card-verified" style="display:inline-flex;align-items:center;gap:.35rem;${tier===3?'color:#e8a020;':''}"><i class="fa-solid fa-shield-check" style="font-size:10px;"></i> ${tr('Verificado')}</span>`
-      : `<span style="font-size:10px;font-weight:800;color:#bbb;display:inline-flex;align-items:center;gap:.35rem;"><i class="fa-solid fa-circle-question" style="font-size:10px;"></i> ${tr('Sin verificar')}</span>`;
+      : `<span style="font-size:10px;font-weight:800;color:#7c7c85;display:inline-flex;align-items:center;gap:.35rem;"><i class="fa-solid fa-circle-question" style="font-size:10px;"></i> ${tr('Sin verificar')}</span>`;
 
     const imgTopPad = '';
 
@@ -4842,7 +4858,7 @@ function buildPropertyCardEl(prop){
         <div class="prop-card-overlay"></div>
         ${tier===3 ? topBadge : ''}
         <div class="prop-card-price-overlay" style="z-index:11;">
-          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}${prop.etv_number?` · ${escapeHtml(prop.etv_number)}`:''}</div>`:''}${prop.occupancySituation && prop.occupancySituation!=='Libre' ? `<div style="display:inline-block;background:${prop.occupancySituation==='Ocupada (okupas)'?'rgba(192,57,43,0.88)':'rgba(59,89,152,0.85)'};backdrop-filter:blur(6px);color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid ${prop.occupancySituation==='Ocupada (okupas)'?'fa-triangle-exclamation':'fa-key'}" style="font-size:8px;"></i> ${prop.occupancySituation==='Ocupada (okupas)'?tr('Ocupada'):tr('Alquilada')}</div>` : ''}
+          <div style="display:inline-block;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;border-radius:999px;">${tr(prop.type)}</div>${prop.seasonality==='Temporada'?`<div style="display:inline-block;background:rgba(232,160,32,0.85);backdrop-filter:blur(6px);color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid fa-sun" style="font-size:8px;"></i> ${tr('Temporada')}${prop.etv_number?` · ${escapeHtml(prop.etv_number)}`:''}</div>`:''}${prop.occupancySituation && prop.occupancySituation!=='Libre' ? `<div style="display:inline-block;background:${prop.occupancySituation==='Ocupada (okupas)'?'rgba(192,57,43,0.88)':'rgba(59,89,152,0.85)'};backdrop-filter:blur(6px);color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.25rem .7rem;margin-bottom:.4rem;margin-left:.35rem;border-radius:999px;"><i class="fa-solid ${prop.occupancySituation==='Ocupada (okupas)'?'fa-triangle-exclamation':'fa-key'}" style="font-size:8px;"></i> ${prop.occupancySituation==='Ocupada (okupas)'?tr('Ocupada'):tr('Alquilada')}</div>` : ''}
           <div class="prop-card-price">${formatPrice(prop)}</div>
           <div class="prop-card-location">${prop.location}</div>
         </div>
@@ -4855,13 +4871,13 @@ function buildPropertyCardEl(prop){
         ${dropHtml}
         <div class="prop-card-footer">
           ${verifiedFooter}
-          <span class="prop-card-response"><i class="fa-regular fa-clock" style="font-size:9px;color:var(--accent);"></i> ${tr('Suele responder rápido')}</span>
+          <span class="prop-card-response"><i class="fa-regular fa-clock" style="font-size:10.5px;color:var(--accent);"></i> ${tr('Suele responder rápido')}</span>
         </div>
         <div class="prop-card-actions" style="margin-top:auto;padding-top:.5rem;flex-direction:column;gap:.45rem;">
           <button onclick="openChat('${prop.id}')" class="prop-card-cta" title="Hablar con el propietario"><i class="fa-solid fa-comment-dots"></i> ${tr('Hablar con el dueño')}</button>
           <button onclick="openPropertyModal('${prop.id}')" class="prop-card-see"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;"></i> ${tr('Ver inmueble')}</button>
         </div>
-        ${tier===1?`<div style="margin-top:.6rem;padding:.5rem .6rem;background:rgba(0,0,0,0.03);border:1px dashed rgba(0,0,0,0.1);font-size:9.5px;color:#aaa;font-weight:700;text-align:center;">${tr('¿Eres el propietario?')} <button onclick="startPropertyVerification('${prop.id}')" style="color:var(--accent);font-weight:900;background:none;border:none;cursor:pointer;text-decoration:underline;">${tr('Verifica tu inmueble')}</button></div>`:''}
+        ${tier===1?`<div style="margin-top:.6rem;padding:.5rem .6rem;background:rgba(0,0,0,0.03);border:1px dashed rgba(0,0,0,0.1);font-size:10.5px;color:#6f6f78;font-weight:700;text-align:center;">${tr('¿Eres el propietario?')} <button onclick="startPropertyVerification('${prop.id}')" style="color:var(--accent);font-weight:900;background:none;border:none;cursor:pointer;text-decoration:underline;">${tr('Verifica tu inmueble')}</button></div>`:''}
       </div>`;
     return card;
 }
@@ -5073,7 +5089,7 @@ async function openPropertyModal(id){
     // BÁSICO — sin borde especial, limpio y discreto
     header.style.cssText = 'background:#F9F9F9;border-bottom:1px solid rgba(0,0,0,0.06);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;';
     container.style.cssText = 'background:white;width:100%;max-width:80rem;height:94vh;display:flex;flex-direction:column;border:1px solid rgba(0,0,0,0.08);box-shadow:0 40px 80px rgba(0,0,0,0.25);';
-    badge.style.cssText = 'display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.06);color:#999;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.3rem .75rem;flex-shrink:0;';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.06);color:#616168;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.14em;padding:.3rem .75rem;flex-shrink:0;';
     badge.innerHTML = '<i class="fa-solid fa-circle-question"></i> Sin verificar';
     document.getElementById('property-modal-title').style.color = '#0A0F1E';
     locationEl.style.color = '#64748B';
@@ -6144,7 +6160,7 @@ async function renderAddToListItems(){
   const wrap = document.getElementById('add-to-list-items');
   const { data: lists, error } = await supabase.from('custom_lists').select('id,name').eq('user_id', user.supabase_id).order('created_at');
   if(error){ wrap.innerHTML = '<div style="font-size:13px;color:#ef4444;">No se han podido cargar tus listas.</div>'; return; }
-  if(!lists || !lists.length){ wrap.innerHTML = '<div style="font-size:13px;color:#a1a1aa;">Todavía no tienes ninguna lista. Crea la primera abajo.</div>'; return; }
+  if(!lists || !lists.length){ wrap.innerHTML = '<div style="font-size:13px;color:#6f6f78;">Todavía no tienes ninguna lista. Crea la primera abajo.</div>'; return; }
 
   const { data: items } = await supabase.from('custom_list_items').select('list_id').eq('property_id', currentProperty.id).in('list_id', lists.map(l=>l.id));
   const inLists = new Set((items||[]).map(i=>i.list_id));
@@ -6607,13 +6623,13 @@ async function renderMessageBubbleInner(msg){
   if(isMine){
     el.className = 'flex flex-col items-end message-enter gap-1.5';
     const needsTranslation = !!chatTheirLang;
-    el.innerHTML = `<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm">${fileHtml}${textHtml}<div class="message-status">${timeStr} · ${msg.read_at?'✓✓ Leído':'✓ Enviado'}</div></div>${needsTranslation && msg.content ? `<div id="${translId}" style="background:#0d1a14;border:1px solid rgba(0,168,120,0.35);" class="px-3 py-2 max-w-[85%] flex items-center gap-2"><span class="text-sm">🌐</span><span style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traduciendo…</span></div>` : ''}`;
+    el.innerHTML = `<div class="chat-bubble bg-[var(--accent)] text-white p-4 shadow-sm">${fileHtml}${textHtml}<div class="message-status">${timeStr} · ${msg.read_at?'✓✓ Leído':'✓ Enviado'}</div></div>${needsTranslation && msg.content ? `<div id="${translId}" style="background:#0d1a14;border:1px solid rgba(0,168,120,0.35);" class="px-3 py-2 max-w-[85%] flex items-center gap-2"><span class="text-sm">🌐</span><span style="color:#5ee6b0;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traduciendo…</span></div>` : ''}`;
     m.appendChild(el);
     if(needsTranslation && msg.content){
       const translated = await translateText(msg.content, chatTheirLang);
       const box = document.getElementById(translId);
       if(box) box.innerHTML = translated
-        ? `<span class="text-sm shrink-0">🌐</span><div class="min-w-0"><div style="color:#5ee6b0;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traducido a ${chatTheirLang}</div><div style="color:#fff;font-size:13px;">${escapeHtml(translated)}</div></div>`
+        ? `<span class="text-sm shrink-0">🌐</span><div class="min-w-0"><div style="color:#5ee6b0;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;">Traducido a ${chatTheirLang}</div><div style="color:#fff;font-size:13px;">${escapeHtml(translated)}</div></div>`
         : `<span class="text-sm">⚠️</span><span style="color:#f0b84a;font-size:11px;">No se pudo traducir</span>`;
     }
   } else {
@@ -6864,7 +6880,7 @@ async function loadChatThreads(activePropertyId, activeRoommateId){
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-2">
             <div class="font-bold text-sm truncate">${escapeHtml(otherName)}</div>
-            ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
+            ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:10.5px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
           </div>
           <div class="text-xs text-zinc-700 truncate mt-1">${preview}</div>
           <div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">Busca piso compartido</div>
@@ -6880,7 +6896,7 @@ async function loadChatThreads(activePropertyId, activeRoommateId){
       <div class="min-w-0 flex-1">
         <div class="flex items-center justify-between gap-2">
           <div class="font-bold text-sm truncate">${escapeHtml(otherName)}</div>
-          ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
+          ${t.unread>0 ? `<span style="background:var(--accent);color:white;font-size:10.5px;font-weight:900;padding:2px 7px;border-radius:999px;">${t.unread}</span>` : ''}
         </div>
         <div class="text-xs text-zinc-700 truncate mt-1">${preview}</div>
         <div class="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--accent)] mt-2">${formatPrice({price:prop.price,type:prop.type})}</div>
@@ -7087,14 +7103,14 @@ function injectMapCSS(){
   .sk-house-card .sk-hc-fav{ font-size:12px; color:#e84c1e; }
   .sk-house-card .sk-hc-title{ font-size:11.5px; font-weight:700; color:#4b4b4b; margin-top:1px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .sk-house-card .sk-hc-specs{ font-size:10.5px; font-weight:700; color:#8a8a8a; margin-top:3px; }
+  .sk-house-card .sk-hc-specs{ font-size:10.5px; font-weight:700; color:#616168; margin-top:3px; }
   .sk-house-card .sk-hc-loc{ display:flex; gap:5px; align-items:flex-start; margin-top:7px;
-    font-size:10px; line-height:1.4; color:#8a8a8a; font-weight:600; }
+    font-size:10px; line-height:1.4; color:#616168; font-weight:600; }
   .sk-house-card .sk-hc-loc i{ margin-top:1px; color:#00a878; }
   .sk-house-card .sk-hc-loc.aprox i{ color:#c98a00; }
   .sk-house-card .sk-hc-loc.aprox span{ color:#a8791a; }
   .sk-house-card .sk-hc-cta{ margin-top:9px; padding:6px 0; text-align:center; border-radius:6px;
-    background:#0d1a14; color:#00d98f; font-size:9.5px; font-weight:900;
+    background:#0d1a14; color:#00d98f; font-size:10.5px; font-weight:900;
     text-transform:uppercase; letter-spacing:.12em; }
   @media (max-width:640px){ .sk-house-card{ display:none; } }
 
@@ -7254,7 +7270,7 @@ function createPricePinEl(prop, isSelected){
   const el = document.createElement('div');
   const isFav = isPropFavourite(prop);
   el.className = 'sk-price-pin' + (isSelected ? ' selected' : '') + (isFav ? ' fav' : '');
-  el.innerHTML = '<i class="fa-solid ' + (isFav ? 'fa-heart' : 'fa-house') + '" style="font-size:9px;opacity:.75;"></i>' + formatPriceShort(prop.price);
+  el.innerHTML = '<i class="fa-solid ' + (isFav ? 'fa-heart' : 'fa-house') + '" style="font-size:10.5px;opacity:.75;"></i>' + formatPriceShort(prop.price);
   return el;
 }
 
@@ -8873,7 +8889,7 @@ function calcValuationPremium(){
       yieldResEl.classList.remove('hidden');
       const yieldColor = isGood ? 'var(--accent)' : 'var(--orange)';
       const yieldMsg = isGood ? '✦ Por encima de la media de Baleares (4,5%)' : 'Por debajo de la media de Baleares (4,5%)';
-      yieldResEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px;">Como inversión — rentabilidad bruta estimada</div>'
+      yieldResEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px;">Como inversión — rentabilidad bruta estimada</div>'
         + '<div style="display:flex;align-items:center;gap:12px;">'
         + '<div style="font-size:24px;font-weight:900;color:' + yieldColor + ';letter-spacing:-0.04em;">' + grossYield.toFixed(1) + '%</div>'
         + '<div style="font-size:11px;color:rgba(255,255,255,0.65);">' + monthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €/mes estimado<br>' + yieldMsg + '</div>'
@@ -8934,7 +8950,7 @@ function downloadValuationPDF(){
     .range-val .label{font-size:8px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px;}
     .range-val .amount{font-size:14px;font-weight:900;color:rgba(255,255,255,0.7);}
     .range-val.main .amount{font-size:26px;color:#00d98f;}
-    .section-title{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#999;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #eee;}
+    .section-title{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:#616168;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #eee;}
     .factors{margin-bottom:24px;}
     .factor-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;}
     .factor-row.pos{background:#f0fdf9;} .factor-row.neg{background:#fff5f5;} .factor-row.neu{background:#f5f5f5;}
@@ -8942,12 +8958,12 @@ function downloadValuationPDF(){
     .factor-val{font-weight:900;} .factor-val.pos{color:#00a878;} .factor-val.neg{color:#c0392b;}
     .data-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;}
     .data-item{background:#f8f8f8;padding:12px;border-radius:8px;}
-    .data-item .label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+    .data-item .label{font-size:10.5px;color:#616168;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
     .data-item .value{font-size:14px;font-weight:900;color:#0e0e0e;}
-    .disclaimer{background:#f5f5f3;border-radius:8px;padding:14px;font-size:9.5px;color:#666;line-height:1.6;margin-bottom:20px;}
+    .disclaimer{background:#f5f5f3;border-radius:8px;padding:14px;font-size:10.5px;color:#666;line-height:1.6;margin-bottom:20px;}
     .disclaimer strong{color:#333;}
     .footer{position:absolute;bottom:14mm;left:18mm;right:18mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eee;padding-top:10px;}
-    .footer-text{font-size:8.5px;color:#aaa;} .footer-url{font-size:9px;font-weight:900;color:#00d98f;}
+    .footer-text{font-size:8.5px;color:#6f6f78;} .footer-url{font-size:10.5px;font-weight:900;color:#00d98f;}
     @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact;}}
   </style></head><body>
   <div class="page">
@@ -8978,7 +8994,7 @@ function downloadValuationPDF(){
     ${r.yieldPct!=null?`<div style="background:linear-gradient(135deg,#0d1a14,#1a2e1a);border-radius:10px;padding:18px 20px;margin-bottom:20px;color:#fff;">
       <div style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:rgba(0,217,143,0.7);margin-bottom:8px;">Análisis de rentabilidad como inversión</div>
       <div style="display:flex;align-items:center;gap:20px;">
-        <div><div style="font-size:28px;font-weight:900;color:${r.yieldPct>=4.5?`#00d98f`:`#ff9f0a`};">${r.yieldPct.toFixed(1)}%</div><div style="font-size:9px;color:rgba(255,255,255,0.5);">Rentabilidad bruta anual estimada</div></div>
+        <div><div style="font-size:28px;font-weight:900;color:${r.yieldPct>=4.5?`#00d98f`:`#ff9f0a`};">${r.yieldPct.toFixed(1)}%</div><div style="font-size:10.5px;color:rgba(255,255,255,0.5);">Rentabilidad bruta anual estimada</div></div>
         <div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.6;">Alquiler estimado: ${r.yieldMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0})} €/mes<br>Ingresos anuales: ${(r.yieldMonthlyRent*12).toLocaleString('es-ES',{maximumFractionDigits:0})} €/año<br>Media Baleares: 4,5% · ${r.yieldPct>=4.5?'✦ Por encima de la media':'Por debajo de la media'}</div>
       </div>
     </div>`:''}
@@ -9316,7 +9332,7 @@ function handlePublishVideo(input){
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div style="width:24px;height:24px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>
         <button onclick="removePublishVideo()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.75);color:white;border:none;padding:4px 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;letter-spacing:.1em;">✕ Quitar</button>
       </div>
-      <div style="font-size:10px;color:#aaa;font-weight:600;margin-top:4px;">Subiendo vídeo… · ${(file.size/1024/1024).toFixed(1)}MB</div>
+      <div style="font-size:10px;color:#6f6f78;font-weight:600;margin-top:4px;">Subiendo vídeo… · ${(file.size/1024/1024).toFixed(1)}MB</div>
     `;
   }
   uploadPropertyVideo(file, user.supabase_id);
@@ -9543,15 +9559,15 @@ function openUserPanel(){
             <div>
               <div style="font-weight:900;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.title}</div>
               <div style="font-size:11px;color:#00a878;font-weight:800;margin-top:2px;">${formatPrice(p)}</div>
-              <div style="font-size:10px;color:#999;font-weight:600;">${p.location} · ${p.category}</div>
+              <div style="font-size:10px;color:#616168;font-weight:600;">${p.location} · ${p.category}</div>
             </div>
             <div style="display:flex;gap:.4rem;margin-top:.4rem;">
               <button onclick="openPropertyModal('${p.id}');closeUserPanel();"
-                style="flex:1;padding:.3rem .5rem;background:#0d1a14;color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border:none;cursor:pointer;">
+                style="flex:1;padding:.3rem .5rem;background:#0d1a14;color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border:none;cursor:pointer;">
                 Ver ficha
               </button>
               <button onclick="openChat('${p.id}');closeUserPanel();"
-                style="flex:1;padding:.3rem .5rem;background:#00a878;color:white;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border:none;cursor:pointer;">
+                style="flex:1;padding:.3rem .5rem;background:#00a878;color:white;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border:none;cursor:pointer;">
                 💬 Chatear
               </button>
             </div>
@@ -9560,7 +9576,7 @@ function openUserPanel(){
       `).join('');
     } else {
       favsEl.innerHTML = `
-        <div style="text-align:center;padding:1.5rem;color:#aaa;">
+        <div style="text-align:center;padding:1.5rem;color:#6f6f78;">
           <div style="font-size:2rem;margin-bottom:.5rem;">❤️</div>
           <div style="font-size:13px;font-weight:600;">Aún no tienes favoritos guardados.</div>
           <div style="font-size:11px;margin-top:.3rem;">Pulsa el corazón en cualquier tarjeta para guardarla aquí.</div>
@@ -9574,8 +9590,8 @@ function openUserPanel(){
   if(role==='propietario'){
     const userPlan = user.plan || 'basico';
     const planBadge = userPlan === 'premium'
-      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-fire"></i> Destacado activo</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.04);color:#aaa;border:1px solid rgba(0,0,0,0.08);padding:.3rem .7rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-circle-question"></i> Sin destacar</span>`;
+      ? `<span style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,#ff5a2c,#ff7c4d);color:white;padding:.3rem .7rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-fire"></i> Destacado activo</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,0,0,0.04);color:#6f6f78;border:1px solid rgba(0,0,0,0.08);padding:.3rem .7rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;"><i class="fa-solid fa-circle-question"></i> Sin destacar</span>`;
 
     roleSection.innerHTML = `
       <div class="panel p-5">
@@ -9737,14 +9753,14 @@ function openPlanSelector(){
                 onmouseover="this.style.background='rgba(232,160,32,0.06)'" onmouseout="this.style.background='white'">
                 <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;">7 días</div>
                 <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">12,99€</div>
-                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1,86€/día</div>
+                <div style="font-size:10.5px;color:#6f6f78;margin-top:.1rem;">≈1,86€/día</div>
               </div>
               <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',15);"
                 style="flex:1;border:1.5px solid rgba(232,160,32,0.35);padding:.7rem .4rem;text-align:center;cursor:pointer;transition:background .15s;"
                 onmouseover="this.style.background='rgba(232,160,32,0.06)'" onmouseout="this.style.background='white'">
                 <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;">15 días</div>
                 <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">19,99€</div>
-                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1,33€/día</div>
+                <div style="font-size:10.5px;color:#6f6f78;margin-top:.1rem;">≈1,33€/día</div>
               </div>
               <div onclick="document.getElementById('plan-selector-modal').style.display='none';openVerificationEntryPoint('destacado',30);"
                 style="flex:1;border:1.5px solid #e8a020;background:rgba(232,160,32,0.05);padding:.7rem .4rem;text-align:center;cursor:pointer;transition:background .15s;position:relative;"
@@ -9752,13 +9768,13 @@ function openPlanSelector(){
                 <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#e8a020;color:white;font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;padding:.15rem .4rem;white-space:nowrap;">Más popular</div>
                 <div style="font-size:10px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem;">30 días</div>
                 <div style="font-weight:900;font-size:15px;color:#e8a020;margin-top:.2rem;">29,99€</div>
-                <div style="font-size:9px;color:#aaa;margin-top:.1rem;">≈1€/día</div>
+                <div style="font-size:10.5px;color:#6f6f78;margin-top:.1rem;">≈1€/día</div>
               </div>
             </div>
           </div>
 
         </div>
-        <div style="padding:.75rem 1.5rem 1.25rem;text-align:center;font-size:10px;color:#bbb;font-weight:600;">Sin contratos de permanencia · Cancelas el día que cierras la operación</div>
+        <div style="padding:.75rem 1.5rem 1.25rem;text-align:center;font-size:10px;color:#7c7c85;font-weight:600;">Sin contratos de permanencia · Cancelas el día que cierras la operación</div>
       </div>`;
     document.body.appendChild(modal);
   } else {
@@ -9861,7 +9877,7 @@ function openVerificationPropertyPicker(props, plan, days){
     <div style="background:white;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,0.4);">
       <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-weight:900;font-size:14px;">¿Qué inmueble quieres verificar?</div>
-        <button onclick="closeVerificationPropertyPicker()" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#999;">×</button>
+        <button onclick="closeVerificationPropertyPicker()" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#616168;">×</button>
       </div>
       <div style="padding:.75rem;">
         ${props.map(p => `
@@ -10308,7 +10324,7 @@ async function submitPublishForm(){
       </div>
       <div style="padding:1.5rem 2rem 2rem;">
         <div style="background:var(--accent-soft);border:1px solid rgba(0,217,143,0.2);border-radius:var(--r-md);padding:1rem 1.1rem;margin-bottom:1.25rem;">
-          <div style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent-dark);margin-bottom:.35rem;">💡 ¿Quieres más visibilidad?</div>
+          <div style="font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent-dark);margin-bottom:.35rem;">💡 ¿Quieres más visibilidad?</div>
           <p style="font-size:12px;color:#333;margin:0;line-height:1.6;">Verifica tu inmueble por <b>8,99€</b> y aparece destacado con el sello de propietario verificado — genera hasta 3x más contactos.</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:.6rem;">
@@ -10465,11 +10481,11 @@ function verificationSlotHtml(key, label, url){
     <div style="position:relative;">
       <div onclick="document.getElementById('verif-file-${key}').click()" style="display:block;aspect-ratio:1;border:1.5px dashed rgba(0,0,0,0.15);cursor:pointer;overflow:hidden;position:relative;background:${url?'#fff':'#fafafa'};">
         <input type="file" id="verif-file-${key}" accept="image/*,.pdf" style="display:none;" onchange="handleVerificationUpload(this,'${key}')">
-        ${url ? `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">` : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#bbb;gap:.3rem;"><span style="font-size:20px;">+</span></div>`}
+        ${url ? `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">` : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#7c7c85;gap:.3rem;"><span style="font-size:20px;">+</span></div>`}
         ${uploading ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);"><div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.45);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div></div>` : ''}
-        ${url && !uploading ? `<div style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--accent);color:white;border-radius:999px;font-size:9px;display:flex;align-items:center;justify-content:center;">✓</div>` : ''}
+        ${url && !uploading ? `<div style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--accent);color:white;border-radius:999px;font-size:10.5px;display:flex;align-items:center;justify-content:center;">✓</div>` : ''}
       </div>
-      <div style="font-size:9px;text-align:center;color:#888;font-weight:700;margin-top:.3rem;text-transform:uppercase;letter-spacing:.04em;">${label}</div>
+      <div style="font-size:10.5px;text-align:center;color:#888;font-weight:700;margin-top:.3rem;text-transform:uppercase;letter-spacing:.04em;">${label}</div>
     </div>`;
 }
 
@@ -10604,8 +10620,8 @@ function renderMyListingsList(rows, verificationMap){
   container.innerHTML = rows.map(p => {
     const isActive = p.active !== false;
     const statusPill = isActive
-      ? `<span style="background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Activo</span>`
-      : `<span style="background:rgba(0,0,0,0.05);color:#888;border:1px solid rgba(0,0,0,0.1);padding:.25rem .6rem;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Pausado</span>`;
+      ? `<span style="background:rgba(0,168,120,0.1);color:#00a878;border:1px solid rgba(0,168,120,0.3);padding:.25rem .6rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Activo</span>`
+      : `<span style="background:rgba(0,0,0,0.05);color:#888;border:1px solid rgba(0,0,0,0.1);padding:.25rem .6rem;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;">Pausado</span>`;
     const img = (p.images && p.images[0]) ? p.images[0] : '';
     const soldLabel = p.type==='Alquiler' ? 'Alquilado' : 'Vendido';
     const currentStatus = p.status || 'Disponible';
@@ -10624,7 +10640,7 @@ function renderMyListingsList(rows, verificationMap){
     } else if(verif && verif.status === 'pendiente'){
       verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#b9791a;font-size:10px;font-weight:800;"><i class="fa-solid fa-hourglass-half"></i> Verificación pendiente de revisión</span>`;
     } else if(verif && verif.status === 'rechazado'){
-      verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#c0392b;font-size:10px;font-weight:800;" title="${escapeHtml(verif.admin_note||'')}"><i class="fa-solid fa-circle-exclamation"></i> Rechazada</span> <button onclick="startPropertyVerification('${p.id}')" style="font-size:9px;font-weight:800;text-transform:uppercase;color:#00a878;text-decoration:underline;background:none;border:none;cursor:pointer;">Volver a intentar</button>`;
+      verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#c0392b;font-size:10px;font-weight:800;" title="${escapeHtml(verif.admin_note||'')}"><i class="fa-solid fa-circle-exclamation"></i> Rechazada</span> <button onclick="startPropertyVerification('${p.id}')" style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:#00a878;text-decoration:underline;background:none;border:none;cursor:pointer;">Volver a intentar</button>`;
     } else {
       verifBlock = `<button onclick="startPropertyVerification('${p.id}')" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#00a878;background:none;border:1px solid rgba(0,168,120,0.35);padding:.25rem .55rem;cursor:pointer;"><i class="fa-solid fa-shield-check"></i> Verificar — 8,99 €</button>`;
     }
@@ -11219,7 +11235,7 @@ async function loadSavedSearches(){
       p.createdAt && new Date(p.createdAt) > new Date(s.last_seen_at)
     ).length;
     const badge = nuevos > 0
-      ? `<span style="background:var(--accent);color:white;font-size:9px;font-weight:900;padding:.2rem .55rem;margin-left:.5rem;">${nuevos} nuevo${nuevos!==1?'s':''}</span>`
+      ? `<span style="background:var(--accent);color:white;font-size:10.5px;font-weight:900;padding:.2rem .55rem;margin-left:.5rem;">${nuevos} nuevo${nuevos!==1?'s':''}</span>`
       : '';
     return `
     <div class="flex items-center gap-3 p-3 border border-black/8 bg-white mb-2">
@@ -11516,7 +11532,7 @@ function appendAITyping(){
   var box = document.getElementById('ai-messages');
   var div = document.createElement('div');
   div.id = 'ai-typing';
-  div.style.cssText = 'background:white;padding:.75rem 1rem;font-size:13px;border:1px solid rgba(0,0,0,0.06);max-width:90%;color:#aaa;';
+  div.style.cssText = 'background:white;padding:.75rem 1rem;font-size:13px;border:1px solid rgba(0,0,0,0.06);max-width:90%;color:#6f6f78;';
   div.textContent = 'Escribiendo...';
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
