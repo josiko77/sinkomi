@@ -9749,21 +9749,37 @@ function openPlanSelector(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PROMOCIÓN DE LANZAMIENTO — verificación gratis para los primeros inmuebles.
-// COBRAR_VERIFICACION = false  →  gratis (promoción activa, como ahora)
-// COBRAR_VERIFICACION = true   →  se cobran los 8,99€ normales
+// PROMOCIÓN DE LANZAMIENTO — verificación gratis para los primeros FUNDADORES_TOTAL inmuebles verificados.
+// Se comprueba en tiempo real contra Supabase (mismo conteo que el contador de founders).
+// Si la consulta falla (red caída, etc.), por defecto se deja GRATIS: preferimos arriesgar
+// alguna verificación de más gratis antes que cobrarle a alguien por error o bloquearle el alta.
 // Solo afecta al plan "Verificado" básico — "Verificado + Destacado" sigue cobrando siempre.
 // ═══════════════════════════════════════════════════════════════
-const COBRAR_VERIFICACION = false;
+async function contarInmueblesVerificados(){
+  try{
+    const { count, error } = await supabase.from('properties').select('id', { count:'exact', head:true }).eq('verified', true);
+    if(error){ console.error('Error comprobando cupo de la promo:', error); return null; }
+    return count || 0;
+  }catch(e){
+    console.error('Error de red comprobando cupo de la promo:', e);
+    return null;
+  }
+}
+async function promoVerificacionActiva(){
+  const count = await contarInmueblesVerificados();
+  if(count === null) return true; // fallo de red → no bloqueamos el alta, se queda gratis
+  return count < FUNDADORES_TOTAL;
+}
 
 // Refleja la promo (o su ausencia) en el precio mostrado en la sección de precios,
 // para que el texto nunca prometa un precio distinto al que realmente se cobra.
-function updateVerificationPriceDisplay(){
+async function updateVerificationPriceDisplay(){
   const priceEl = document.getElementById('verificado-price-display');
   const subtextEl = document.getElementById('verificado-price-subtext');
   const btnEl = document.getElementById('verificado-price-btn');
   if(!priceEl) return;
-  if(!COBRAR_VERIFICACION){
+  const promoActiva = await promoVerificacionActiva();
+  if(promoActiva){
     priceEl.textContent = 'GRATIS';
     subtextEl.textContent = 'Gratis hasta que termine la promoción de lanzamiento (primeros 60 propietarios) · después, renovación a 4,99€';
     btnEl.textContent = 'Activar verificación · gratis por lanzamiento';
@@ -9779,13 +9795,13 @@ if(document.readyState !== 'loading') updateVerificationPriceDisplay();
 // Arranca la verificación de un inmueble concreto: recuerda cuál es, y abre el pago (o salta directo si hay promo).
 let verifyingPropertyId = null;
 let pendingVerificationAfterPublish = null; // {plan, days} — se usa si aún no tenía ningún inmueble publicado
-function startPropertyVerification(propertyId, plan, days){
+async function startPropertyVerification(propertyId, plan, days){
   verifyingPropertyId = propertyId;
   localStorage.setItem('sk_verifying_property_id', propertyId);
   closeUserPanel();
   closeVerificationPropertyPicker();
 
-  if(!COBRAR_VERIFICACION && (!plan || plan === 'verificado')){
+  if((!plan || plan === 'verificado') && await promoVerificacionActiva()){
     // Promoción activa: nos saltamos el pago y vamos directos a subir los documentos.
     openVerificationDocsModal(propertyId);
     return;
@@ -10608,7 +10624,7 @@ function renderMyListingsList(rows, verificationMap){
     } else if(verif && verif.status === 'rechazado'){
       verifBlock = `<span style="display:inline-flex;align-items:center;gap:.3rem;color:#c0392b;font-size:10px;font-weight:800;" title="${escapeHtml(verif.admin_note||'')}"><i class="fa-solid fa-circle-exclamation"></i> Rechazada</span> <button onclick="startPropertyVerification('${p.id}')" style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:#00a878;text-decoration:underline;background:none;border:none;cursor:pointer;">Volver a intentar</button>`;
     } else {
-      verifBlock = `<button onclick="startPropertyVerification('${p.id}')" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#00a878;background:none;border:1px solid rgba(0,168,120,0.35);padding:.25rem .55rem;cursor:pointer;"><i class="fa-solid fa-shield-check"></i> Verificar — 8,99 €</button>`;
+      verifBlock = `<button onclick="startPropertyVerification('${p.id}')" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#00a878;background:none;border:1px solid rgba(0,168,120,0.35);padding:.25rem .55rem;cursor:pointer;"><i class="fa-solid fa-shield-check"></i> Verificar inmueble</button>`;
     }
     return `
     <div class="flex items-center gap-3 p-3 border border-black/8 bg-white" style="opacity:${isActive?'1':'.6'};">
