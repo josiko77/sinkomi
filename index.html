@@ -7843,10 +7843,13 @@ function toggleMapFavourites(){
 }
 
 // Se llama desde el botón "Ver en mapa" de la sección de Favoritos (dentro del panel de usuario):
-// alterna entre la lista de tarjetas y un mini-mapa propio, con una casita roja por cada favorito,
-// tal como lo hace Idealista (mapa aparte, no el mapa grande de la home).
+// alterna entre la lista de tarjetas y un mini-mapa propio, con una casita roja por cada favorito
+// (agrupadas en burbujas cuando están muy juntas, igual que el mapa grande), tal como Idealista.
 var favsMiniMap = null;
 var favsMiniMapMarkers = [];
+var favsMiniMapCurrentProps = [];
+var _favsProjOverlay = null;
+
 function toggleFavsMapView(){
   const listEl = document.getElementById('user-panel-favs');
   const mapEl  = document.getElementById('user-panel-favs-map');
@@ -7876,6 +7879,7 @@ function toggleFavsMapView(){
 function initFavsMiniMap(favProps){
   const mapEl = document.getElementById('user-panel-favs-map');
   if(!mapEl) return;
+  favsMiniMapCurrentProps = favProps;
 
   if(!favsMiniMap){
     favsMiniMap = new google.maps.Map(mapEl, {
@@ -7885,36 +7889,99 @@ function initFavsMiniMap(favProps){
       zoomControl: true,
       zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM }
     });
+
+    // Overlay invisible, solo para poder pedir la proyección (pasar de lat/lng a píxeles
+    // de pantalla) y así decidir qué casitas están lo bastante juntas como para agruparse.
+    _favsProjOverlay = new google.maps.OverlayView();
+    _favsProjOverlay.onAdd  = function(){};
+    _favsProjOverlay.draw   = function(){};
+    _favsProjOverlay.onRemove = function(){};
+    _favsProjOverlay.setMap(favsMiniMap);
+
+    // Cada vez que el mapa termina de moverse/hacer zoom, las distancias en píxeles
+    // cambian, así que hay que volver a agrupar (una burbuja se puede separar en casitas).
+    let idleTimer = null;
+    favsMiniMap.addListener('idle', function(){
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function(){ clusterAndRenderFavs(favsMiniMapCurrentProps); }, 120);
+    });
   }
 
-  // Limpia los marcadores de la vez anterior antes de volver a dibujar.
+  // Encuadre inicial a todos los favoritos con posición conocida.
+  const bounds = new google.maps.LatLngBounds();
+  let huboAlguno = false;
+  favProps.forEach(function(p){
+    const pos = propertyMapPosition(p);
+    if(pos){ bounds.extend(pos); huboAlguno = true; }
+  });
+  if(huboAlguno){
+    favsMiniMap.fitBounds(bounds, 40);
+    if(favProps.filter(p=>propertyMapPosition(p)).length === 1){
+      google.maps.event.addListenerOnce(favsMiniMap, 'bounds_changed', function(){ favsMiniMap.setZoom(14); });
+    }
+  }
+  setTimeout(function(){ google.maps.event.trigger(favsMiniMap, 'resize'); }, 80);
+  // El propio evento 'idle' que sigue a fitBounds ya dispara el primer agrupado y dibujado.
+}
+
+// Agrupa por cercanía en pantalla (no por municipio, eso exigiría los contornos oficiales
+// que usa el mapa grande) y dibuja: una casita roja si va sola, una burbuja roja con el
+// número si hay varias apiñadas. Al acercar el zoom, la misma distancia en grados ocupa
+// más píxeles, así que las burbujas se separan solas en casitas.
+function clusterAndRenderFavs(favProps){
+  if(!favsMiniMap || !_favsProjOverlay) return;
+  const proj = _favsProjOverlay.getProjection();
+  if(!proj){ setTimeout(function(){ clusterAndRenderFavs(favProps); }, 60); return; }
+
   favsMiniMapMarkers.forEach(m => m.setMap(null));
   favsMiniMapMarkers = [];
 
-  const bounds = new google.maps.LatLngBounds();
-  let huboAlguno = false;
+  const puntos = favProps.map(function(p){
+    const latlng = propertyMapPosition(p);
+    if(!latlng) return null;
+    const px = proj.fromLatLngToDivPixel(latlng);
+    return px ? { prop: p, latlng: latlng, px: px } : null;
+  }).filter(Boolean);
 
-  favProps.forEach(function(p){
-    const pos = propertyMapPosition(p); // ya existente: usa lat/lng exactos, aproximados o el del municipio
-    if(!pos) return;
-    const el = createHouseMarkerEl(p);
-    el.classList.add('sk-house-pin--fav'); // roja, siempre, en este mini-mapa
-    const marker = new CustomMarker({
-      position: pos,
-      element: el,
-      map: favsMiniMap,
-      onClick: function(){ openPropertyModal(p.id); }
-    });
-    favsMiniMapMarkers.push(marker);
-    bounds.extend(pos);
-    huboAlguno = true;
-  });
-
-  if(huboAlguno){
-    favsMiniMap.fitBounds(bounds, 40);
-    if(favProps.length === 1) google.maps.event.addListenerOnce(favsMiniMap, 'bounds_changed', function(){ favsMiniMap.setZoom(14); });
+  const THRESHOLD_PX = 42;
+  const usados = new Array(puntos.length).fill(false);
+  const grupos = [];
+  for(let i=0;i<puntos.length;i++){
+    if(usados[i]) continue;
+    const grupo = [puntos[i]];
+    usados[i] = true;
+    for(let j=i+1;j<puntos.length;j++){
+      if(usados[j]) continue;
+      const dx = puntos[i].px.x - puntos[j].px.x, dy = puntos[i].px.y - puntos[j].px.y;
+      if(Math.sqrt(dx*dx + dy*dy) <= THRESHOLD_PX){ grupo.push(puntos[j]); usados[j] = true; }
+    }
+    grupos.push(grupo);
   }
-  setTimeout(function(){ google.maps.event.trigger(favsMiniMap, 'resize'); }, 80);
+
+  grupos.forEach(function(grupo){
+    if(grupo.length === 1){
+      const p = grupo[0].prop;
+      const el = createHouseMarkerEl(p);
+      el.classList.add('sk-house-pin--fav');
+      favsMiniMapMarkers.push(new CustomMarker({
+        position: grupo[0].latlng, element: el, map: favsMiniMap,
+        onClick: function(){ openPropertyModal(p.id); }
+      }));
+    } else {
+      // Centroide del grupo, en píxeles, convertido otra vez a lat/lng para la burbuja.
+      const cx = grupo.reduce((s,g)=>s+g.px.x,0) / grupo.length;
+      const cy = grupo.reduce((s,g)=>s+g.px.y,0) / grupo.length;
+      const centro = proj.fromDivPixelToLatLng(new google.maps.Point(cx, cy));
+      const el = createClusterEl(grupo.length);
+      el.style.background = '#e84c1e'; // rojo, para diferenciarla de los clusters verdes del mapa grande
+      const bounds = new google.maps.LatLngBounds();
+      grupo.forEach(g => bounds.extend(g.latlng));
+      favsMiniMapMarkers.push(new CustomMarker({
+        position: centro, element: el, map: favsMiniMap,
+        onClick: function(){ favsMiniMap.fitBounds(bounds, 50); }
+      }));
+    }
+  });
 }
 
 function zoomToFavourites(){
