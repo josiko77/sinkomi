@@ -7080,6 +7080,12 @@ function injectMapCSS(){
   .sk-house-pin:hover .sk-hp-door{ fill:#00d98f; }
   .sk-house-pin:hover{ z-index:400 !important; }
 
+  /* Casita en rojo — solo cuando se está viendo "solo favoritos" en el mapa */
+  .sk-house-pin--fav .sk-hp-body{ fill:#e84c1e; stroke:#ffffff; }
+  .sk-house-pin--fav .sk-hp-door{ fill:#7a1f0d; }
+  .sk-house-pin--fav:hover .sk-hp-body{ fill:#0d1a14; stroke:#e84c1e; }
+  .sk-house-pin--fav:hover .sk-hp-door{ fill:#e84c1e; }
+
   /* Tarjeta que aparece al pasar el ratón, sin hacer clic */
   .sk-house-card{
     position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(4px);
@@ -7304,10 +7310,10 @@ function propertyLocationLevel(p){
   return 'municipio';
 }
 
-// La casita SINKOMI// La casita SINKOMI — un anuncio real, dibujado donde está
+// La casita SINKOMI — un anuncio real, dibujado donde está
 function createHouseMarkerEl(prop){
   const el = document.createElement('div');
-  el.className = 'sk-house-pin';   // siempre verde SINKOMI, pase lo que pase
+  el.className = 'sk-house-pin' + (mapOnlyFavourites ? ' sk-house-pin--fav' : ''); // roja en modo "solo favoritos", verde el resto del tiempo
 
   const card  = document.createElement('div');
   card.className = 'sk-house-card';
@@ -7834,6 +7840,18 @@ function toggleMapFavourites(){
   }
   renderMapMarkersHero();
   if(mapOnlyFavourites) zoomToFavourites();
+}
+
+// Se llama desde el botón "Ver en mapa" de la sección de Favoritos (dentro del panel de usuario):
+// cierra el panel, activa el modo "solo favoritos" en el mapa grande (casitas rojas) y baja hasta él.
+function verFavoritosEnMapa(){
+  closeUserPanel();
+  if(!mapOnlyFavourites) toggleMapFavourites();
+  else { renderMapMarkersHero(); zoomToFavourites(); }
+  setTimeout(function(){
+    const mapSection = document.getElementById('sinkomi-map-hero');
+    if(mapSection) mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 150);
 }
 
 function zoomToFavourites(){
@@ -12968,7 +12986,12 @@ function closeLegal() {
 
       <!-- TAB: Favoritos -->
       <div id="user-tab-content-favs" class="space-y-3">
-        <div class="i18n-auto section-label mb-1">Mis propiedades guardadas</div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="i18n-auto section-label">Mis propiedades guardadas</div>
+          <button onclick="verFavoritosEnMapa()" class="i18n-auto flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-[0.08em]" style="color:var(--accent-dark);background:var(--accent-soft);border:1px solid rgba(0,217,143,0.3);padding:.35rem .7rem;border-radius:999px;cursor:pointer;">
+            <i class="fa-solid fa-map-location-dot"></i> Ver en mapa
+          </button>
+        </div>
         <div id="user-panel-favs" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </div>
 
