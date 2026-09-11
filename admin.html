@@ -538,7 +538,7 @@
   // ─── VERIFICACIONES (Nota Simple por inmueble + estado de identidad del propietario) ──
   async function loadVerifications(){
     const { data, error } = await sb.from('properties')
-      .select('id,title,municipality,owner_id,owner_name,nota_simple_url,nota_simple_status,nota_simple_submitted_at,nota_simple_rejection_note,verified')
+      .select('id,title,municipality,owner_id,owner_name,nota_simple_url,nota_simple_status,nota_simple_submitted_at,nota_simple_rejection_note,nota_simple_attempts,nota_simple_csv,nota_simple_checked_at,verified')
       .not('nota_simple_status', 'is', null)
       .order('nota_simple_submitted_at', {ascending:false, nullsFirst:false});
     const tbody = document.getElementById('verifications-body');
@@ -559,6 +559,7 @@
     tbody.innerHTML = data.map(p=>{
       const statusBadge = p.nota_simple_status==='aprobado' ? '<span class="badge badge-green">Aprobado</span>'
         : p.nota_simple_status==='rechazado' ? '<span class="badge badge-red">Rechazado</span>'
+        : p.nota_simple_status==='correccion' ? '<span class="badge badge-orange">Corrección</span>'
         : '<span class="badge badge-orange">Pendiente</span>';
       const ident = identityMap[p.owner_id];
       const identityBadge = ident?.identity_verified_at ? '<span class="badge badge-green">Verificada</span>'
@@ -567,16 +568,35 @@
       const notaLink = p.nota_simple_url
         ? `<a href="${p.nota_simple_url}" target="_blank" class="btn" style="text-decoration:none;">Ver Nota Simple</a>`
         : '<span style="color:var(--muted);font-size:10px;">Sin archivo</span>';
+
+      const intentos = p.nota_simple_attempts || 0;
+      const intentosTxt = intentos >= 3
+        ? `<div style="margin-top:.3rem;font-size:9px;color:var(--red);font-weight:700;">Límite de envíos agotado (${intentos}/3)</div>`
+        : `<div style="margin-top:.3rem;font-size:9px;color:var(--muted);">Envío ${intentos||1} de 3</div>`;
+
+      const csvTxt = p.nota_simple_csv
+        ? `<div style="margin-top:.3rem;font-size:9px;color:var(--accent);">CSV cotejado${p.nota_simple_checked_at ? ' · '+new Date(p.nota_simple_checked_at).toLocaleDateString('es-ES') : ''}</div>`
+        : '';
+
       const rejectionNote = p.nota_simple_rejection_note ? `<div style="margin-top:.35rem;font-size:9px;color:var(--muted);">Motivo: ${p.nota_simple_rejection_note}</div>` : '';
-      const actions = p.nota_simple_status==='pendiente'
-        ? `<button class="btn btn-green" onclick="approveNotaSimple('${p.id}')">Aprobar</button> <button class="btn btn-red" onclick="rejectNotaSimple('${p.id}')">Rechazar</button>`
-        : rejectionNote || '—';
+
+      let actions;
+      if(p.nota_simple_status === 'pendiente'){
+        actions = `<button class="btn btn-green" onclick="openNotaModal('aprobar','${p.id}')">Aprobar</button>
+                   <button class="btn" onclick="openNotaModal('correccion','${p.id}')">Pedir corrección</button>
+                   <button class="btn btn-red" onclick="openNotaModal('rechazar','${p.id}')">Rechazar</button>`;
+      } else if(p.nota_simple_status === 'correccion'){
+        actions = `<span style="font-size:10px;color:var(--orange);font-weight:700;">Esperando al propietario</span>${rejectionNote}`;
+      } else {
+        actions = rejectionNote || '—';
+      }
+
       return `
       <tr>
         <td>${p.title || '—'}<br><span style="color:var(--muted);font-size:10px;">${p.municipality||''}</span></td>
         <td style="font-size:11px;">${p.owner_name || '—'}</td>
         <td style="font-size:11px;color:var(--muted);">${p.nota_simple_submitted_at ? new Date(p.nota_simple_submitted_at).toLocaleDateString('es-ES') : '—'}</td>
-        <td>${notaLink}</td>
+        <td>${notaLink}${intentosTxt}${csvTxt}</td>
         <td>${identityBadge}</td>
         <td>${statusBadge}</td>
         <td>${actions}</td>
@@ -584,24 +604,100 @@
     }).join('');
   }
 
-  async function approveNotaSimple(propertyId){
-    if(!confirm('¿Aprobar esta Nota Simple? Si el propietario ya tiene la identidad verificada, el inmueble pasará a mostrar el sello "Verificado" automáticamente.')) return;
-    const { error } = await sb.from('properties').update({ nota_simple_status:'aprobado' }).eq('id', propertyId);
-    if(error){ showToast('Error al aprobar'); console.error(error); return; }
-    showToast('Nota Simple aprobada');
-    notifyOwner(propertyId, 'aprobado');
-    loadVerifications();
-    loadProperties();
+  // ─── REVISIÓN DE NOTAS SIMPLES ───────────────────────────────────
+  // Motivos cerrados: así todos los rechazos dicen lo mismo y el correo sale
+  // siempre igual. Corrección = el propietario puede volver a intentarlo.
+  // Rechazo = definitivo, sin botón de reintentar.
+  const MOTIVOS_CORRECCION = [
+    'La foto o el PDF no se lee con suficiente claridad',
+    'No se aprecia el código CSV en el documento',
+    'Falta alguna página de la Nota Simple',
+    'El titular de la Nota Simple no coincide con tu documento de identidad',
+    'La Nota Simple tiene más de 3 meses de antigüedad',
+    'El inmueble de la Nota Simple no coincide con el del anuncio'
+  ];
+  const MOTIVOS_RECHAZO = [
+    'El documento aportado no es una Nota Simple del Registro de la Propiedad',
+    'El código CSV no supera la comprobación en registradores.org',
+    'El contenido del documento no coincide con el original del Registro',
+    'Se ha superado el número de envíos permitidos'
+  ];
+
+  let notaModalAccion = null, notaModalPropertyId = null;
+
+  function openNotaModal(accion, propertyId){
+    notaModalAccion = accion;
+    notaModalPropertyId = propertyId;
+
+    const titulo = document.getElementById('nota-modal-title');
+    const bloqueCsv = document.getElementById('nota-modal-csv-block');
+    const bloqueMotivo = document.getElementById('nota-modal-motivo-block');
+    const select = document.getElementById('nota-modal-motivo');
+    const confirmar = document.getElementById('nota-modal-confirm');
+
+    document.getElementById('nota-modal-csv').value = '';
+    document.getElementById('nota-modal-extra').value = '';
+
+    if(accion === 'aprobar'){
+      titulo.textContent = 'Aprobar Nota Simple';
+      bloqueCsv.style.display = 'block';
+      bloqueMotivo.style.display = 'none';
+      confirmar.textContent = 'Aprobar';
+      confirmar.className = 'btn btn-green';
+    } else {
+      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION : MOTIVOS_RECHAZO;
+      titulo.textContent = accion === 'correccion' ? 'Pedir corrección al propietario' : 'Rechazar Nota Simple';
+      bloqueCsv.style.display = 'none';
+      bloqueMotivo.style.display = 'block';
+      select.innerHTML = motivos.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+      confirmar.textContent = accion === 'correccion' ? 'Pedir corrección' : 'Rechazar';
+      confirmar.className = accion === 'correccion' ? 'btn' : 'btn btn-red';
+    }
+    document.getElementById('nota-modal').style.display = 'flex';
   }
 
-  async function rejectNotaSimple(propertyId){
-    const motivo = prompt('Motivo del rechazo (lo verá el propietario):');
-    if(motivo === null) return;
-    const { error } = await sb.from('properties').update({ nota_simple_status:'rechazado', nota_simple_rejection_note: motivo }).eq('id', propertyId);
-    if(error){ showToast('Error al rechazar'); console.error(error); return; }
-    showToast('Nota Simple rechazada');
-    notifyOwner(propertyId, 'rechazado', motivo);
+  function closeNotaModal(){
+    document.getElementById('nota-modal').style.display = 'none';
+    notaModalAccion = null; notaModalPropertyId = null;
+  }
+
+  async function confirmNotaModal(){
+    if(!notaModalAccion || !notaModalPropertyId) return;
+    const accion = notaModalAccion, propertyId = notaModalPropertyId;
+    const extra = document.getElementById('nota-modal-extra').value.trim();
+
+    let update, motivoTexto = null;
+
+    if(accion === 'aprobar'){
+      const csv = document.getElementById('nota-modal-csv').value.trim();
+      if(!csv){ showToast('Pega el CSV que has cotejado antes de aprobar'); return; }
+      update = {
+        nota_simple_status: 'aprobado',
+        nota_simple_rejection_note: null,
+        nota_simple_csv: csv,
+        nota_simple_checked_at: new Date().toISOString()
+      };
+    } else {
+      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION : MOTIVOS_RECHAZO;
+      const idx = parseInt(document.getElementById('nota-modal-motivo').value, 10);
+      motivoTexto = motivos[idx] + (extra ? ' — ' + extra : '');
+      update = {
+        nota_simple_status: accion === 'correccion' ? 'correccion' : 'rechazado',
+        nota_simple_rejection_note: motivoTexto
+      };
+    }
+
+    const { error } = await sb.from('properties').update(update).eq('id', propertyId);
+    if(error){ showToast('Error al guardar'); console.error(error); return; }
+
+    closeNotaModal();
+    showToast(accion === 'aprobar' ? 'Nota Simple aprobada'
+      : accion === 'correccion' ? 'Corrección solicitada al propietario'
+      : 'Nota Simple rechazada');
+
+    notifyOwner(propertyId, update.nota_simple_status, motivoTexto);
     loadVerifications();
+    loadProperties();
   }
 
   // Avisa por email al propietario de que su Nota Simple ha sido revisada.
@@ -617,13 +713,17 @@
       const nombre = owner.nombre ? ' ' + owner.nombre : '';
       const tituloInmueble = prop.title || 'tu inmueble';
 
-      const subject = status === 'aprobado'
-        ? `Tu Nota Simple ha sido aprobada — ${tituloInmueble}`
-        : `Tu Nota Simple necesita revisión — ${tituloInmueble}`;
-
-      const html = status === 'aprobado'
-        ? `<p>Hola${nombre},</p><p>Buenas noticias: hemos aprobado la Nota Simple de <strong>${tituloInmueble}</strong>. Si tu identidad también está verificada, tu anuncio ya muestra el sello "Verificado" en SINKOMI.</p><p>— El equipo de SINKOMI</p>`
-        : `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y de momento no podemos aprobarla.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Puedes volver a subirla desde "Mis inmuebles publicados" en tu cuenta de SINKOMI.</p><p>— El equipo de SINKOMI</p>`;
+      let subject, html;
+      if(status === 'aprobado'){
+        subject = `Tu Nota Simple ha sido aprobada — ${tituloInmueble}`;
+        html = `<p>Hola${nombre},</p><p>Buenas noticias: hemos aprobado la Nota Simple de <strong>${tituloInmueble}</strong>. Si tu identidad también está verificada, tu anuncio ya muestra el sello "Verificado" en SINKOMI.</p><p>— El equipo de SINKOMI</p>`;
+      } else if(status === 'correccion'){
+        subject = `Necesitamos que vuelvas a subir tu Nota Simple — ${tituloInmueble}`;
+        html = `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y necesitamos que la vuelvas a subir.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Entra en tu cuenta de SINKOMI, en "Mis inmuebles publicados", y verás el aviso con el botón para subirla de nuevo.</p><p>— El equipo de SINKOMI</p>`;
+      } else {
+        subject = `No hemos podido verificar tu Nota Simple — ${tituloInmueble}`;
+        html = `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y no podemos aprobarla.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Si crees que se trata de un error, responde a este correo y lo revisamos manualmente.</p><p>— El equipo de SINKOMI</p>`;
+      }
 
       const { error: notifyError } = await sb.functions.invoke('sinkomi-notify', { body: { to: owner.email, subject, html } });
       if(notifyError) console.error('No se pudo enviar el email de notificación:', notifyError);
@@ -640,6 +740,9 @@
     return 'badge-gray';
   }
 
+  // Cerrar el modal con Escape
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeNotaModal(); });
+
   function showToast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -647,5 +750,38 @@
     setTimeout(()=>t.style.display='none', 3000);
   }
 </script>
+
+<!-- ─── MODAL DE REVISIÓN DE NOTA SIMPLE ─────────────────────────── -->
+<div id="nota-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--panel);border:1px solid var(--border);width:100%;max-width:480px;padding:1.6rem;box-shadow:0 30px 70px -20px rgba(0,0,0,0.8);">
+    <div id="nota-modal-title" style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:1.1rem;"></div>
+
+    <div id="nota-modal-csv-block" style="display:none;">
+      <div style="font-size:10px;color:var(--muted-2);line-height:1.6;margin-bottom:.7rem;">
+        Antes de aprobar, coteja el documento en el comprobador oficial del Colegio de Registradores
+        e introduce aquí el CSV que has verificado. Queda guardado como prueba de que la comprobación se hizo.
+      </div>
+      <a href="https://www.registradores.org:4004/consultaDocumentos/homeCSV.seam" target="_blank" rel="noopener"
+         class="btn" style="text-decoration:none;display:inline-block;margin-bottom:.7rem;">Abrir comprobador CSV ↗</a>
+      <input id="nota-modal-csv" type="text" placeholder="Código CSV de la Nota Simple"
+             style="width:100%;padding:.7rem;background:var(--panel-2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;">
+    </div>
+
+    <div id="nota-modal-motivo-block" style="display:none;">
+      <div style="font-size:10px;color:var(--muted-2);margin-bottom:.5rem;">Motivo (lo verá el propietario)</div>
+      <select id="nota-modal-motivo"
+              style="width:100%;padding:.7rem;background:var(--panel-2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;"></select>
+    </div>
+
+    <div style="font-size:10px;color:var(--muted-2);margin:.9rem 0 .4rem;">Detalle adicional (opcional)</div>
+    <textarea id="nota-modal-extra" rows="2" placeholder="Se añade al motivo en el correo"
+              style="width:100%;padding:.7rem;background:var(--panel-2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;resize:vertical;"></textarea>
+
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.2rem;">
+      <button class="btn" onclick="closeNotaModal()">Cancelar</button>
+      <button id="nota-modal-confirm" class="btn btn-green" onclick="confirmNotaModal()">Confirmar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
