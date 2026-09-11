@@ -35,7 +35,8 @@
   ]
 }
 </script>
-  <meta name="description" content="SINKOMI es la primera plataforma inmobiliaria P2P sin comisiones de las Islas Baleares. Compra, vende o alquila hablando directamente con el propietario, en más de 220 localidades de Mallorca, Menorca, Ibiza y Formentera." />
+  <meta name="description" content="SINKOMI es la plataforma para comprar, vender o alquilar viviendas de particulares en Mallorca, Menorca, Ibiza y Formentera, sin comisiones ni intermediarios. Habla directamente con el propietario en más de 220 localidades de Baleares." />
+  <title>Pisos y casas de particulares en Mallorca sin comisiones | SINKOMI</title>
   <meta property="og:title" content="SINKOMI · Habla con quien tiene las llaves" />
   <meta property="og:description" content="Compra, vende o alquila en Baleares sin comisiones, hablando directo con el propietario. Contratos incluidos, listos para firmar." />
   <meta property="og:site_name" content="SINKOMI" />
@@ -968,7 +969,7 @@
       <div class="absolute -bottom-16 left-1/3 w-64 h-64 rounded-full opacity-[0.07]" style="background:#0d1a14;"></div>
     </div>
     <div class="relative p-6 md:p-10">
-      <h1 class="i18n-auto text-2xl md:text-4xl font-black text-[#0d1a14] mb-6 leading-tight">Encuentra tu próxima casa en Baleares</h1>
+      <h1 class="i18n-auto text-2xl md:text-4xl font-black text-[#0d1a14] mb-6 leading-tight">Pisos y casas de particulares en Baleares</h1>
       <div class="flex flex-col md:flex-row gap-2.5">
         <div class="inline-flex bg-[#0d1a14]/10 p-1 shrink-0 rounded-full" role="tablist" aria-label="Tipo de operación">
           <button type="button" id="hero-search-buy" onclick="setHeroSearchType('Venta')" class="i18n-auto hero-op-btn px-5 py-3.5 text-[12px] font-black uppercase tracking-[0.1em] transition-all rounded-full">Comprar</button>
@@ -2619,7 +2620,7 @@
         <div class="text-xs uppercase font-black tracking-[0.14em] mb-7" style="color:rgba(255,255,255,0.3);">Suscripción · cancela cuando quieras, sin permanencia</div>
         <div class="space-y-3 text-sm mb-8 flex-1" style="color:rgba(255,255,255,0.7);">
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Todo lo del plan Verificado</span></div>
-          <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Posición destacada sobre los anuncios básicos</span></div>
+          <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Por encima de todos los anuncios no destacados</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Refresco automático — sube como nuevo cada semana</span></div>
           <div class="flex items-start gap-2"><i class="fa-solid fa-check mt-0.5 shrink-0" style="color:var(--orange);"></i><span class="i18n-auto">Panel de estadísticas y hasta 15 fotos + vídeo tour</span></div>
         </div>
@@ -4410,20 +4411,18 @@ function sortProperties(list,order){
     const scoreB = (Number(b.reviews)||0) + (b.featured?5:0) + Math.floor(Number(b.price)/100000);
     return scoreB - scoreA;
   });
-  // Intercalado — premium, verificado, básico, premium, verificado, básico...
-  // Dentro de cada grupo, los impulsados en las últimas 24h van primero.
-  const byBoost = g => [...g].sort((a,b)=>(isBoosted(b)?1:0)-(isBoosted(a)?1:0));
-  const premium  = byBoost(arr.filter(p=>p.verified&&p.featured));
-  const verified = byBoost(arr.filter(p=>p.verified&&!p.featured));
-  const basic    = byBoost(arr.filter(p=>!p.verified));
-  const result   = [];
-  const maxLen   = Math.max(premium.length, verified.length, basic.length);
-  for(let i=0;i<maxLen;i++){
-    if(premium[i])  result.push(premium[i]);
-    if(verified[i]) result.push(verified[i]);
-    if(basic[i])    result.push(basic[i]);
-  }
-  return result;
+  // Bloques por nivel — Destacado siempre por encima de todos los que no lo sean, exactamente
+  // como hace Idealista ("tu anuncio aparecerá por encima de todos los que no sean preferentes").
+  // Dentro de cada bloque, primero quien tenga el Impulso 24h activo, luego por más reciente.
+  const byBoostThenNewest = g => [...g].sort((a,b)=>{
+    const boostDiff = (isBoosted(b)?1:0) - (isBoosted(a)?1:0);
+    if(boostDiff !== 0) return boostDiff;
+    return (Number(a.daysAgo)||999) - (Number(b.daysAgo)||999);
+  });
+  const premium  = byBoostThenNewest(arr.filter(p=>p.verified&&p.featured));
+  const verified = byBoostThenNewest(arr.filter(p=>p.verified&&!p.featured));
+  const basic    = byBoostThenNewest(arr.filter(p=>!p.verified));
+  return [...premium, ...verified, ...basic];
 }
 
 /* CALCULADORA */
