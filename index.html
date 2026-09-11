@@ -7843,15 +7843,78 @@ function toggleMapFavourites(){
 }
 
 // Se llama desde el botón "Ver en mapa" de la sección de Favoritos (dentro del panel de usuario):
-// cierra el panel, activa el modo "solo favoritos" en el mapa grande (casitas rojas) y baja hasta él.
-function verFavoritosEnMapa(){
-  closeUserPanel();
-  if(!mapOnlyFavourites) toggleMapFavourites();
-  else { renderMapMarkersHero(); zoomToFavourites(); }
-  setTimeout(function(){
-    const mapSection = document.getElementById('sinkomi-map-hero');
-    if(mapSection) mapSection.scrollIntoView({ behavior:'smooth', block:'start' });
-  }, 150);
+// alterna entre la lista de tarjetas y un mini-mapa propio, con una casita roja por cada favorito,
+// tal como lo hace Idealista (mapa aparte, no el mapa grande de la home).
+var favsMiniMap = null;
+var favsMiniMapMarkers = [];
+function toggleFavsMapView(){
+  const listEl = document.getElementById('user-panel-favs');
+  const mapEl  = document.getElementById('user-panel-favs-map');
+  const btn    = document.getElementById('favs-map-toggle-btn');
+  if(!listEl || !mapEl) return;
+
+  const goingToMap = mapEl.classList.contains('hidden-tab');
+  listEl.classList.toggle('hidden-tab', goingToMap);
+  mapEl.classList.toggle('hidden-tab', !goingToMap);
+  if(btn){
+    btn.innerHTML = goingToMap
+      ? '<i class="fa-solid fa-list"></i> Ver en listado'
+      : '<i class="fa-solid fa-map-location-dot"></i> Ver en mapa';
+  }
+
+  if(goingToMap){
+    const favIds   = getFavourites();
+    const favProps = favIds.map(id => properties.find(p=>p.id===id)).filter(Boolean);
+    if(!favProps.length){
+      mapEl.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:1.5rem;color:#6f6f78;font-size:12.5px;font-weight:600;">Aún no tienes favoritos guardados.<br>Pulsa el corazón en cualquier tarjeta para verla aquí.</div>';
+      return;
+    }
+    loadGoogleMapsAPI(function(){ initFavsMiniMap(favProps); }, 'user-panel-favs-map');
+  }
+}
+
+function initFavsMiniMap(favProps){
+  const mapEl = document.getElementById('user-panel-favs-map');
+  if(!mapEl) return;
+
+  if(!favsMiniMap){
+    favsMiniMap = new google.maps.Map(mapEl, {
+      center: { lat: 39.6, lng: 2.9 }, // Baleares, centro aproximado
+      zoom: 9,
+      disableDefaultUI: true,
+      zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM }
+    });
+  }
+
+  // Limpia los marcadores de la vez anterior antes de volver a dibujar.
+  favsMiniMapMarkers.forEach(m => m.setMap(null));
+  favsMiniMapMarkers = [];
+
+  const bounds = new google.maps.LatLngBounds();
+  let huboAlguno = false;
+
+  favProps.forEach(function(p){
+    const pos = propertyMapPosition(p); // ya existente: usa lat/lng exactos, aproximados o el del municipio
+    if(!pos) return;
+    const el = createHouseMarkerEl(p);
+    el.classList.add('sk-house-pin--fav'); // roja, siempre, en este mini-mapa
+    const marker = new CustomMarker({
+      position: pos,
+      element: el,
+      map: favsMiniMap,
+      onClick: function(){ openPropertyModal(p.id); }
+    });
+    favsMiniMapMarkers.push(marker);
+    bounds.extend(pos);
+    huboAlguno = true;
+  });
+
+  if(huboAlguno){
+    favsMiniMap.fitBounds(bounds, 40);
+    if(favProps.length === 1) google.maps.event.addListenerOnce(favsMiniMap, 'bounds_changed', function(){ favsMiniMap.setZoom(14); });
+  }
+  setTimeout(function(){ google.maps.event.trigger(favsMiniMap, 'resize'); }, 80);
 }
 
 function zoomToFavourites(){
@@ -12988,11 +13051,12 @@ function closeLegal() {
       <div id="user-tab-content-favs" class="space-y-3">
         <div class="flex items-center justify-between mb-1">
           <div class="i18n-auto section-label">Mis propiedades guardadas</div>
-          <button onclick="verFavoritosEnMapa()" class="i18n-auto flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-[0.08em]" style="color:var(--accent-dark);background:var(--accent-soft);border:1px solid rgba(0,217,143,0.3);padding:.35rem .7rem;border-radius:999px;cursor:pointer;">
+          <button id="favs-map-toggle-btn" onclick="toggleFavsMapView()" class="i18n-auto flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-[0.08em]" style="color:var(--accent-dark);background:var(--accent-soft);border:1px solid rgba(0,217,143,0.3);padding:.35rem .7rem;border-radius:999px;cursor:pointer;">
             <i class="fa-solid fa-map-location-dot"></i> Ver en mapa
           </button>
         </div>
         <div id="user-panel-favs" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        <div id="user-panel-favs-map" class="hidden-tab" style="height:340px;width:100%;position:relative;border-radius:var(--r-sm);overflow:hidden;border:1px solid rgba(0,0,0,0.08);background:#eef0ee;"></div>
       </div>
 
       <!-- TAB: Alertas -->
