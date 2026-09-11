@@ -10577,7 +10577,7 @@ async function loadVerificationStatus(){
   try{
     const [{ data: idData }, { data: propData }] = await Promise.all([
       supabase.from('verification_documents').select('*').eq('user_id', user.supabase_id).maybeSingle(),
-      supabase.from('properties').select('id,nota_simple_url,nota_simple_status,verified').eq('id', verifyingPropertyId).maybeSingle()
+      supabase.from('properties').select('id,nota_simple_url,nota_simple_status,nota_simple_rejection_note,nota_simple_attempts,verified').eq('id', verifyingPropertyId).maybeSingle()
     ]);
     identityRow = idData; propertyRow = propData;
   }catch(e){ console.error('Error cargando estado de verificación:', e); }
@@ -10585,8 +10585,12 @@ async function loadVerificationStatus(){
   identityStatus.verified = !!(identityRow && identityRow.identity_verified_at);
   identityStatus.diditStatus = identityRow ? identityRow.didit_status : null;
 
-  if(propertyRow && propertyRow.nota_simple_status !== 'rechazado'){
+  // Si hay que volver a subirla, no arrastramos la miniatura anterior: el hueco
+  // vacío es la señal más clara de que falta hacer algo.
+  if(propertyRow && propertyRow.nota_simple_status !== 'rechazado' && propertyRow.nota_simple_status !== 'correccion'){
     notaSimpleUpload.url = propertyRow.nota_simple_url;
+  } else {
+    notaSimpleUpload.url = null;
   }
 
   renderVerificationPanel(propertyRow);
@@ -10610,14 +10614,32 @@ function renderVerificationPanel(propertyRow){
 
   // ── Bloque de Nota Simple (por inmueble) ──
   const notaStatus = propertyRow ? propertyRow.nota_simple_status : null;
+  const notaMotivo = propertyRow ? propertyRow.nota_simple_rejection_note : null;
+  const notaIntentos = propertyRow ? (propertyRow.nota_simple_attempts || 0) : 0;
+  const intentosRestantes = Math.max(0, 3 - notaIntentos);
+
   let notaBanner = '';
   if(notaStatus === 'pendiente'){
-    notaBanner = `<div style="background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.3);color:#b9791a;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;">⏳ Nota Simple pendiente de revisión.</div>`;
+    notaBanner = `<div style="background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.3);color:#b9791a;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;">⏳ Nota Simple pendiente de revisión. Te avisaremos por email en cuanto la comprobemos.</div>`;
   } else if(notaStatus === 'aprobado'){
     notaBanner = `<div style="background:rgba(0,168,120,0.1);border:1px solid rgba(0,168,120,0.3);color:#00a878;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;">✓ Nota Simple aprobada.</div>`;
+  } else if(notaStatus === 'correccion'){
+    notaBanner = `<div style="background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.35);color:#b9791a;padding:.7rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;line-height:1.6;">
+        ↻ Necesitamos que vuelvas a subir la Nota Simple.
+        ${notaMotivo ? `<div style="font-weight:600;margin-top:.35rem;">${escapeHtml(notaMotivo)}</div>` : ''}
+        ${intentosRestantes > 0 ? `<div style="font-weight:600;margin-top:.35rem;opacity:.8;">Te ${intentosRestantes === 1 ? 'queda 1 intento' : 'quedan '+intentosRestantes+' intentos'}.</div>` : ''}
+      </div>`;
   } else if(notaStatus === 'rechazado'){
-    notaBanner = `<div style="background:rgba(200,40,40,0.08);border:1px solid rgba(200,40,40,0.3);color:#c0392b;padding:.6rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;">✕ Nota Simple rechazada. Vuelve a subirla.</div>`;
+    notaBanner = `<div style="background:rgba(200,40,40,0.08);border:1px solid rgba(200,40,40,0.3);color:#c0392b;padding:.7rem .8rem;font-size:11px;font-weight:700;margin-bottom:.75rem;line-height:1.6;">
+        ✕ No hemos podido verificar esta Nota Simple.
+        ${notaMotivo ? `<div style="font-weight:600;margin-top:.35rem;">${escapeHtml(notaMotivo)}</div>` : ''}
+        <div style="font-weight:600;margin-top:.35rem;opacity:.8;">Si crees que es un error, escríbenos y lo revisamos manualmente.</div>
+      </div>`;
   }
+
+  // Solo tiene sentido subir cuando no hay nada enviado o cuando pedimos corrección.
+  const puedeSubir = notaSimpleUpload.uploading
+    || ((!notaStatus || notaStatus === 'correccion') && intentosRestantes > 0);
 
   const overallVerified = propertyRow && propertyRow.verified;
 
@@ -10632,10 +10654,12 @@ function renderVerificationPanel(propertyRow){
     <div style="border:1px solid rgba(0,0,0,0.08);padding:.9rem;">
       <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:.5rem;">2 · Nota Simple de este inmueble</div>
       ${notaBanner}
+      ${puedeSubir ? `
       <p class="text-xs text-zinc-500 mb-3">Demuestra que este inmueble concreto es tuyo. Solo tú y el equipo de SINKOMI podéis verla. Sube el PDF oficial de tu Nota Simple si lo tienes — es más fiable que una foto, y evita que se quede fuera alguna página importante.</p>
+      <p class="text-xs text-zinc-500 mb-3">Debe verse el <strong>código CSV</strong> del documento, que es lo que nos permite cotejarlo con el Registro de la Propiedad. Si tu Nota Simple no lo lleva, puedes pedir una nueva en registradores.org.</p>
       <div style="max-width:120px;">
         ${verificationSlotHtml('nota_simple', 'Nota Simple', notaSimpleUpload.url)}
-      </div>
+      </div>` : ''}
     </div>
   `;
 }
@@ -10683,7 +10707,14 @@ async function uploadNotaSimpleFile(file){
     if(updateError) throw updateError;
   }catch(e){
     console.error('Error subiendo la Nota Simple:', e);
-    alert('No se ha podido subir la Nota Simple. Inténtalo de nuevo.');
+    // El límite de envíos lo impone la base de datos, no el navegador: si salta,
+    // mostramos su mensaje tal cual en vez del genérico.
+    const msg = (e && e.message) ? String(e.message) : '';
+    if(msg.includes('limite de 3 envios')){
+      alert('Has alcanzado el límite de 3 envíos de Nota Simple para este inmueble. Escríbenos y lo revisamos manualmente.');
+    } else {
+      alert('No se ha podido subir la Nota Simple. Inténtalo de nuevo.');
+    }
   }
   notaSimpleUpload.uploading = false;
   loadVerificationStatus();
