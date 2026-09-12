@@ -3881,7 +3881,7 @@ function switchRoommateTab(tab){
 
 async function loadRoommateRooms(){
   const grid = document.getElementById('roommate-rooms-grid');
-  const { data, error } = await supabase.from('properties').select('*')
+  const { data, error } = await supabase.from('properties_public').select('*')
     .eq('category', 'Habitación en vivienda compartida').eq('active', true)
     .order('created_at', { ascending: false });
   if(error){ grid.innerHTML = `<div class="text-sm text-red-500 col-span-full text-center py-8">No se han podido cargar las habitaciones.</div>`; return; }
@@ -4266,7 +4266,9 @@ function mapDbRowToProperty(row){
 // Carga los inmuebles reales y activos desde Supabase, y repinta todas las vistas que dependen de ellos.
 async function loadRealProperties(){
   try{
-    const { data, error } = await supabase.from('properties').select('*').eq('active', true).order('created_at', { ascending:false });
+    // Lectura pública: va contra properties_public, la vista que ya devuelve la
+    // dirección y las coordenadas enmascaradas. El dato exacto no sale del servidor.
+    const { data, error } = await supabase.from('properties_public').select('*').eq('active', true).order('created_at', { ascending:false });
     if(error){ console.error('Error cargando inmuebles reales:', error); return; }
     properties = (data||[]).map(mapDbRowToProperty);
     await applyPriceDrops();
@@ -6841,7 +6843,7 @@ async function loadChatThreads(activePropertyId, activeRoommateId){
   const propIds = [...new Set(threads.filter(t=>t.propertyId).map(t=>t.propertyId))];
   let propMap = {};
   if(propIds.length){
-    const { data: props } = await supabase.from('properties').select('id,title,images,price,type,owner_name').in('id', propIds);
+    const { data: props } = await supabase.from('properties_public').select('id,title,images,price,type,owner_name').in('id', propIds);
     (props||[]).forEach(p => { propMap[p.id] = p; });
   }
   const roommateIds = [...new Set(threads.filter(t=>t.roommateId).map(t=>t.roommateId))];
