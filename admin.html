@@ -587,6 +587,13 @@
                    <button class="btn btn-red" onclick="openNotaModal('rechazar','${p.id}')">Rechazar</button>`;
       } else if(p.nota_simple_status === 'correccion'){
         actions = `<span style="font-size:10px;color:var(--orange);font-weight:700;">Esperando al propietario</span>${rejectionNote}`;
+      } else if(p.nota_simple_status === 'aprobado'){
+        // Una aprobación tiene que poder deshacerse: si la Nota resulta ser falsa o
+        // el inmueble cambia de manos, el sello debe poder retirarse desde aquí.
+        actions = `<button class="btn btn-red" onclick="openNotaModal('retirar','${p.id}')">Retirar verificación</button>`;
+      } else if(p.nota_simple_status === 'rechazado'){
+        // Un rechazo tampoco puede ser un callejón sin salida para el admin.
+        actions = `<button class="btn" onclick="reabrirNota('${p.id}')">Reabrir</button>${rejectionNote}`;
       } else {
         actions = rejectionNote || '—';
       }
@@ -622,6 +629,14 @@
     'El contenido del documento no coincide con el original del Registro',
     'Se ha superado el número de envíos permitidos'
   ];
+  // Retirar una verificación ya concedida. El trigger de la base de datos quita
+  // el sello solo en cuanto el estado deja de ser 'aprobado'.
+  const MOTIVOS_RETIRADA = [
+    'La Nota Simple no supera una comprobación posterior en el Registro',
+    'El inmueble ya no pertenece al titular verificado',
+    'La documentación aportada ha quedado desactualizada',
+    'A petición del propietario'
+  ];
 
   let notaModalAccion = null, notaModalPropertyId = null;
 
@@ -645,12 +660,18 @@
       confirmar.textContent = 'Aprobar';
       confirmar.className = 'btn btn-green';
     } else {
-      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION : MOTIVOS_RECHAZO;
-      titulo.textContent = accion === 'correccion' ? 'Pedir corrección al propietario' : 'Rechazar Nota Simple';
+      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION
+                    : accion === 'retirar'    ? MOTIVOS_RETIRADA
+                    : MOTIVOS_RECHAZO;
+      titulo.textContent = accion === 'correccion' ? 'Pedir corrección al propietario'
+                         : accion === 'retirar'    ? 'Retirar la verificación de este inmueble'
+                         : 'Rechazar Nota Simple';
       bloqueCsv.style.display = 'none';
       bloqueMotivo.style.display = 'block';
       select.innerHTML = motivos.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
-      confirmar.textContent = accion === 'correccion' ? 'Pedir corrección' : 'Rechazar';
+      confirmar.textContent = accion === 'correccion' ? 'Pedir corrección'
+                            : accion === 'retirar'    ? 'Retirar verificación'
+                            : 'Rechazar';
       confirmar.className = accion === 'correccion' ? 'btn' : 'btn btn-red';
     }
     document.getElementById('nota-modal').style.display = 'flex';
@@ -678,7 +699,9 @@
         nota_simple_checked_at: new Date().toISOString()
       };
     } else {
-      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION : MOTIVOS_RECHAZO;
+      const motivos = accion === 'correccion' ? MOTIVOS_CORRECCION
+                    : accion === 'retirar'    ? MOTIVOS_RETIRADA
+                    : MOTIVOS_RECHAZO;
       const idx = parseInt(document.getElementById('nota-modal-motivo').value, 10);
       motivoTexto = motivos[idx] + (extra ? ' — ' + extra : '');
       update = {
@@ -693,9 +716,23 @@
     closeNotaModal();
     showToast(accion === 'aprobar' ? 'Nota Simple aprobada'
       : accion === 'correccion' ? 'Corrección solicitada al propietario'
+      : accion === 'retirar' ? 'Verificación retirada'
       : 'Nota Simple rechazada');
 
-    notifyOwner(propertyId, update.nota_simple_status, motivoTexto);
+    notifyOwner(propertyId, update.nota_simple_status, motivoTexto, accion);
+    loadVerifications();
+    loadProperties();
+  }
+
+  // Deshace un rechazo: devuelve el inmueble a la cola de revisión sin tocar el
+  // contador de envíos del propietario.
+  async function reabrirNota(propertyId){
+    if(!confirm('¿Devolver esta Nota Simple a la cola de revisión? El propietario no recibirá ningún aviso.')) return;
+    const { error } = await sb.from('properties')
+      .update({ nota_simple_status: 'pendiente', nota_simple_rejection_note: null })
+      .eq('id', propertyId);
+    if(error){ showToast('Error al reabrir'); console.error(error); return; }
+    showToast('Devuelta a revisión');
     loadVerifications();
     loadProperties();
   }
@@ -703,7 +740,7 @@
   // Avisa por email al propietario de que su Nota Simple ha sido revisada.
   // Si el email falla por lo que sea (falta la API key, Resend caído, etc.), no bloquea
   // nada — el estado ya quedó guardado en Supabase, el aviso es un extra, no un requisito.
-  async function notifyOwner(propertyId, status, motivo){
+  async function notifyOwner(propertyId, status, motivo, accion){
     try{
       const { data: prop } = await sb.from('properties').select('title, owner_id').eq('id', propertyId).maybeSingle();
       if(!prop?.owner_id) return;
@@ -720,6 +757,9 @@
       } else if(status === 'correccion'){
         subject = `Necesitamos que vuelvas a subir tu Nota Simple — ${tituloInmueble}`;
         html = `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y necesitamos que la vuelvas a subir.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Entra en tu cuenta de SINKOMI, en "Mis inmuebles publicados", y verás el aviso con el botón para subirla de nuevo.</p><p>— El equipo de SINKOMI</p>`;
+      } else if(accion === 'retirar'){
+        subject = `Hemos retirado la verificación de ${tituloInmueble}`;
+        html = `<p>Hola${nombre},</p><p>Te escribimos para informarte de que hemos retirado el sello "Verificado" de <strong>${tituloInmueble}</strong>. Tu anuncio sigue publicado con normalidad.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Si quieres recuperarlo o crees que se trata de un error, responde a este correo y lo vemos.</p><p>— El equipo de SINKOMI</p>`;
       } else {
         subject = `No hemos podido verificar tu Nota Simple — ${tituloInmueble}`;
         html = `<p>Hola${nombre},</p><p>Hemos revisado la Nota Simple de <strong>${tituloInmueble}</strong> y no podemos aprobarla.</p><p><strong>Motivo:</strong> ${motivo || 'consulta con soporte'}</p><p>Si crees que se trata de un error, responde a este correo y lo revisamos manualmente.</p><p>— El equipo de SINKOMI</p>`;
