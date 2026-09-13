@@ -18,7 +18,18 @@
 
 const SUPABASE_URL = 'https://utrkwpepgviadaygjfyr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_JLpiGWpCo6PGCpQ0Ca-HZQ_CasEBaeh';
-const SITE_URL = 'https://sinkomi.es';
+
+// El host bueno es www: sinkomi.es devuelve un 308 hacia aquí.
+const SITE_URL = 'https://www.sinkomi.es';
+
+// Lectura pública: siempre contra la vista, nunca contra la tabla. Así esta función
+// no puede filtrar por accidente ni la dirección exacta de un inmueble que pidió
+// ocultarla, ni ninguno de los campos de verificación del propietario.
+const PUBLIC_TABLE = 'properties_public';
+
+// Solo los campos que esta página necesita pintar. Pedir la fila entera traía
+// también los datos de la Nota Simple, que aquí no pintan nada.
+const CAMPOS = 'id,title,description,price,images,municipality,nucleo,location,type,category';
 
 // Lista de "robots" conocidos a los que SÍ les enseñamos esta página especial.
 // A todos los demás (personas normales) los mandamos directos a la web real.
@@ -48,7 +59,7 @@ module.exports = async (req, res) => {
 
   try{
     const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/properties?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
+      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?id=eq.${encodeURIComponent(id)}&select=${CAMPOS}&limit=1`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const rows = await resp.json();
