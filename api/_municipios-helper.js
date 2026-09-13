@@ -6,7 +6,16 @@
 
 const SUPABASE_URL = 'https://utrkwpepgviadaygjfyr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_JLpiGWpCo6PGCpQ0Ca-HZQ_CasEBaeh';
-const SITE_URL = 'https://sinkomi.es';
+
+// El host bueno es www: sinkomi.es devuelve un 308 hacia aquí. Si generamos
+// enlaces sin www, cada uno provoca un salto extra y Google los trata como
+// redirecciones en vez de como páginas.
+const SITE_URL = 'https://www.sinkomi.es';
+
+// Lectura pública: siempre contra la vista, nunca contra la tabla. La vista solo
+// expone inmuebles activos y devuelve la dirección y las coordenadas ya
+// enmascaradas según lo que haya pedido cada propietario.
+const PUBLIC_TABLE = 'properties_public';
 
 // Lista completa: los 67 municipios oficiales de Baleares + sus pedanías, barrios y
 // urbanizaciones más buscadas (la misma lista que usa el buscador de la propia web).
@@ -70,7 +79,7 @@ async function generateMunicipioPage(req, res, operacion){
     }
 
     const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/properties?${filterParam}&active=eq.true&or=(municipality.eq.${encodeURIComponent(municipio)},nucleo.eq.${encodeURIComponent(municipio)})&select=id,title,price,images,municipality,nucleo&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?${filterParam}&active=eq.true&or=(municipality.eq.${encodeURIComponent(municipio)},nucleo.eq.${encodeURIComponent(municipio)})&select=id,title,price,images,municipality,nucleo&order=created_at.desc`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const props = await resp.json();
