@@ -1,8 +1,8 @@
 // api/_translations.js
 //
 // Diccionario central de textos para las versiones de idioma indexables
-// (sinkomi.es/de/, /en/, /sv/, /ar/...). Un solo archivo, un idioma nuevo
-// = un bloque nuevo aquí, sin tocar el resto del código.
+// (sinkomi.es/de/, /en/, /sv/, /ar/, /zh/...). Un solo archivo, un idioma
+// nuevo = un bloque nuevo aquí, sin tocar el resto del código.
 //
 // Esto NO traduce el chat (eso ya lo tiene SINKOMI con DeepL en tiempo real,
 // y sigue funcionando exactamente igual). Esto es solo lo que un buscador
@@ -12,6 +12,11 @@
 // El árabe (ar) lleva dir:'rtl' — la función api/lang/[locale].js ya lee
 // ese valor y pone <html dir="rtl"> automáticamente, así que el navegador
 // alinea el texto de derecha a izquierda solo con este dato, sin más código.
+//
+// Nota sobre 'zh': esto solo crea la página /zh/ indexable para Google. El
+// selector de idioma del chat en vivo y de la propia web (ES/DE/EN/SV) es
+// código aparte que todavía no incluye chino — eso queda pendiente para
+// otra sesión si se quiere que la web entera se pueda ver en chino.
 
 const TRANSLATIONS = {
 
@@ -89,6 +94,25 @@ const TRANSLATIONS = {
     islands: ['مايوركا', 'مينوركا', 'إيبيزا', 'فورمنتيرا'],
     switchNote: 'تعرض هذه الصفحة نظرة عامة باللغة العربية. الموقع الكامل (البحث، الفلاتر، المحادثة) يعمل على sinkomi.es — عند الضغط أدناه سيتم تفعيل اللغة العربية تلقائيًا.',
     goToSite: 'الانتقال إلى الموقع الكامل باللغة العربية',
+  },
+
+  zh: {
+    dir: 'ltr',
+    htmlLang: 'zh',
+    pageTitle: '巴利阿里群岛业主直售公寓和房屋，无中介费 | SINKOMI',
+    metaDescription: 'SINKOMI 是一个平台，让您在巴利阿里群岛（马略卡、梅诺卡、伊维萨和福门特拉）直接与业主买卖或租赁房产——没有中介费，没有中介机构。直接与业主沟通。',
+    ogDescription: '在巴利阿里群岛买卖或租赁房产，无中介费，直接与业主沟通。合同已包含，随时可签署。',
+    h1: '直接联系持有钥匙的人。',
+    subtitle: 'SINKOMI 是巴利阿里群岛第一个免中介费的房地产平台。没有中间商，没有佣金——只有您和业主。',
+    ctaPrimary: '查看房源',
+    ctaSecondary: '免费发布房源',
+    featureCommission: '0% 中介费',
+    featureChat: '与业主直接聊天',
+    featureContract: '包含租赁合同和定金合同',
+    islandsIntro: '四个岛屿，一个市场，没有中间商：',
+    islands: ['马略卡', '梅诺卡', '伊维萨', '福门特拉'],
+    switchNote: '本页面显示中文概览。完整网站（搜索、筛选、聊天）运行在 sinkomi.es 上——点击下方链接将自动切换为中文。',
+    goToSite: '前往中文完整网站',
   },
 
 };
