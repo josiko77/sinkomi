@@ -49,6 +49,10 @@ module.exports = async (req, res) => {
   const userAgent = req.headers['user-agent'] || '';
   const isBot = BOT_PATTERN.test(userAgent);
   const spaUrl = `${SITE_URL}/?inmueble=${encodeURIComponent(id)}`;
+  // URL "bonita" y estable — la que ve cualquier persona en la barra de
+  // direcciones. Es la que debe ir en canonical y og:url; spaUrl es solo el
+  // destino de redirección para humanos.
+  const canonicalUrl = `${SITE_URL}/inmueble/${encodeURIComponent(id)}`;
 
   // A las personas normales las mandamos directas a la web de verdad, sin pasar por aquí.
   if(!isBot){
@@ -72,18 +76,22 @@ module.exports = async (req, res) => {
     }
 
     const title = escapeHtml(prop.title || 'Inmueble en Baleares');
-    const description = escapeHtml((prop.description || '').slice(0, 300)) || 'Descubre este inmueble en SINKOMI, la plataforma inmobiliaria P2P sin comisiones de las Islas Baleares.';
+    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'Baleares');
+    // "en venta"/"en alquiler" según el tipo, para que el título use la
+    // misma palabra clave por la que la gente busca este tipo de anuncio.
+    const opWord = prop.type === 'Alquiler' ? 'en alquiler' : (prop.category ? 'en traspaso' : 'en venta');
+    const description = escapeHtml((prop.description || '').slice(0, 260))
+      || `Inmueble ${opWord} en ${location}, Illes Balears, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
     const image = (Array.isArray(prop.images) && prop.images[0]) ? prop.images[0] : `${SITE_URL}/og-default.jpg`;
     const price = prop.price ? Number(prop.price).toLocaleString('es-ES') + ' €' : '';
-    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'Baleares');
-    const pageTitle = `${title} · ${price} · ${location} | SINKOMI`;
+    const pageTitle = `${title} · ${opWord} en ${location} · ${price} | SINKOMI`;
 
     const schema = {
       "@context": "https://schema.org",
       "@type": "RealEstateListing",
       "name": prop.title,
       "description": prop.description || title,
-      "url": spaUrl,
+      "url": canonicalUrl,
       "image": Array.isArray(prop.images) ? prop.images : [image],
       "offers": {
         "@type": "Offer",
@@ -104,12 +112,12 @@ module.exports = async (req, res) => {
 <meta charset="UTF-8">
 <title>${pageTitle}</title>
 <meta name="description" content="${description}">
-<link rel="canonical" href="${spaUrl}">
+<link rel="canonical" href="${canonicalUrl}">
 <meta property="og:type" content="product">
 <meta property="og:title" content="${title} · ${price}">
 <meta property="og:description" content="${description}">
 <meta property="og:image" content="${escapeHtml(image)}">
-<meta property="og:url" content="${spaUrl}">
+<meta property="og:url" content="${canonicalUrl}">
 <meta property="og:site_name" content="SINKOMI">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${title} · ${price}">
@@ -119,7 +127,7 @@ module.exports = async (req, res) => {
 </head>
 <body>
   <h1>${title}</h1>
-  <p><strong>${price}</strong> · ${location}</p>
+  <p><strong>${price}</strong> · ${opWord} · ${location}</p>
   <img src="${escapeHtml(image)}" alt="${title}" style="max-width:600px;">
   <p>${description}</p>
   <p><a href="${spaUrl}">Ver este inmueble en SINKOMI</a></p>
