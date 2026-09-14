@@ -30,8 +30,27 @@ const TRANSLATIONS = {
     goToSite: 'Zur vollständigen Website auf Deutsch',
   },
 
-  // Cuando toque inglés, sueco o árabe, se añade un bloque igual que el de
-  // arriba con la clave 'en', 'sv' o 'ar'. El árabe además necesita dir:'rtl'.
+  en: {
+    dir: 'ltr',
+    htmlLang: 'en',
+    pageTitle: 'Apartments and Houses for Sale by Owner in the Balearic Islands, No Commission | SINKOMI',
+    metaDescription: 'SINKOMI is the platform to buy, sell or rent property directly from private owners in the Balearic Islands (Mallorca, Menorca, Ibiza and Formentera) — no commission, no agencies. Talk directly to the owner.',
+    ogDescription: 'Buy, sell or rent in the Balearic Islands with no commission, talking directly to the owner. Contracts included, ready to sign.',
+    h1: 'Talk to the person who holds the keys.',
+    subtitle: 'SINKOMI is the first commission-free real estate platform in the Balearic Islands. No middlemen, no commissions — just you and the owner.',
+    ctaPrimary: 'View properties',
+    ctaSecondary: 'List for free',
+    featureCommission: '0% commission',
+    featureChat: 'Direct chat with the owner',
+    featureContract: 'Rental and deposit contracts included',
+    islandsIntro: 'Four islands, one market, no middlemen:',
+    islands: ['Mallorca', 'Menorca', 'Ibiza', 'Formentera'],
+    switchNote: 'This page shows an overview in English. The full website (search, filters, chat) runs on sinkomi.es — clicking below will switch the language to English automatically.',
+    goToSite: 'Go to the full website in English',
+  },
+
+  // Cuando toque sueco o árabe, se añade un bloque igual que el de arriba
+  // con la clave 'sv' o 'ar'. El árabe además necesita dir:'rtl'.
 
 };
 
