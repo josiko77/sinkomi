@@ -920,6 +920,7 @@
           <a onclick="selectLang('de','de','DE')"><span class="flag-box"><img src="https://flagcdn.com/de.svg" alt="Alemania"></span> Deutsch</a>
           <a onclick="selectLang('en','gb','EN')"><span class="flag-box"><img src="https://flagcdn.com/gb.svg" alt="Inglaterra"></span> English</a>
           <a onclick="selectLang('sv','se','SV')"><span class="flag-box"><img src="https://flagcdn.com/se.svg" alt="Suecia"></span> Svenska</a>
+          <a onclick="selectLang('zh','cn','ZH')"><span class="flag-box"><img src="https://flagcdn.com/cn.svg" alt="China"></span> 中文</a>
         </div>
       </div>
       <button onclick="openLoginModal()" id="login-btn" class="i18n-auto h-10 px-4 rounded-full border border-black/10 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-zinc-50 transition-colors inline-flex items-center">Iniciar sesión</button>
@@ -4466,7 +4467,7 @@ function calcSaving(){
 }
 
 /* TRADUCCIONES */
-const translations={es:{home:'Inicio',help:'Ayuda',contact:'Contacto',explore:'Explorar',login:'Iniciar sesión',publish:'Publicar gratis'},ca:{home:'Inici',help:'Ajuda',contact:'Contacte',explore:'Explorar',login:'Iniciar sessió',publish:'Publicar gratis'},en:{home:'Home',help:'Help',contact:'Contact',explore:'Explore',login:'Log in',publish:'Publish free'},de:{home:'Start',help:'Hilfe',contact:'Kontakt',explore:'Entdecken',login:'Anmelden',publish:'Kostenlos inserieren'},sv:{home:'Hem',help:'Hjälp',contact:'Kontakt',explore:'Utforska',login:'Logga in',publish:'Publicera gratis'}};
+const translations={es:{home:'Inicio',help:'Ayuda',contact:'Contacto',explore:'Explorar',login:'Iniciar sesión',publish:'Publicar gratis'},ca:{home:'Inici',help:'Ajuda',contact:'Contacte',explore:'Explorar',login:'Iniciar sessió',publish:'Publicar gratis'},en:{home:'Home',help:'Help',contact:'Contact',explore:'Explore',login:'Log in',publish:'Publish free'},de:{home:'Start',help:'Hilfe',contact:'Kontakt',explore:'Entdecken',login:'Anmelden',publish:'Kostenlos inserieren'},sv:{home:'Hem',help:'Hjälp',contact:'Kontakt',explore:'Utforska',login:'Logga in',publish:'Publicera gratis'},zh:{home:'首页',help:'帮助',contact:'联系',explore:'浏览',login:'登录',publish:'免费发布'}};
 
 /* DROPDOWNS */
 function closeAllDropdowns(except){['municipios','types','ayuda'].forEach(k=>{if(k!==except){const p=document.getElementById(`${k}-panel`);if(p)p.classList.remove('show');}});if(except!=='precios'){const pp=document.getElementById('precios-panel');if(pp)pp.classList.remove('show');}if(except!=='lang'){const lp=document.getElementById('lang-panel');if(lp)lp.classList.remove('show');}const um=document.getElementById('user-menu-panel');if(um&&except!=='userMenu')um.classList.remove('show');}
@@ -4510,7 +4511,7 @@ function renderMunicipiosDropdown(){
 }
 function renderTypesDropdown(){const list=document.getElementById('types-list');if(!list)return;list.innerHTML='';propertyTypeGroups.forEach(group=>{const title=document.createElement('div');title.className='group-title';title.textContent=group.group;list.appendChild(title);group.items.forEach(type=>{const btn=document.createElement('button');btn.innerHTML=`<strong>${type}</strong><span>${group.group}</span>`;btn.onclick=()=>{setTypeFilterFromDropdown(type);closeAllDropdowns();};list.appendChild(btn);});});}
 function setTypeFilterFromDropdown(type){buyTypeFilter=type;rentTypeFilter=type;zoneTypeFilter=type;renderTypeFilters('buy-type-filters',buyTypeFilter,'buy','buy');renderTypeFilters('rent-type-filters',rentTypeFilter,'rent','rent');renderTypeFilters('zone-type-filters',zoneTypeFilter,'zone','zone');renderPropertyCards('buy-grid','Venta');renderPropertyCards('rent-grid','Alquiler');renderZoneMiniCatalog();document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});}
-const FLAG_IMG_SRC = { es:'https://flagcdn.com/es.svg', de:'https://flagcdn.com/de.svg', gb:'https://flagcdn.com/gb.svg', se:'https://flagcdn.com/se.svg' };
+const FLAG_IMG_SRC = { es:'https://flagcdn.com/es.svg', de:'https://flagcdn.com/de.svg', gb:'https://flagcdn.com/gb.svg', se:'https://flagcdn.com/se.svg', cn:'https://flagcdn.com/cn.svg' };
 function selectLang(lang,flagKey,code){
   setLang(lang);
   const visual=document.getElementById('current-lang-visual');
@@ -4599,7 +4600,7 @@ function refreshDynamicFilterLabels(){
 // ── TRADUCCIÓN AUTOMÁTICA DE LA PORTADA (Capa 2) ────────────────────
 // Cualquier elemento marcado con class="i18n-auto" se traduce solo al cambiar de idioma,
 // usando DeepL, y se guarda en el navegador (localStorage) para no volver a pedirlo.
-const LANG_CODE_TO_DEEPL = { ca:'CA', de:'DE', en:'EN-US', sv:'SV' };
+const LANG_CODE_TO_DEEPL = { ca:'CA', de:'DE', en:'EN-US', sv:'SV', zh:'ZH' };
 
 async function translatePageContent(lang){
   const elements = document.querySelectorAll('.i18n-auto');
