@@ -8,6 +8,10 @@
 // y sigue funcionando exactamente igual). Esto es solo lo que un buscador
 // como Google lee la primera vez que visita /de/, /en/, etc. — el título,
 // la meta descripción y un resumen corto de la web en ese idioma.
+//
+// El árabe (ar) lleva dir:'rtl' — la función api/lang/[locale].js ya lee
+// ese valor y pone <html dir="rtl"> automáticamente, así que el navegador
+// alinea el texto de derecha a izquierda solo con este dato, sin más código.
 
 const TRANSLATIONS = {
 
@@ -68,8 +72,24 @@ const TRANSLATIONS = {
     goToSite: 'Gå till hela webbplatsen på svenska',
   },
 
-  // Cuando toque árabe, se añade un bloque igual que el de arriba con la
-  // clave 'ar'. El árabe además necesita dir:'rtl'.
+  ar: {
+    dir: 'rtl',
+    htmlLang: 'ar',
+    pageTitle: 'شقق ومنازل من أصحابها مباشرة في جزر البليار بدون عمولة | SINKOMI',
+    metaDescription: 'SINKOMI هي المنصة لشراء أو بيع أو استئجار العقارات مباشرة من أصحابها في جزر البليار (مايوركا، مينوركا، إيبيزا وفورمنتيرا) — بدون عمولة وبدون وسطاء. تحدث مباشرة مع المالك.',
+    ogDescription: 'اشترِ أو بِع أو استأجر في جزر البليار بدون عمولة، بالتواصل المباشر مع المالك. العقود متضمنة وجاهزة للتوقيع.',
+    h1: 'تحدث مع من يملك المفاتيح.',
+    subtitle: 'SINKOMI هي أول منصة عقارية بدون عمولة في جزر البليار. بدون وسطاء، بدون عمولات — أنت والمالك فقط.',
+    ctaPrimary: 'عرض العقارات',
+    ctaSecondary: 'أضف إعلانك مجانًا',
+    featureCommission: '0% عمولة',
+    featureChat: 'محادثة مباشرة مع المالك',
+    featureContract: 'عقد الإيجار وعقد العربون متضمنان',
+    islandsIntro: 'أربع جزر، سوق واحد، بدون وسطاء:',
+    islands: ['مايوركا', 'مينوركا', 'إيبيزا', 'فورمنتيرا'],
+    switchNote: 'تعرض هذه الصفحة نظرة عامة باللغة العربية. الموقع الكامل (البحث، الفلاتر، المحادثة) يعمل على sinkomi.es — عند الضغط أدناه سيتم تفعيل اللغة العربية تلقائيًا.',
+    goToSite: 'الانتقال إلى الموقع الكامل باللغة العربية',
+  },
 
 };
 
