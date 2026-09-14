@@ -36,13 +36,13 @@
 }
 </script>
   <meta name="description" content="SINKOMI es la plataforma para comprar, vender o alquilar viviendas de particulares en Mallorca, Menorca, Ibiza y Formentera, sin comisiones ni intermediarios. Habla directamente con el propietario en más de 220 localidades de Baleares." />
-  <title>Pisos y casas de particulares en Mallorca sin comisiones | SINKOMI</title>
+  <title>Pisos y casas de particulares en Baleares sin comisiones | SINKOMI</title>
   <meta property="og:title" content="SINKOMI · Habla con quien tiene las llaves" />
   <meta property="og:description" content="Compra, vende o alquila en Baleares sin comisiones, hablando directo con el propietario. Contratos incluidos, listos para firmar." />
   <meta property="og:site_name" content="SINKOMI" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://sinkomi.es" />
-  <link rel="canonical" href="https://sinkomi.es" />
+  <link rel="canonical" href="https://www.sinkomi.es" />
   <meta name="robots" content="index, follow" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMGQxYTE0Ii8+CjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1IDMyIDMyKSI+CjxjaXJjbGUgY3g9IjIxIiBjeT0iMzIiIHI9IjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZDk4ZiIgc3Ryb2tlLXdpZHRoPSI1LjUiLz4KPHJlY3QgeD0iMjkiIHk9IjI5LjIiIHdpZHRoPSIyMiIgaGVpZ2h0PSI1LjYiIGZpbGw9IiMwMGQ5OGYiLz4KPHJlY3QgeD0iNDAiIHk9IjM0LjgiIHdpZHRoPSI1LjIiIGhlaWdodD0iNy41IiBmaWxsPSIjMDBkOThmIi8+CjxyZWN0IHg9IjQ3IiB5PSIzNC44IiB3aWR0aD0iNS4yIiBoZWlnaHQ9IjkuNSIgZmlsbD0iIzAwZDk4ZiIvPgo8L2c+Cjwvc3ZnPg==" />
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMGQxYTE0Ii8+CjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1IDMyIDMyKSI+CjxjaXJjbGUgY3g9IjIxIiBjeT0iMzIiIHI9IjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZDk4ZiIgc3Ryb2tlLXdpZHRoPSI1LjUiLz4KPHJlY3QgeD0iMjkiIHk9IjI5LjIiIHdpZHRoPSIyMiIgaGVpZ2h0PSI1LjYiIGZpbGw9IiMwMGQ5OGYiLz4KPHJlY3QgeD0iNDAiIHk9IjM0LjgiIHdpZHRoPSI1LjIiIGhlaWdodD0iNy41IiBmaWxsPSIjMDBkOThmIi8+CjxyZWN0IHg9IjQ3IiB5PSIzNC44IiB3aWR0aD0iNS4yIiBoZWlnaHQ9IjkuNSIgZmlsbD0iIzAwZDk4ZiIvPgo8L2c+Cjwvc3ZnPg==" />
@@ -875,9 +875,9 @@
     </div>
     <nav class="hidden xl:flex items-center gap-5 text-[10.5px] font-black uppercase tracking-[0.18em] text-zinc-700">
       <a href="#inicio" id="nav-home" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Inicio</a>
-      <a href="javascript:void(0)" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
-      <a href="javascript:void(0)" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
-      <a href="javascript:void(0)" onclick="openRoommateSection()" id="nav-roommate" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Piso compartido</a>
+      <a href="#tab-comprar" onclick="openExplore()" id="nav-explore" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Explorar</a>
+      <a href="#tab-zonas" onclick="openMunicipiosTab()" id="nav-municipios" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Municipios</a>
+      <a href="#roommate-modal" onclick="openRoommateSection()" id="nav-roommate" class="h-10 inline-flex items-center hover:text-[var(--accent)] transition-colors">Piso compartido</a>
       <div class="relative h-10 inline-flex items-center" id="precios-wrapper">
         <button onclick="toggleDropdown('precios')" class="h-10 inline-flex items-center gap-1.5 font-black text-[10.5px] uppercase tracking-[0.18em] text-zinc-700 hover:text-[var(--orange)] transition-colors">Precios <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
         <div id="precios-panel" class="precios-panel">
@@ -891,11 +891,11 @@
         <button onclick="toggleDropdown('ayuda')" class="h-10 inline-flex items-center gap-1.5 font-black text-[10.5px] uppercase tracking-[0.18em] text-zinc-700 hover:text-[var(--accent)] transition-colors">Ayuda <i class="fa-solid fa-chevron-down text-[9px]"></i></button>
         <div id="ayuda-panel" class="precios-panel">
           <div class="ph-mini">Ayuda y recursos</div>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openPublishGuideModal()" id="nav-publish-guide"><i class="fa-solid fa-camera text-[var(--accent)] w-5 text-center"></i> Cómo publicar bien</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openAyudaModal()" id="nav-help"><i class="fa-solid fa-circle-question text-[var(--accent)] w-5 text-center"></i> Centro de ayuda</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openContratosTab()" id="nav-contratos"><i class="fa-solid fa-file-signature text-[var(--accent)] w-5 text-center"></i> Contratos</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openDatosModal()"><i class="fa-solid fa-chart-simple text-[var(--accent)] w-5 text-center"></i> Nuestros datos</a>
-          <a href="javascript:void(0)" onclick="closeAllDropdowns();openContactoModal()" id="nav-contact"><i class="fa-solid fa-envelope text-[var(--accent)] w-5 text-center"></i> Contacto</a>
+          <a href="#publish-guide-modal" onclick="closeAllDropdowns();openPublishGuideModal()" id="nav-publish-guide"><i class="fa-solid fa-camera text-[var(--accent)] w-5 text-center"></i> Cómo publicar bien</a>
+          <a href="#ayuda-modal" onclick="closeAllDropdowns();openAyudaModal()" id="nav-help"><i class="fa-solid fa-circle-question text-[var(--accent)] w-5 text-center"></i> Centro de ayuda</a>
+          <a href="#tab-contratos" onclick="closeAllDropdowns();openContratosTab()" id="nav-contratos"><i class="fa-solid fa-file-signature text-[var(--accent)] w-5 text-center"></i> Contratos</a>
+          <a href="#datos-modal" onclick="closeAllDropdowns();openDatosModal()"><i class="fa-solid fa-chart-simple text-[var(--accent)] w-5 text-center"></i> Nuestros datos</a>
+          <a href="#contacto-modal" onclick="closeAllDropdowns();openContactoModal()" id="nav-contact"><i class="fa-solid fa-envelope text-[var(--accent)] w-5 text-center"></i> Contacto</a>
         </div>
       </div>
     </nav>
@@ -3556,7 +3556,7 @@
       <i class="fa-solid fa-lightbulb" style="color:var(--accent-dark);margin-top:2px;"></i>
       <div style="font-size:12.5px;line-height:1.6;color:#1a3d33;">
         <b>Sube al menos 8-10 fotos con luz natural</b> — los anuncios con más fotos reciben muchos más contactos. Empieza por el salón, luego cocina, dormitorios y baños, y deja el exterior para el final.
-        <a href="javascript:void(0)" onclick="openPublishGuideModal()" style="color:var(--accent-dark);font-weight:700;text-decoration:underline;white-space:nowrap;">Ver guía completa →</a>
+        <a href="#publish-guide-modal" onclick="openPublishGuideModal()" style="color:var(--accent-dark);font-weight:700;text-decoration:underline;white-space:nowrap;">Ver guía completa →</a>
       </div>
     </div>
     <input id="publish-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePublishPhotos(this)">
