@@ -43,6 +43,33 @@ function escapeHtml(text){
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Título y meta descripción por operación, ya con las palabras clave reales
+// que la gente busca ("particular", "sin agencia", "propietario"), en vez de
+// redacciones genéricas tipo "Negocios y pisos en venta en X".
+function buildCopy(operacion, municipio){
+  const m = escapeHtml(municipio);
+  if(operacion === 'alquiler'){
+    return {
+      pageTitle: `Alquiler de pisos en ${m} de particulares, sin agencia | SINKOMI`,
+      h1: `Alquiler en ${m} sin agencias`,
+      description: `Encuentra pisos y casas en alquiler en ${m}, Illes Balears, publicados directamente por sus propietarios. Sin agencias ni comisiones: habla con el propietario en SINKOMI.`,
+    };
+  }
+  if(operacion === 'traspasar'){
+    return {
+      pageTitle: `Traspaso de negocios en ${m} sin comisión, trato directo | SINKOMI`,
+      h1: `Traspasos de negocio en ${m}`,
+      description: `Bares, locales y negocios en traspaso en ${m}, Illes Balears, publicados por sus propios dueños. Sin intermediarios ni comisión de agencia, en SINKOMI.`,
+    };
+  }
+  // comprar / venta
+  return {
+    pageTitle: `Pisos y casas en venta en ${m} de particulares, sin comisión | SINKOMI`,
+    h1: `Pisos y casas en venta en ${m}`,
+    description: `Compra directamente al propietario en ${m}, Illes Balears, sin pagar comisión de agencia. Anuncios reales de particulares, verificados, en SINKOMI.`,
+  };
+}
+
 async function generateMunicipioPage(req, res, operacion){
   const municipioSlug = req.query.municipio;
   const municipio = findMunicipioBySlug(municipioSlug);
@@ -51,6 +78,10 @@ async function generateMunicipioPage(req, res, operacion){
   const spaUrl = municipio
     ? `${SITE_URL}/?zona=${encodeURIComponent(municipio)}&op=${operacion}`
     : SITE_URL;
+  // URL "bonita" y estable — la misma que ve cualquier persona en la barra de
+  // direcciones (/comprar/soller, /alquiler/soller...). Es la que debe ir en
+  // canonical y og:url; spaUrl es solo el destino de redirección para humanos.
+  const canonicalUrl = municipio ? `${SITE_URL}/${operacion}/${municipioSlug}` : SITE_URL;
 
   if(!municipio){
     res.writeHead(302, { Location: SITE_URL });
@@ -85,8 +116,7 @@ async function generateMunicipioPage(req, res, operacion){
     const props = await resp.json();
     const list = Array.isArray(props) ? props : [];
 
-    const pageTitle = `Negocios y pisos ${accion} en ${escapeHtml(municipio)} sin comisiones | SINKOMI`;
-    const description = `Descubre oportunidades ${accion} en ${escapeHtml(municipio)}, Illes Balears. Habla directamente con el propietario, sin agencias ni comisiones, en SINKOMI.`;
+    const { pageTitle, h1, description } = buildCopy(operacion, municipio);
 
     const itemsHtml = list.map(p => {
       const price = p.price ? Number(p.price).toLocaleString('es-ES') + ' €' : '';
@@ -111,15 +141,15 @@ async function generateMunicipioPage(req, res, operacion){
 <meta charset="UTF-8">
 <title>${pageTitle}</title>
 <meta name="description" content="${escapeHtml(description)}">
-<link rel="canonical" href="${spaUrl}">
+<link rel="canonical" href="${canonicalUrl}">
 <meta property="og:title" content="${pageTitle}">
 <meta property="og:description" content="${escapeHtml(description)}">
-<meta property="og:url" content="${spaUrl}">
+<meta property="og:url" content="${canonicalUrl}">
 <meta property="og:site_name" content="SINKOMI">
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
 <body>
-  <h1>Oportunidades ${accion} en ${escapeHtml(municipio)}</h1>
+  <h1>${h1}</h1>
   <p>${description}</p>
   <ul>${itemsHtml || '<li>Ahora mismo no hay nada publicado en esta zona, pero pronto habrá — vuelve a mirar en unos días.</li>'}</ul>
   <p><a href="${spaUrl}">Ver todos en SINKOMI</a></p>
