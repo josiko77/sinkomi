@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/comprar/:municipio", "destination": "/api/comprar/:municipio" },
+    { "source": "/alquiler/:municipio", "destination": "/api/alquiler/:municipio" },
+    { "source": "/traspasar/:municipio", "destination": "/api/traspasar/:municipio" },
+    { "source": "/inmueble/:id", "destination": "/api/inmueble/:id" },
+    { "source": "/:locale(de|en|sv|ar|zh)", "destination": "/api/lang/:locale" },
+    { "source": "/:locale(de|en|sv|ar|zh)/", "destination": "/api/lang/:locale" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
