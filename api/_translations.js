@@ -49,8 +49,27 @@ const TRANSLATIONS = {
     goToSite: 'Go to the full website in English',
   },
 
-  // Cuando toque sueco o árabe, se añade un bloque igual que el de arriba
-  // con la clave 'sv' o 'ar'. El árabe además necesita dir:'rtl'.
+  sv: {
+    dir: 'ltr',
+    htmlLang: 'sv',
+    pageTitle: 'Lägenheter och hus från privatpersoner på Balearerna utan provision | SINKOMI',
+    metaDescription: 'SINKOMI är plattformen för att köpa, sälja eller hyra bostäder direkt av privatpersoner på Balearerna (Mallorca, Menorca, Ibiza och Formentera) — utan provision och utan mäklare. Prata direkt med ägaren.',
+    ogDescription: 'Köp, sälj eller hyr på Balearerna utan provision, direkt med ägaren. Kontrakt ingår, klara att skriva under.',
+    h1: 'Prata med den som har nycklarna.',
+    subtitle: 'SINKOMI är den första provisionsfria fastighetsplattformen på Balearerna. Inga mellanhänder, ingen provision — bara du och ägaren.',
+    ctaPrimary: 'Se bostäder',
+    ctaSecondary: 'Annonsera gratis',
+    featureCommission: '0% provision',
+    featureChat: 'Direktchatt med ägaren',
+    featureContract: 'Hyreskontrakt och handpenningsavtal ingår',
+    islandsIntro: 'Fyra öar, en marknad, inga mellanhänder:',
+    islands: ['Mallorca', 'Menorca', 'Ibiza', 'Formentera'],
+    switchNote: 'Den här sidan visar en översikt på svenska. Hela webbplatsen (sökning, filter, chatt) körs på sinkomi.es — när du klickar nedan ställs språket automatiskt in på svenska.',
+    goToSite: 'Gå till hela webbplatsen på svenska',
+  },
+
+  // Cuando toque árabe, se añade un bloque igual que el de arriba con la
+  // clave 'ar'. El árabe además necesita dir:'rtl'.
 
 };
 
