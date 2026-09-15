@@ -486,7 +486,8 @@
       .fundadores-grid{grid-template-columns:1fr;gap:1.75rem;justify-items:center;text-align:center;}
       .fundadores-counter{padding:1.75rem 1.5rem;min-width:0;width:100%;max-width:280px;}
     }
-    .calc-pct-row{display:flex;gap:.5rem;}
+    .calc-pct-row{display:flex;gap:.5rem;min-width:0;}
+    .calc-pct-row button{min-width:0;}
     @media(max-width:480px){.calc-pct-row{display:grid;grid-template-columns:repeat(3,1fr);}}
     /* Cabecera en móvil: que la fila de idioma / iniciar sesión / publicar
        no se corte — se reduce el relleno y se oculta el código de idioma
@@ -1442,16 +1443,16 @@
   <div class="panel p-8 md:p-12 overflow-hidden relative">
     <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-[0.04]" style="background:var(--orange);"></div>
     <div class="grid xl:grid-cols-2 gap-10 items-center">
-      <div>
+      <div class="min-w-0">
         <div class="i18n-auto section-label mb-3">Calculadora</div>
         <h2 class="serif text-4xl md:text-6xl leading-[0.92] text-black mb-5"><span class="i18n-auto">¿Cuánto te ahorras</span> <em class="text-[var(--orange)] i18n-auto">aquí?</em></h2>
         <p class="i18n-auto text-zinc-700 leading-relaxed mb-8">Introduce el precio de tu inmueble y ve en tiempo real cuánto te puedes ahorrar evitando la comisión inmobiliaria.</p>
         <div class="space-y-5">
-          <div><label class="i18n-auto section-label block mb-2">Precio del inmueble</label><div class="flex items-center gap-3"><input id="calc-price" type="text" inputmode="numeric" pattern="[0-9.]*" placeholder="350.000" oninput="calcSaving()" class="flex-1 border border-black/10 px-5 py-4 text-xl font-black bg-white focus:outline-none focus:border-[var(--accent)]"><span class="text-2xl font-black text-zinc-600">€</span></div></div>
+          <div><label class="i18n-auto section-label block mb-2">Precio del inmueble</label><div class="flex items-center gap-3 min-w-0"><input id="calc-price" type="text" inputmode="numeric" pattern="[0-9.]*" placeholder="350.000" oninput="calcSaving()" class="flex-1 min-w-0 border border-black/10 px-5 py-4 text-xl font-black bg-white focus:outline-none focus:border-[var(--accent)]"><span class="text-2xl font-black text-zinc-600 shrink-0">€</span></div></div>
           <div><label class="i18n-auto section-label block mb-2">Comisión estimada de agencia</label><div class="calc-pct-row"><button onclick="setCalcPct(2)" id="calc-btn-2" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">2%</button><button onclick="setCalcPct(3)" id="calc-btn-3" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">3%</button><button onclick="setCalcPct(4)" id="calc-btn-4" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">4%</button><button onclick="setCalcPct(5)" id="calc-btn-5" class="flex-1 py-3 border border-[var(--accent)] bg-[var(--accent-soft)] font-black text-sm text-[var(--accent)]">5% <span class="i18n-auto text-[9px]">MEDIA</span></button><button onclick="setCalcPct(6)" id="calc-btn-6" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">6%</button><button onclick="setCalcPct(7)" id="calc-btn-7" class="flex-1 py-3 border border-black/10 bg-white font-black text-sm hover:bg-zinc-50 transition-colors">7%</button></div></div>
         </div>
       </div>
-      <div class="soft-panel p-8 relative overflow-hidden">
+      <div class="soft-panel p-8 relative overflow-hidden min-w-0">
         <div class="absolute top-0 left-0 w-full h-1 bg-[var(--orange)]"></div>
         <div class="i18n-auto section-label mb-4">Tu ahorro potencial</div>
         <div id="calc-saving" class="calc-saving-number mb-2">–</div>
