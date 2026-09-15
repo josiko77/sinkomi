@@ -4331,8 +4331,8 @@ function handleDeepLinkParams(){
   const inmuebleId = params.get('inmueble');
   if(inmuebleId){
     deepLinkHandled = true;
+    window.history.replaceState({}, document.title, '/');
     openPropertyModal(inmuebleId);
-    window.history.replaceState({}, document.title, window.location.pathname);
     return;
   }
   const zona = params.get('zona');
@@ -4742,7 +4742,7 @@ function tr(text){
 }
 
 function formatPrice(prop){
-  if(prop.category === 'Traspaso' || prop.category === 'Bar / Cafetería' || prop.category === 'Restaurante' || prop.category === 'Tienda / Comercio' || prop.category === 'Peluquería / Estética' || prop.category === 'Oficina' || prop.category === 'Nave industrial'){
+  if(prop.category === 'Traspaso'){
     const traspaso = Number(prop.price).toLocaleString('es-ES');
     if(prop.rentPrice){
       const alquiler = Number(prop.rentPrice).toLocaleString('es-ES');
@@ -5019,6 +5019,12 @@ function findProperty(id){return properties.find(p=>p.id===id);}
 async function openPropertyModal(id){
   currentProperty=findProperty(id);
   if(!currentProperty)return;
+
+  // Empuja un estado nuevo en el historial: así "atrás" cierra la ficha
+  // (ver el listener de popstate más abajo) en vez de salir de la web.
+  if(window.location.pathname !== '/inmueble/' + id){
+    history.pushState({sinkomiPropertyModal:true, id}, '', '/inmueble/' + id);
+  }
 
   // Reinicia el simulador de amueblado con IA para esta ficha
   const stagingResultWrap = document.getElementById('staging-result-wrap');
@@ -6056,6 +6062,14 @@ function setupPropertyQuicknav(){
   }, {root: body, threshold: 0.35});
   sections.forEach(s=>propertyScrollspyObserver.observe(s));
 }
+
+window.addEventListener('popstate', function(){
+  const modal = document.getElementById('property-modal');
+  if(modal && !modal.classList.contains('hidden')){
+    document.getElementById('property-modal').classList.add('hidden');
+    if(propertyScrollspyObserver){ propertyScrollspyObserver.disconnect(); propertyScrollspyObserver=null; }
+  }
+});
 
 function closePropertyModal(){
   document.getElementById('property-modal').classList.add('hidden');
@@ -10367,9 +10381,8 @@ async function submitPublishForm(){
       return;
     }
   }
-  const traspasoCats=['Traspaso','Bar / Cafetería','Restaurante','Tienda / Comercio','Peluquería / Estética','Oficina','Nave industrial'];
   let rentPrice = null;
-  if(traspasoCats.includes(category)){
+  if(category === 'Traspaso'){
     rentPrice = Number((document.getElementById('publish-rent-price').value||'').replace(/[^\d]/g,''));
     if(!rentPrice){
       alert('Para este tipo de local, indica el alquiler mensual además del precio del traspaso.');
