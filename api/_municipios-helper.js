@@ -27,6 +27,45 @@ const TRASPASO_CATEGORIES = ["Traspaso","Bar / Cafetería","Restaurante","Tienda
 
 const BOT_PATTERN = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
 
+// Nombre alternativo (el que se busca en español/inglés) para los municipios
+// donde el nombre oficial en catalán es notablemente distinto — sobre todo
+// los pueblos turísticos de Ibiza y Menorca. Se añade entre paréntesis en el
+// título y el H1, para no perder a quien busca "San Antonio" en vez de
+// "Sant Antoni de Portmany".
+const ALT_NAMES = {
+  "Palma": "Palma de Mallorca",
+  "Eivissa": "Ibiza",
+  "Maó": "Mahón",
+  "Ciutadella de Menorca": "Ciudadela",
+  "Sant Antoni de Portmany": "San Antonio",
+  "Sant Josep de sa Talaia": "San José",
+  "Sant Joan de Labritja": "San Juan",
+  "Sant Miquel de Balansat": "San Miguel",
+  "Sant Francesc Xavier": "San Francisco Javier",
+  "Sant Ferran de ses Roques": "San Fernando",
+  "Sant Rafel de sa Creu": "San Rafael",
+  "Sant Carles de Peralta": "San Carlos",
+  "Sant Lluís": "San Luis",
+  // Variante ortográfica muy usada (con "s" en vez de "ç") — igual que hace
+  // Idealista en el texto de sus propios anuncios, aunque su campo oficial
+  // de municipio use "Santa Ponça".
+  "Santa Ponça": "Santa Ponsa",
+  "Sant Climent": "San Clemente",
+};
+
+// Aclaración de ubicación para nombres que se repiten en distintos puntos de
+// Baleares y podrían confundirse entre sí (a diferencia de ALT_NAMES, esto no
+// es "cómo lo busca la gente", es "a qué lugar exacto nos referimos"):
+// - "Sant Jordi" es un barrio de Palma.
+// - "Colònia de Sant Jordi" es la pedanía costera del municipio de Ses Salines.
+// - "Sant Jordi de ses Salines" es un pueblo de Ibiza, dentro de Sant Josep de
+//   sa Talaia — nada que ver con los dos anteriores, pese al nombre parecido.
+const LOCATION_HINTS = {
+  "Sant Jordi": "Palma",
+  "Colònia de Sant Jordi": "Ses Salines",
+  "Sant Jordi de ses Salines": "Ibiza",
+};
+
 function slugify(text){
   return text.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -43,11 +82,18 @@ function escapeHtml(text){
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Añade "(Nombre alternativo)" cuando existe, para que el título use la
+// palabra exacta que la gente busca, sin crear una página duplicada.
+function displayName(municipio){
+  const alt = ALT_NAMES[municipio] || LOCATION_HINTS[municipio];
+  return alt ? `${municipio} (${alt})` : municipio;
+}
+
 // Título y meta descripción por operación, ya con las palabras clave reales
 // que la gente busca ("particular", "sin agencia", "propietario"), en vez de
 // redacciones genéricas tipo "Negocios y pisos en venta en X".
 function buildCopy(operacion, municipio){
-  const m = escapeHtml(municipio);
+  const m = escapeHtml(displayName(municipio));
   if(operacion === 'alquiler'){
     return {
       pageTitle: `Alquiler de pisos en ${m} de particulares, sin agencia | SINKOMI`,
