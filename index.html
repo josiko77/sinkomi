@@ -3101,7 +3101,7 @@
 
 <div id="property-modal" class="hidden fixed inset-0 bg-black/80 z-[1300] flex items-center justify-center px-4 py-4">
   <div id="property-modal-container" class="bg-white w-full max-w-7xl h-[94vh] shadow-2xl flex flex-col" style="transition:all .3s ease;">
-    <div id="property-modal-header" class="border-b border-black/6 px-6 py-4 flex items-center justify-between" style="transition:all .3s ease;">
+    <div id="property-modal-header" class="border-b border-black/6 px-4 sm:px-6 py-4 flex items-center justify-between flex-wrap gap-y-3" style="transition:all .3s ease;">
       <div class="min-w-0 flex items-center gap-3">
         <div id="property-modal-badge" style="display:none;"></div>
         <div>
@@ -3109,14 +3109,14 @@
           <div class="text-sm truncate" id="property-modal-location"></div>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
-        <button onclick="toggleDiscardProperty()" id="property-modal-discard-btn" title="Descartar" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-trash-can"></i></button>
-        <button onclick="openPropertyZoneMap()" id="property-modal-directions-btn" title="Ver el mapa de la zona" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-map-location-dot"></i></button>
-        <button onclick="openAddToListModal()" id="property-modal-list-btn" title="Añadir a una lista" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-bookmark"></i></button>
-        <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
-        <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em]">Contactar</button>
-        <button onclick="closePropertyModal()" id="property-modal-close-btn" class="text-2xl hover:opacity-70">×</button>
+      <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto thin-scroll">
+        <a href="#" id="property-modal-call-btn" class="hidden px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 shrink-0"><i class="fa-solid fa-phone"></i> <span id="property-modal-call-label" class="i18n-auto">Llamar</span></a>
+        <button onclick="toggleDiscardProperty()" id="property-modal-discard-btn" title="Descartar" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 shrink-0"><i class="fa-solid fa-trash-can"></i></button>
+        <button onclick="openPropertyZoneMap()" id="property-modal-directions-btn" title="Ver el mapa de la zona" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 shrink-0"><i class="fa-solid fa-map-location-dot"></i></button>
+        <button onclick="openAddToListModal()" id="property-modal-list-btn" title="Añadir a una lista" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 shrink-0"><i class="fa-solid fa-bookmark"></i></button>
+        <button onclick="shareProperty()" id="property-modal-share-btn" class="px-4 py-3 border border-black/15 text-sm font-bold uppercase tracking-[0.12em] flex items-center gap-2 hover:bg-zinc-50 shrink-0"><i class="fa-solid fa-share-nodes"></i> <span class="i18n-auto">Compartir</span></button>
+        <button onclick="openChatFromProperty()" id="property-modal-contact-btn" class="i18n-auto px-4 py-3 accent-btn text-sm font-bold uppercase tracking-[0.12em] shrink-0">Contactar</button>
+        <button onclick="closePropertyModal()" id="property-modal-close-btn" class="text-2xl hover:opacity-70 shrink-0">×</button>
       </div>
     </div>
     <div id="property-modal-body" class="flex-1 modal-scroll p-6 bg-[#faf8f5]">
