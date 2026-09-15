@@ -488,6 +488,15 @@
     }
     .calc-pct-row{display:flex;gap:.5rem;}
     @media(max-width:480px){.calc-pct-row{display:grid;grid-template-columns:repeat(3,1fr);}}
+    /* Cabecera en móvil: que la fila de idioma / iniciar sesión / publicar
+       no se corte — se reduce el relleno y se oculta el código de idioma
+       (ES/DE/EN...) dejando solo la bandera, que ya comunica lo mismo. */
+    @media(max-width:640px){
+      .header-actions #login-btn,
+      .header-actions #publish-free-btn{padding-left:.85rem;padding-right:.85rem;font-size:10px;}
+      .header-actions #current-lang-code{display:none;}
+      .header-actions #lang-wrapper > button{padding-left:.6rem;padding-right:.6rem;}
+    }
     .precios-compare-strip{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;justify-content:center;}
     .chat-lang-pill{background:#111a14;color:#e8f0eb;border:1.5px solid rgba(94,230,176,0.35);font-size:11.5px;font-weight:800;padding:.5rem .8rem;border-radius:999px;outline:none;cursor:pointer;transition:border-color .18s ease,background .18s ease;}
     .chat-lang-pill:hover{border-color:rgba(94,230,176,0.6);}
@@ -498,7 +507,7 @@
     .comparison-value{font-size:2.2rem;line-height:1;font-weight:900;letter-spacing:-0.025em;color:var(--accent);}
     .saving-metric-card{padding:1.35rem;border:1px solid var(--line);background:white;transition:all .25s ease;}
     .saving-metric-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(0,0,0,.06);}
-    .calc-saving-number{font-size:3.5rem;font-weight:900;letter-spacing:-0.06em;line-height:1;color:var(--orange);}
+    .calc-saving-number{font-size:clamp(1.9rem,9vw,3.5rem);font-weight:900;letter-spacing:-0.06em;line-height:1;color:var(--orange);max-width:100%;overflow-wrap:break-word;}
     .calc-result{animation:calcPop .35s cubic-bezier(0.23,1,0.32,1) both;}
     .stat-number{font-size:3.5rem;font-weight:900;letter-spacing:-0.06em;line-height:1;}
     .stat-bar{height:4px;background:rgba(255,255,255,0.1);overflow:hidden;}
@@ -875,7 +884,7 @@
 
 <!-- HEADER -->
 <header class="sticky top-[37px] z-50 backdrop-blur-2xl bg-white/92 border-b border-black/5" style="box-shadow:0 2px 30px rgba(0,0,0,0.07);">
-  <div class="w-full px-6 py-4 flex items-center justify-between gap-6">
+  <div class="w-full px-6 py-4 flex items-center justify-between gap-6 flex-wrap sm:flex-nowrap">
     <div>
       <div class="i18n-auto section-label mb-1.5">Baleares · Sin comisiones</div>
       <h1 class="brand-title text-4xl md:text-5xl text-black">SINKO<span class="text-[var(--accent)]">MI</span></h1>
@@ -906,7 +915,7 @@
         </div>
       </div>
     </nav>
-    <div class="flex items-center gap-2.5 shrink-0">
+    <div class="flex items-center gap-2 sm:gap-2.5 shrink-0 header-actions">
       <div class="relative h-10 inline-flex items-center" id="lang-wrapper">
         <button onclick="toggleDropdown('lang')" class="h-10 px-3 inline-flex items-center gap-1.5 border border-black/10 text-sm font-semibold hover:bg-zinc-50 transition-colors">
           <span id="current-lang-visual" class="flag-box"><img src="https://flagcdn.com/es.svg" alt="España"></span>
@@ -1382,7 +1391,7 @@
       <div style="text-align:center;flex-shrink:0;">
         <div class="fundadores-counter" style="border:1px solid rgba(232,160,32,0.25);background:rgba(0,0,0,0.25);">
           <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);margin-bottom:.9rem;" class="i18n-auto">Verificado</div>
-          <div style="font-size:3.2rem;font-weight:900;line-height:1;color:white;letter-spacing:-0.04em;font-family:'Plus Jakarta Sans',sans-serif;" class="i18n-auto">1er mes</div>
+          <div style="font-size:clamp(1.8rem,8vw,3.2rem);font-weight:900;line-height:1;color:white;letter-spacing:-0.04em;font-family:'Plus Jakarta Sans',sans-serif;max-width:100%;overflow-wrap:break-word;" class="i18n-auto">1er mes</div>
           <div style="font-size:1.4rem;font-weight:900;line-height:1;color:var(--orange);letter-spacing:-0.02em;font-family:'Plus Jakarta Sans',sans-serif;margin-top:.35rem;" class="i18n-auto">GRATIS</div>
           <div style="width:100%;height:4px;background:rgba(255,255,255,0.08);margin:1.1rem 0;overflow:hidden;">
             <div style="height:100%;background:var(--orange);width:100%;"></div>
@@ -2556,7 +2565,7 @@
       <span class="pp-tag i18n-auto">Incluido en los tres planes</span>
     </div>
 
-    <div class="grid lg:grid-cols-4 gap-6 items-stretch">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
 
       <!-- BÁSICO -->
       <div class="soft-panel p-8 flex flex-col" style="border:1.5px solid rgba(0,0,0,0.08);">
