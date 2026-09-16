@@ -3103,6 +3103,7 @@
   <div id="property-modal-container" class="bg-white w-full max-w-7xl h-[94vh] shadow-2xl flex flex-col" style="transition:all .3s ease;">
     <div id="property-modal-header" class="border-b border-black/6 px-4 sm:px-6 py-4 flex items-center justify-between flex-wrap gap-y-3" style="transition:all .3s ease;">
       <div class="min-w-0 flex items-center gap-3">
+        <button onclick="history.back()" title="Volver" aria-label="Volver" class="shrink-0 w-9 h-9 -ml-1.5 flex items-center justify-center rounded-full hover:bg-black/5 text-lg text-zinc-700"><i class="fa-solid fa-arrow-left"></i></button>
         <div id="property-modal-badge" style="display:none;"></div>
         <div>
           <div class="font-semibold text-2xl truncate" id="property-modal-title"></div>
@@ -4863,7 +4864,7 @@ function buildPropertyCardEl(prop){
         ${tier===1 ? topBadge : ''}
         ${tier===3 ? featuredCorner : ''}
         ${statusStampHtml}
-        <button class="heart-btn" data-id="${prop.id}" onclick="toggleFavourite('${prop.id}',this,event)" title="Guardar en favoritos"><i class="fa-regular fa-heart"></i></button>
+        <button class="heart-btn${isPropFavourite(prop)?' active':''}" data-id="${prop.id}" onclick="toggleFavourite('${prop.id}',this,event)" title="Guardar en favoritos"><i class="fa-${isPropFavourite(prop)?'solid':'regular'} fa-heart"></i></button>
         <button class="compare-btn${compareIds.indexOf(prop.id)>=0?' active':''}" data-compare-id="${prop.id}" onclick="toggleCompare('${prop.id}',this,event)" title="Comparar"><i class="fa-solid fa-code-compare"></i></button>
         <img src="${prop.img}" alt="${escapeHtml(prop.title)}" ${imgAttrs}>
         <div class="prop-card-overlay"></div>
