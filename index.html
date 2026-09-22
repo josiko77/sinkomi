@@ -3303,12 +3303,12 @@
             <div class="i18n-auto section-label mb-3">Características</div>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Superficie</div><div id="property-surface" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Dormitorios</div><div id="property-bedrooms" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Baños</div><div id="property-bathrooms" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Planta</div><div id="property-floor" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Estado</div><div id="property-condition" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Orientación</div><div id="property-orientation" class="font-bold"></div></div>
-              <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Cert. Energético</div><div id="property-energy" class="font-bold"></div></div>
+              <div id="field-detail-bedrooms" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Dormitorios</div><div id="property-bedrooms" class="font-bold"></div></div>
+              <div id="field-detail-bathrooms" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Baños</div><div id="property-bathrooms" class="font-bold"></div></div>
+              <div id="field-detail-floor" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Planta</div><div id="property-floor" class="font-bold"></div></div>
+              <div id="field-detail-condition" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Estado</div><div id="property-condition" class="font-bold"></div></div>
+              <div id="field-detail-orientation" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Orientación</div><div id="property-orientation" class="font-bold"></div></div>
+              <div id="field-detail-energy" class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Cert. Energético</div><div id="property-energy" class="font-bold"></div></div>
               <div class="soft-panel p-3"><div class="text-zinc-500 text-xs uppercase font-black mb-1">Precio negociable</div><div id="property-negotiable" class="font-bold"></div></div>
             </div>
           </div>
@@ -5159,6 +5159,7 @@ async function openPropertyModal(id){
   document.getElementById('property-orientation').textContent = currentProperty.orientation || tr('No especificada');
   document.getElementById('property-energy').textContent = currentProperty.energy || tr('En trámite');
   document.getElementById('property-negotiable').textContent = currentProperty.negotiable || tr('No especificado');
+  toggleDetailFieldsByCategory(currentProperty.category);
   document.getElementById('property-community').textContent = currentProperty.community ? `${currentProperty.community}€/${tr('mes')}` : tr('No especificado');
   document.getElementById('property-ibi').textContent = currentProperty.ibi ? `${currentProperty.ibi}€/${tr('año')}` : tr('No especificado');
 
@@ -11339,6 +11340,17 @@ function togglePublishFieldsByCategory(category){
   });
   const extrasPanel = document.getElementById('publish-extras-panel');
   if(extrasPanel) extrasPanel.classList.toggle('hidden', !group.showExtrasPanel);
+}
+/* Igual que arriba, pero para la ficha de detalle que ve el comprador: oculta Dormitorios/Baños/
+   Planta/Estado/Orientación/Cert.Energético cuando no aplican al tipo de inmueble (parking, terreno, traspaso...). */
+function toggleDetailFieldsByCategory(category){
+  const groupKey = publishCategoryToGroup[category] || 'vivienda';
+  const group = publishFieldGroups[groupKey];
+  const detailKeys = ['bedrooms','bathrooms','floor','condition','orientation','energy'];
+  detailKeys.forEach(key=>{
+    const el = document.getElementById('field-detail-'+key);
+    if(el) el.classList.toggle('hidden', !group.fields.includes(key));
+  });
 }
 let selectedDestacadoDays = 'mensual';
 let currentVerificationPlan = 'verificado';
