@@ -5170,7 +5170,10 @@ async function openPropertyModal(id){
     const price = Number(currentProperty.price) || 0;
     const mun = currentProperty.municipality;
     const munData = m2PriceData.find(r => r.name === mun);
-    if(isVenta && price > 0 && munData && munData.rent > 0){
+    // Los datos de €/m² son de vivienda residencial: no tienen sentido para un parking, un trastero,
+    // un terreno o un local, así que la caja de rentabilidad solo se calcula para ese tipo de inmueble.
+    const isResidencial = (publishCategoryToGroup[currentProperty.category] || 'vivienda') === 'vivienda';
+    if(isVenta && isResidencial && price > 0 && munData && munData.rent > 0){
       // Estimamos superficie útil desde precio y precio/m² del municipio (o usamos surface si disponible)
       const surfaceNum = parseInt((currentProperty.surface||'').replace(/[^\d]/g,'')) || Math.round(price / munData.sale);
       const estimatedMonthlyRent = munData.rent * surfaceNum;
