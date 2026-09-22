@@ -3550,8 +3550,8 @@
 </div>
 </div>
 <div id="publish-step-2" class="hidden">
-<div class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div><label class="text-sm font-medium mb-2 block">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
-<div class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label><label class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-accesible" type="checkbox"> ♿ Vivienda accesible</label></div>
+<div id="publish-features-panel" class="panel p-5"><div class="i18n-auto section-label mb-3">Características principales</div><div class="grid md:grid-cols-4 gap-4"><div id="field-built-m2"><label class="text-sm font-medium mb-2 block" id="label-built-m2">m² construidos</label><input id="publish-built-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="108"></div><div id="field-useful-m2"><label class="text-sm font-medium mb-2 block">m² útiles</label><input id="publish-useful-m2" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="94"></div><div id="field-bedrooms"><label class="text-sm font-medium mb-2 block">Habitaciones</label><input id="publish-bedrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="3"></div><div id="field-bathrooms"><label class="text-sm font-medium mb-2 block">Baños</label><input id="publish-bathrooms" type="number" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2"></div></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div id="field-floor"><label class="text-sm font-medium mb-2 block">Planta</label><input id="publish-floor" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="2ª / bajo / ático"></div><div id="field-condition"><label class="text-sm font-medium mb-2 block">Estado</label><select id="publish-condition" class="w-full border border-black/8 px-4 py-3 bg-white"><option>Buen estado</option><option>Reformado</option><option>A reformar</option><option>Obra nueva</option></select></div><div id="field-energy"><label class="text-sm font-medium mb-2 block">Certificado energético</label><select id="publish-energy" class="w-full border border-black/8 px-4 py-3 bg-white"><option>En trámite</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>Exento</option></select></div><div id="field-orientation"><label class="text-sm font-medium mb-2 block">Orientación</label><select id="publish-orientation" class="w-full border border-black/8 px-4 py-3 bg-white"><option>No especificada</option><option>Norte</option><option>Sur</option><option>Este</option><option>Oeste</option><option>Sureste</option><option>Suroeste</option></select></div></div></div>
+<div id="publish-extras-panel" class="panel p-5"><div class="i18n-auto section-label mb-3">Extras</div><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm"><label id="extrawrap-ascensor" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-ascensor" type="checkbox"> Ascensor</label><label id="extrawrap-terraza" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-terraza" type="checkbox"> Terraza</label><label id="extrawrap-balcon" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-balcon" type="checkbox"> Balcón</label><label id="extrawrap-garaje" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-garaje" type="checkbox"> Garaje</label><label id="extrawrap-trastero" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-trastero" type="checkbox"> Trastero</label><label id="extrawrap-piscina" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-piscina" type="checkbox"> Piscina</label><label id="extrawrap-jardin" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-jardin" type="checkbox"> Jardín</label><label id="extrawrap-aire" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-aire" type="checkbox"> Aire acondicionado</label><label id="extrawrap-accesible" class="flex gap-2 items-center bg-white border border-black/8 p-3"><input id="extra-accesible" type="checkbox"> ♿ Vivienda accesible</label></div>
   <div class="grid sm:grid-cols-2 gap-4 mt-4">
     <div>
       <label class="flex gap-2 items-center bg-white border border-black/8 p-3 mb-2"><input id="extra-plano" type="checkbox" onchange="document.getElementById('publish-plano-url-wrap').classList.toggle('hidden',!this.checked)"> 📐 Tengo plano de la vivienda</label>
@@ -11282,6 +11282,63 @@ function toggleEtvField(){const type=document.getElementById('publish-type').val
   if(traspasoWrap) traspasoWrap.classList.toggle('hidden', !traspasoCats.includes(category));
   const roommateWrap=document.getElementById('publish-roommate-wrap');
   if(roommateWrap) roommateWrap.classList.toggle('hidden', category!=='Habitación en vivienda compartida');
+  togglePublishFieldsByCategory(category);
+}
+
+/* Qué campos de "Características principales" y "Extras" tienen sentido según el tipo de inmueble.
+   Evita que a un parking le pidamos habitaciones, o a un terreno certificado energético, etc. */
+const publishFieldGroups = {
+  vivienda: {
+    fields: ['built-m2','useful-m2','bedrooms','bathrooms','floor','condition','energy','orientation'],
+    extras: ['ascensor','terraza','balcon','garaje','trastero','piscina','jardin','aire','accesible'],
+    showExtrasPanel: true
+  },
+  terreno: {
+    fields: ['built-m2'],
+    extras: [],
+    showExtrasPanel: false
+  },
+  garaje_trastero: {
+    fields: ['built-m2'],
+    extras: [],
+    showExtrasPanel: false
+  },
+  local: {
+    fields: ['built-m2','useful-m2','floor','condition','energy'],
+    extras: ['aire','accesible'],
+    showExtrasPanel: true
+  },
+  traspaso: {
+    fields: ['built-m2','floor'],
+    extras: [],
+    showExtrasPanel: false
+  }
+};
+const publishCategoryToGroup = {
+  'Piso':'vivienda','Ático':'vivienda','Dúplex':'vivienda','Estudio':'vivienda','Casa o chalet':'vivienda',
+  'Casa adosada':'vivienda','Casa pareada':'vivienda','Casa de pueblo':'vivienda','Casa rústica o regional':'vivienda',
+  'Obra nueva':'vivienda','Edificio':'vivienda','Alquiler vacacional':'vivienda','Habitación en vivienda compartida':'vivienda',
+  'Finca rústica':'vivienda',
+  'Terreno':'terreno','Solar urbano':'terreno','Terreno edificable':'terreno','Terreno rústico':'terreno','Terreno no edificable':'terreno',
+  'Plaza de garaje':'garaje_trastero','Trastero':'garaje_trastero',
+  'Bar / Cafetería':'local','Restaurante':'local','Tienda / Comercio':'local','Peluquería / Estética':'local','Oficina':'local','Nave industrial':'local','Local comercial':'local',
+  'Traspaso':'traspaso'
+};
+function togglePublishFieldsByCategory(category){
+  const groupKey = publishCategoryToGroup[category] || 'vivienda';
+  const group = publishFieldGroups[groupKey];
+  const allFieldKeys = ['built-m2','useful-m2','bedrooms','bathrooms','floor','condition','energy','orientation'];
+  allFieldKeys.forEach(key=>{
+    const el = document.getElementById('field-'+key);
+    if(el) el.classList.toggle('hidden', !group.fields.includes(key));
+  });
+  const allExtraKeys = ['ascensor','terraza','balcon','garaje','trastero','piscina','jardin','aire','accesible'];
+  allExtraKeys.forEach(key=>{
+    const el = document.getElementById('extrawrap-'+key);
+    if(el) el.classList.toggle('hidden', !group.extras.includes(key));
+  });
+  const extrasPanel = document.getElementById('publish-extras-panel');
+  if(extrasPanel) extrasPanel.classList.toggle('hidden', !group.showExtrasPanel);
 }
 let selectedDestacadoDays = 'mensual';
 let currentVerificationPlan = 'verificado';
