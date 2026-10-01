@@ -10334,9 +10334,10 @@ async function submitPublishForm(){
   if(!user || !user.supabase_id){ alert('No se ha podido identificar tu cuenta. Vuelve a iniciar sesión e inténtalo de nuevo.'); return; }
 
   // Verificación de sesión REAL con Supabase antes de escribir nada.
-  // No basta con confiar en lo guardado en el navegador: la sesión pudo caducar.
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if(sessionError || !sessionData?.session || sessionData.session.user.id !== user.supabase_id){
+  // No basta con confiar en lo guardado en el navegador: la sesión pudo caducar. Antes de darla
+  // por perdida, se intenta refrescar el token una vez (ver getFreshSession).
+  const freshSession = await getFreshSession(user.supabase_id);
+  if(!freshSession){
     alert('Tu sesión ha caducado. Vuelve a iniciar sesión para poder publicar tu inmueble.');
     SinKomiAuth.clearLocalSession();
     syncUI();
@@ -10920,11 +10921,24 @@ async function updatePropertyStatus(id, status){
   loadRealProperties();
 }
 
+// Devuelve la sesión de Supabase vigente, reintentando refrescar el token una vez antes de darla
+// por caducada: si la pestaña ha estado un rato en segundo plano (cambiando de foto, mirando el
+// móvil...), el refresco automático de Supabase puede no llegar a tiempo aunque la sesión siga
+// siendo válida de verdad. Devuelve null solo si hay que volver a iniciar sesión de verdad.
+async function getFreshSession(expectedUserId){
+  let { data, error } = await supabase.auth.getSession();
+  let session = (!error && data?.session && (!expectedUserId || data.session.user.id === expectedUserId)) ? data.session : null;
+  if(!session){
+    const r = await supabase.auth.refreshSession();
+    session = (!r.error && r.data?.session && (!expectedUserId || r.data.session.user.id === expectedUserId)) ? r.data.session : null;
+  }
+  return session;
+}
 // Comprueba que la sesión de Supabase sigue siendo válida antes de una acción protegida.
 // Devuelve true si todo está en orden; si no, avisa al usuario y lo manda a loguearse de nuevo.
 async function ensureValidSession(user){
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if(sessionError || !sessionData?.session || sessionData.session.user.id !== user.supabase_id){
+  const session = await getFreshSession(user.supabase_id);
+  if(!session){
     alert('Tu sesión ha caducado. Vuelve a iniciar sesión para continuar.');
     SinKomiAuth.clearLocalSession();
     syncUI();
@@ -11138,8 +11152,8 @@ async function generateStandaloneStaging(){
   if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
   if(!standaloneStagingImageUrl){ alert('Sube primero una foto.'); return; }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if(sessionError || !sessionData?.session){
+  const freshSession = await getFreshSession();
+  if(!freshSession){
     alert('Tu sesión ha caducado. Vuelve a iniciar sesión.');
     openLoginModal();
     return;
@@ -11155,7 +11169,7 @@ async function generateStandaloneStaging(){
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'Authorization':`Bearer ${sessionData.session.access_token}`
+        'Authorization':`Bearer ${freshSession.access_token}`
       },
       body: JSON.stringify({ image_url: standaloneStagingImageUrl, style: selectedStagingStyle, mode: selectedStagingMode, custom_prompt: standaloneStagingCustomPrompt })
     });
@@ -11232,8 +11246,8 @@ async function generateStaging(){
   if(!SinKomiAuth.isLoggedIn()){ openLoginModal(); return; }
   if(!currentProperty || !currentProperty.img){ alert('Esta ficha no tiene ninguna foto sobre la que generar el amueblado.'); return; }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if(sessionError || !sessionData?.session){
+  const freshSession = await getFreshSession();
+  if(!freshSession){
     alert('Tu sesión ha caducado. Vuelve a iniciar sesión.');
     openLoginModal();
     return;
@@ -11249,7 +11263,7 @@ async function generateStaging(){
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'Authorization':`Bearer ${sessionData.session.access_token}`
+        'Authorization':`Bearer ${freshSession.access_token}`
       },
       body: JSON.stringify({ image_url: currentProperty.img, style: selectedStagingStyle, custom_prompt: stagingCustomPrompt })
     });
