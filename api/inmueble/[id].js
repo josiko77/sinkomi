@@ -75,13 +75,13 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const title = escapeHtml(prop.title || 'Inmueble en Baleares');
-    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'Baleares');
+    const title = escapeHtml(prop.title || 'Inmueble en España');
+    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'España');
     // "en venta"/"en alquiler" según el tipo, para que el título use la
     // misma palabra clave por la que la gente busca este tipo de anuncio.
     const opWord = prop.type === 'Alquiler' ? 'en alquiler' : (prop.category ? 'en traspaso' : 'en venta');
     const description = escapeHtml((prop.description || '').slice(0, 260))
-      || `Inmueble ${opWord} en ${location}, Illes Balears, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
+      || `Inmueble ${opWord} en ${location}, España, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
     const image = (Array.isArray(prop.images) && prop.images[0]) ? prop.images[0] : `${SITE_URL}/og-default.jpg`;
     const price = prop.price ? Number(prop.price).toLocaleString('es-ES') + ' €' : '';
     const pageTitle = `${title} · ${opWord} en ${location} · ${price} | SINKOMI`;
@@ -101,7 +101,6 @@ module.exports = async (req, res) => {
       "address": {
         "@type": "PostalAddress",
         "addressLocality": prop.nucleo || prop.municipality,
-        "addressRegion": "Illes Balears",
         "addressCountry": "ES",
       },
     };
