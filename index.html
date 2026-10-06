@@ -4626,6 +4626,12 @@ function mapDbRowToProperty(row){
     title_de: row.title_de || null,
     description_de: row.description_de || null,
     surface, bedrooms, bathrooms,
+    // m2: metros construidos en bruto (número), para cualquier cálculo o filtro.
+    // "surface" es solo el texto bonito para mostrar ("260 m² construidos · 725 m²
+    // útiles") — nunca se debe volver a sacar un número de ahí quitando lo que no
+    // sea dígito, porque si hay útiles además de construidos los dos números se
+    // pegan (p.ej. "260" + "725" = "260725"). Para cálculos, usar siempre m2.
+    m2: Number(builtM2) || 0,
     extras: extrasParts.join(' · '),
     daysAgo, priceDrop: 0, savingPct: 0,
     createdAt: row.created_at || null,
@@ -4782,7 +4788,7 @@ function renderTraspasosCards(append=false){
 function sortProperties(list,order){
   const arr=[...list];
   const isBoosted=p=>!!(p.boostedUntil && new Date(p.boostedUntil).getTime() > Date.now());
-  const m2of=p=>parseInt((p.surface||'').replace(/[^\d]/g,''))||0;
+  const m2of=p=>Number(p.m2)||0;
   const eurm2=p=>{const m=m2of(p);return m>0?Number(p.price)/m:Infinity;};
   const savingOf=p=>p.type==='Venta'?Number(p.price)*(p.savingPct||0.06)*1.21:Number(p.price);
   if(order==='price-asc') return arr.sort((a,b)=>Number(a.price)-Number(b.price));
