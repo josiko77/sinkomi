@@ -117,11 +117,22 @@ function escapeHtml(text){
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Añade "(Nombre alternativo)" cuando existe, para que el título use la
-// palabra exacta que la gente busca, sin crear una página duplicada.
+// Añade "(Nombre alternativo)" cuando existe, para que el H1 y la descripción
+// usen las dos formas y quien aterriza en la página reconozca el sitio. Esto
+// NO se usa en el <title> (ver titleName) porque ahí el espacio es limitado:
+// Google corta el título sobre los 60 caracteres, y con los dos nombres
+// juntos se pasaba de 90, comiéndose justo "| SINKOMI" y "sin comisión".
 function displayName(municipio){
   const alt = ALT_NAMES[municipio] || LOCATION_HINTS[municipio];
   return alt ? `${municipio} (${alt})` : municipio;
+}
+
+// Para el <title>: un solo nombre, el que de verdad se busca en Google (el
+// alternativo en español/inglés si existe — es literalmente para lo que
+// está pensado ALT_NAMES), sin el paréntesis. Así el título cabe entero en
+// el buscador y no pierde la marca ni el "sin comisión"/"sin agencia".
+function titleName(municipio){
+  return ALT_NAMES[municipio] || LOCATION_HINTS[municipio] || municipio;
 }
 
 // Título y meta descripción por operación, ya con las palabras clave reales
@@ -130,24 +141,25 @@ function displayName(municipio){
 // Baleares a secas: SINKOMI ya cubre toda España, así que el texto no debe
 // dar por hecho una región concreta.
 function buildCopy(operacion, municipio){
+  const t = escapeHtml(titleName(municipio));
   const m = escapeHtml(displayName(municipio));
   if(operacion === 'alquiler'){
     return {
-      pageTitle: `Alquiler de pisos en ${m} de particulares, sin agencia | SINKOMI`,
+      pageTitle: `Alquiler de pisos y casas en ${t}, sin agencia | SINKOMI`,
       h1: `Alquiler en ${m} sin agencias`,
       description: `Encuentra pisos y casas en alquiler en ${m}, publicados directamente por sus propietarios. Sin agencias ni comisiones: habla con el propietario en SINKOMI.`,
     };
   }
   if(operacion === 'traspasar'){
     return {
-      pageTitle: `Traspaso de negocios en ${m} sin comisión, trato directo | SINKOMI`,
+      pageTitle: `Traspaso de negocios en ${t}, trato directo | SINKOMI`,
       h1: `Traspasos de negocio en ${m}`,
       description: `Bares, locales y negocios en traspaso en ${m}, publicados por sus propios dueños. Sin intermediarios ni comisión de agencia, en SINKOMI.`,
     };
   }
   // comprar / venta
   return {
-    pageTitle: `Pisos y casas en venta en ${m} de particulares, sin comisión | SINKOMI`,
+    pageTitle: `Pisos y casas en venta en ${t}, sin comisión | SINKOMI`,
     h1: `Pisos y casas en venta en ${m}`,
     description: `Compra directamente al propietario en ${m}, sin pagar comisión de agencia. Anuncios reales de particulares, verificados, en SINKOMI.`,
   };
