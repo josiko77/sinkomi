@@ -23,7 +23,7 @@
 // en el sitemap una página vacía (que Google penaliza indexando peor todo el
 // dominio, no solo esa página).
 
-const { getActiveLocationsByOperation, slugify } = require('./_municipios-helper');
+const { getActiveLocationsByOperation, locationSlug } = require('./_municipios-helper');
 const { SUPPORTED_LOCALES } = require('./_translations');
 
 const SUPABASE_URL = 'https://utrkwpepgviadaygjfyr.supabase.co';
@@ -51,13 +51,15 @@ module.exports = async (req, res) => {
     });
 
     // Páginas de zona: solo las que tienen contenido real detrás. Una por
-    // municipio/núcleo y operación, únicamente si hay al menos un inmueble
-    // activo de esa operación ahí — sea en Baleares o en cualquier otro
-    // punto de España.
+    // municipio/núcleo + provincia y operación, únicamente si hay al menos
+    // un inmueble activo de esa operación ahí — sea en Baleares o en
+    // cualquier otro punto de España. El slug lleva la provincia (ver
+    // locationSlug) para que dos pueblos homónimos de provincias distintas
+    // nunca compartan la misma URL.
     const { comprar, alquiler, traspasar } = await getActiveLocationsByOperation();
-    comprar.forEach(m => entries.push(urlEntry(`${SITE_URL}/comprar/${slugify(m)}`)));
-    alquiler.forEach(m => entries.push(urlEntry(`${SITE_URL}/alquiler/${slugify(m)}`)));
-    traspasar.forEach(m => entries.push(urlEntry(`${SITE_URL}/traspasar/${slugify(m)}`, { priority: 0.5 })));
+    comprar.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/comprar/${locationSlug(nombre, provincia)}`)));
+    alquiler.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/alquiler/${locationSlug(nombre, provincia)}`)));
+    traspasar.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/traspasar/${locationSlug(nombre, provincia)}`, { priority: 0.5 })));
 
     // Inmuebles activos reales, leídos de Supabase en el momento — así un
     // inmueble publicado hace 5 minutos ya sale aquí, sin que nadie edite nada.
