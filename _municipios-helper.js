@@ -17,58 +17,86 @@ const SITE_URL = 'https://www.sinkomi.es';
 // enmascaradas según lo que haya pedido cada propietario.
 const PUBLIC_TABLE = 'properties_public';
 
-// SINKOMI ya no es solo Baleares: cubre toda España. Por eso esta lista de
-// municipios YA NO ES FIJA — antes tenía los 67 municipios de Baleares escritos
-// a mano, lo que (a) no incluía nada fuera de las islas y (b) generaba una
-// página de zona (y una entrada en el sitemap) para sitios sin ni un solo
-// anuncio, algo que a Google no le gusta nada (contenido pobre/vacío a escala).
-//
-// Ahora las zonas se calculan en el momento, leyendo de Supabase qué
-// municipios/núcleos tienen al menos un inmueble activo — así la lista crece
-// sola según entra gente nueva a publicar, en cualquier punto de España, y
-// nunca existe una página de zona vacía.
-//
-// Devuelve, para los inmuebles activos, tres listas de nombres de
-// municipio/núcleo (una por operación: venta, alquiler, traspaso), calculadas
-// de forma independiente —igual que hace generateMunicipioPage más abajo—
-// porque un mismo inmueble puede contar para "alquiler" y, si es un traspaso,
-// también para "traspasar" a la vez.
-async function getActiveLocationsByOperation(){
-  const resp = await fetch(
-    `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?active=eq.true&select=type,category,municipality,nucleo&limit=5000`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-  );
-  const rows = await resp.json();
-  const comprar = new Set();
-  const alquiler = new Set();
-  const traspasar = new Set();
-  if(Array.isArray(rows)){
-    rows.forEach(r => {
-      const locs = [r.municipality, r.nucleo].filter(Boolean);
-      if(r.type === 'Venta') locs.forEach(l => comprar.add(l));
-      if(r.type === 'Alquiler') locs.forEach(l => alquiler.add(l));
-      if(TRASPASO_CATEGORIES.includes(r.category)) locs.forEach(l => traspasar.add(l));
-    });
-  }
-  return {
-    comprar: Array.from(comprar),
-    alquiler: Array.from(alquiler),
-    traspasar: Array.from(traspasar),
-  };
-}
-
 // El traspaso es una categoría propia (distinta de Bar/Oficina/Nave industrial...
 // que ahora son solo TIPOS de local en venta/alquiler normales, sin alquiler
 // obligatorio). Solo un "Traspaso" real implica ceder un contrato de
 // arrendamiento en curso — por eso esta página de zona solo lo filtra a él.
 const TRASPASO_CATEGORIES = ["Traspaso"];
 
+function slugify(text){
+  return text.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+// El slug de una zona es municipio+provincia, no solo el municipio. España
+// tiene bastantes municipios que se llaman igual en provincias distintas
+// (Valverde en Huelva y Valverde en El Hierro, por ejemplo); sin la provincia
+// en la URL, SINKOMI mezclaría los anuncios de ambos en la misma página. En
+// Baleares esto no se notaba porque los nombres eran únicos en las islas —
+// pero al cubrir toda España hace falta esta combinación para que cada
+// página de zona sea un sitio real y no una mezcla de dos.
+function locationSlug(nombre, provincia){
+  return `${slugify(nombre)}-${slugify(provincia || '')}`;
+}
+
+// SINKOMI ya no es solo Baleares: cubre toda España. Por eso esta lista de
+// municipios YA NO ES FIJA — antes tenía los 67 municipios de Baleares escritos
+// a mano, lo que (a) no incluía nada fuera de las islas y (b) generaba una
+// página de zona (y una entrada en el sitemap) para sitios sin ni un solo
+// anuncio, algo que a Google no le gusta nada (contenido pobre/vacío a escala).
+//
+// Ahora las zonas se calculan en el momento, leyendo de Supabase qué pares
+// municipio/núcleo + provincia tienen al menos un inmueble activo — así la
+// lista crece sola según entra gente nueva a publicar, en cualquier punto de
+// España, y nunca existe una página de zona vacía ni una mezcla de dos
+// pueblos homónimos de provincias distintas.
+//
+// Devuelve, para los inmuebles activos, tres listas de {nombre, provincia}
+// (una por operación: venta, alquiler, traspaso), calculadas de forma
+// independiente —igual que hace generateMunicipioPage más abajo— porque un
+// mismo inmueble puede contar para "alquiler" y, si es un traspaso, también
+// para "traspasar" a la vez.
+async function getActiveLocationsByOperation(){
+  const resp = await fetch(
+    `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?active=eq.true&select=type,category,municipality,nucleo,provincia&limit=5000`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+  );
+  const rows = await resp.json();
+  // Clave única nombre+provincia en cada Map, para no repetir "Valverde,
+  // Huelva" dos veces si hay varios inmuebles ahí, pero sí distinguirlo de
+  // "Valverde, Santa Cruz de Tenerife".
+  const comprar = new Map();
+  const alquiler = new Map();
+  const traspasar = new Map();
+  const add = (map, nombre, provincia) => {
+    if(!nombre || !provincia) return; // sin provincia no se puede construir un slug fiable
+    map.set(`${nombre}\u0000${provincia}`, { nombre, provincia });
+  };
+  if(Array.isArray(rows)){
+    rows.forEach(r => {
+      const locs = [r.municipality, r.nucleo].filter(Boolean);
+      locs.forEach(l => {
+        if(r.type === 'Venta') add(comprar, l, r.provincia);
+        if(r.type === 'Alquiler') add(alquiler, l, r.provincia);
+        if(TRASPASO_CATEGORIES.includes(r.category)) add(traspasar, l, r.provincia);
+      });
+    });
+  }
+  return {
+    comprar: Array.from(comprar.values()),
+    alquiler: Array.from(alquiler.values()),
+    traspasar: Array.from(traspasar.values()),
+  };
+}
+
 const BOT_PATTERN = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
 
 // Nombre alternativo (el que se busca en español/inglés) para los municipios
 // donde el nombre oficial en catalán es notablemente distinto — sobre todo
 // los pueblos turísticos de Ibiza y Menorca. Se añade entre paréntesis en el
-// título y el H1, para no perder a quien busca "San Antonio" en vez de
+// H1 y la descripción, para no perder a quien busca "San Antonio" en vez de
 // "Sant Antoni de Portmany". Para municipios fuera de Baleares simplemente no
 // hay entrada aquí, así que displayName() los deja tal cual.
 const ALT_NAMES = {
@@ -92,25 +120,22 @@ const ALT_NAMES = {
   "Sant Climent": "San Clemente",
 };
 
-// Aclaración de ubicación para nombres que se repiten en distintos puntos de
-// Baleares y podrían confundirse entre sí (a diferencia de ALT_NAMES, esto no
-// es "cómo lo busca la gente", es "a qué lugar exacto nos referimos"):
+// Aclaración de ubicación para nombres que se repiten dentro de Baleares y
+// podrían confundirse entre sí (a diferencia de ALT_NAMES, esto no es "cómo
+// lo busca la gente", es "a qué lugar exacto nos referimos" cuando NO basta
+// con la provincia porque las dos opciones caen en la misma):
 // - "Sant Jordi" es un barrio de Palma.
 // - "Colònia de Sant Jordi" es la pedanía costera del municipio de Ses Salines.
 // - "Sant Jordi de ses Salines" es un pueblo de Ibiza, dentro de Sant Josep de
 //   sa Talaia — nada que ver con los dos anteriores, pese al nombre parecido.
+// Fuera de Baleares, dos pueblos homónimos ya quedan distinguidos por la
+// provincia (ver locationSlug), así que esta lista no necesita crecer para
+// el resto de España.
 const LOCATION_HINTS = {
   "Sant Jordi": "Palma",
   "Colònia de Sant Jordi": "Ses Salines",
   "Sant Jordi de ses Salines": "Ibiza",
 };
-
-function slugify(text){
-  return text.toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
 
 function escapeHtml(text){
   if(!text) return '';
@@ -121,7 +146,8 @@ function escapeHtml(text){
 // usen las dos formas y quien aterriza en la página reconozca el sitio. Esto
 // NO se usa en el <title> (ver titleName) porque ahí el espacio es limitado:
 // Google corta el título sobre los 60 caracteres, y con los dos nombres
-// juntos se pasaba de 90, comiéndose justo "| SINKOMI" y "sin comisión".
+// juntos (más la provincia) se pasaba de 90, comiéndose justo "| SINKOMI" y
+// "sin comisión".
 function displayName(municipio){
   const alt = ALT_NAMES[municipio] || LOCATION_HINTS[municipio];
   return alt ? `${municipio} (${alt})` : municipio;
@@ -129,94 +155,96 @@ function displayName(municipio){
 
 // Para el <title>: un solo nombre, el que de verdad se busca en Google (el
 // alternativo en español/inglés si existe — es literalmente para lo que
-// está pensado ALT_NAMES), sin el paréntesis. Así el título cabe entero en
-// el buscador y no pierde la marca ni el "sin comisión"/"sin agencia".
+// está pensado ALT_NAMES), sin el paréntesis y sin la provincia. Así el
+// título cabe entero en el buscador y no pierde la marca ni el "sin
+// comisión"/"sin agencia".
 function titleName(municipio){
   return ALT_NAMES[municipio] || LOCATION_HINTS[municipio] || municipio;
 }
 
 // Título y meta descripción por operación, ya con las palabras clave reales
 // que la gente busca ("particular", "sin agencia", "propietario"), en vez de
-// redacciones genéricas tipo "Negocios y pisos en venta en X". Sin mencionar
-// Baleares a secas: SINKOMI ya cubre toda España, así que el texto no debe
-// dar por hecho una región concreta.
-function buildCopy(operacion, municipio){
+// redacciones genéricas tipo "Negocios y pisos en venta en X". La provincia
+// va en la descripción y el H1 (no en el título, por espacio) — da contexto
+// geográfico real, sea cual sea la zona de España, en vez del "Illes
+// Balears" fijo que llevaba antes.
+function buildCopy(operacion, municipio, provincia){
   const t = escapeHtml(titleName(municipio));
   const m = escapeHtml(displayName(municipio));
+  const p = escapeHtml(provincia);
   if(operacion === 'alquiler'){
     return {
       pageTitle: `Alquiler de pisos y casas en ${t}, sin agencia | SINKOMI`,
-      h1: `Alquiler en ${m} sin agencias`,
-      description: `Encuentra pisos y casas en alquiler en ${m}, publicados directamente por sus propietarios. Sin agencias ni comisiones: habla con el propietario en SINKOMI.`,
+      h1: `Alquiler en ${m}, ${p}, sin agencias`,
+      description: `Encuentra pisos y casas en alquiler en ${m} (${p}), publicados directamente por sus propietarios. Sin agencias ni comisiones: habla con el propietario en SINKOMI.`,
     };
   }
   if(operacion === 'traspasar'){
     return {
       pageTitle: `Traspaso de negocios en ${t}, trato directo | SINKOMI`,
-      h1: `Traspasos de negocio en ${m}`,
-      description: `Bares, locales y negocios en traspaso en ${m}, publicados por sus propios dueños. Sin intermediarios ni comisión de agencia, en SINKOMI.`,
+      h1: `Traspasos de negocio en ${m}, ${p}`,
+      description: `Bares, locales y negocios en traspaso en ${m} (${p}), publicados por sus propios dueños. Sin intermediarios ni comisión de agencia, en SINKOMI.`,
     };
   }
   // comprar / venta
   return {
     pageTitle: `Pisos y casas en venta en ${t}, sin comisión | SINKOMI`,
-    h1: `Pisos y casas en venta en ${m}`,
-    description: `Compra directamente al propietario en ${m}, sin pagar comisión de agencia. Anuncios reales de particulares, verificados, en SINKOMI.`,
+    h1: `Pisos y casas en venta en ${m}, ${p}`,
+    description: `Compra directamente al propietario en ${m} (${p}), sin pagar comisión de agencia. Anuncios reales de particulares, verificados, en SINKOMI.`,
   };
 }
 
 async function generateMunicipioPage(req, res, operacion){
-  const municipioSlug = req.query.municipio;
+  const zonaSlug = req.query.municipio; // combinado municipio+provincia, p.ej. "palma-illes-balears"
   const userAgent = req.headers['user-agent'] || '';
   const isBot = BOT_PATTERN.test(userAgent);
 
-  if(!municipioSlug){
+  if(!zonaSlug){
     res.writeHead(302, { Location: SITE_URL });
     res.end();
     return;
   }
 
   try{
-    let filterParam, accion;
+    let filterParam;
     if(operacion === 'alquiler'){
       filterParam = 'type=eq.Alquiler';
-      accion = 'en alquiler';
     } else if(operacion === 'traspasar'){
       const catList = TRASPASO_CATEGORIES.map(c => '"' + encodeURIComponent(c) + '"').join(',');
       filterParam = `category=in.(${catList})`;
-      accion = 'en traspaso';
     } else {
       filterParam = 'type=eq.Venta';
-      accion = 'en venta';
     }
 
     // Traemos todos los inmuebles activos de ESTA operación (sin filtrar aún
-    // por municipio): de ahí resolvemos qué nombre real de municipio/núcleo
+    // por zona): de ahí resolvemos qué par municipio/núcleo + provincia
     // corresponde al slug pedido —ya no contra una lista fija— y de paso ya
     // tenemos el listado entero, sin necesitar una segunda consulta.
     const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?${filterParam}&active=eq.true&select=id,title,price,images,municipality,nucleo&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?${filterParam}&active=eq.true&select=id,title,price,images,municipality,nucleo,provincia&order=created_at.desc`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const allProps = await resp.json();
     const rows = Array.isArray(allProps) ? allProps : [];
 
     let municipio = null;
+    let provincia = null;
     for(const p of rows){
-      if(p.municipality && slugify(p.municipality) === municipioSlug){ municipio = p.municipality; break; }
-      if(p.nucleo && slugify(p.nucleo) === municipioSlug){ municipio = p.nucleo; break; }
+      if(!p.provincia) continue;
+      if(p.municipality && locationSlug(p.municipality, p.provincia) === zonaSlug){ municipio = p.municipality; provincia = p.provincia; break; }
+      if(p.nucleo && locationSlug(p.nucleo, p.provincia) === zonaSlug){ municipio = p.nucleo; provincia = p.provincia; break; }
     }
 
     const spaUrl = municipio
       ? `${SITE_URL}/?zona=${encodeURIComponent(municipio)}&op=${operacion}`
       : SITE_URL;
     // URL "bonita" y estable — la misma que ve cualquier persona en la barra de
-    // direcciones (/comprar/soller, /alquiler/soller...). Es la que debe ir en
+    // direcciones (/comprar/palma-illes-balears...). Es la que debe ir en
     // canonical y og:url; spaUrl es solo el destino de redirección para humanos.
-    const canonicalUrl = municipio ? `${SITE_URL}/${operacion}/${municipioSlug}` : SITE_URL;
+    const canonicalUrl = municipio ? `${SITE_URL}/${operacion}/${zonaSlug}` : SITE_URL;
 
-    // Sin ningún inmueble activo de esta operación en ese municipio: la página
-    // no existe (en vez de servir, e indexar, una página vacía).
+    // Sin ningún inmueble activo de esta operación en esa zona: la página no
+    // existe (en vez de servir, e indexar, una página vacía).
     if(!municipio){
       res.writeHead(302, { Location: SITE_URL });
       res.end();
@@ -229,9 +257,9 @@ async function generateMunicipioPage(req, res, operacion){
       return;
     }
 
-    const list = rows.filter(p => p.municipality === municipio || p.nucleo === municipio);
+    const list = rows.filter(p => p.provincia === provincia && (p.municipality === municipio || p.nucleo === municipio));
 
-    const { pageTitle, h1, description } = buildCopy(operacion, municipio);
+    const { pageTitle, h1, description } = buildCopy(operacion, municipio, provincia);
 
     const itemsHtml = list.map(p => {
       const price = p.price ? Number(p.price).toLocaleString('es-ES') + ' €' : '';
@@ -284,4 +312,4 @@ async function generateMunicipioPage(req, res, operacion){
   }
 }
 
-module.exports = { generateMunicipioPage, getActiveLocationsByOperation, slugify };
+module.exports = { generateMunicipioPage, getActiveLocationsByOperation, slugify, locationSlug };
