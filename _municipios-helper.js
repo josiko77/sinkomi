@@ -17,25 +17,99 @@ const SITE_URL = 'https://www.sinkomi.es';
 // enmascaradas según lo que haya pedido cada propietario.
 const PUBLIC_TABLE = 'properties_public';
 
-// Lista completa: los 67 municipios oficiales de Baleares + sus pedanías, barrios y
-// urbanizaciones más buscadas (la misma lista que usa el buscador de la propia web).
-const MUNICIPALITY_LIST = ["Palma","Santa Catalina","Portixol","El Molinar","Génova","Son Vida","Es Coll d'en Rabassa","Sant Jordi","Son Ferriol","Son Rapinya","Calvià","Santa Ponça","Magaluf","Palmanova","Peguera","Portals Nous","Son Ferrer","El Toro","Costa d'en Blanes","Illetes","Cas Català","Portals Vells","Llucmajor","s'Arenal","Badia Gran","Badia Blava","Cala Pi","Vallgornera","Marratxí","Pòrtol","Sa Cabaneta","Es Pont d'Inca","Es Figueral","Inca","Muro","Platja de Muro","Can Picafort","Manacor","Porto Cristo","s'Illot","Cala Murada","Cales de Mallorca","Son Macià","Alcúdia","Port d'Alcúdia","Mal Pas","Bonaire","Pollença","Port de Pollença","Cala Sant Vicenç","Sóller","Port de Sóller","Fornalutx","Andratx","Port d'Andratx","Camp de Mar","Sant Elm","s'Arracó","Artà","Colònia de Sant Pere","Canyamel","Capdepera","Cala Rajada","Font de sa Cala","Son Servera","Cala Millor","Cala Bona","Costa dels Pins","Sant Llorenç des Cardassar","Sa Coma","Cala Millor Nord","Santanyí","Cala d'Or","Cala Figuera","Portopetro","s'Alqueria Blanca","Calonge","es Llombards","Cala Santanyí","Cala Llombards","Campos","Sa Ràpita","Ses Covetes","es Trenc","Felanitx","Portocolom","Cas Concos","s'Horta","Cala Ferrera","Ses Salines","Colònia de Sant Jordi","es Dolç","Montuïri","Algaida","Randa","Pina","Santa Eugènia","Sencelles","Biniali","Binissalem","Lloseta","Alaró","Consell","Santa Maria del Camí","Bunyola","Palmanyola","Valldemossa","Deià","Esporles","Banyalbufar","Estellencs","Puigpunyent","Escorca","Lluc","Sa Calobra","Selva","Caimari","Biniamar","Moscari","Mancor de la Vall","Campanet","Búger","Sa Pobla","Llubí","Santa Margalida","Son Serra de Marina","Petra","Vilafranca de Bonany","Ariany","Maria de la Salut","Costitx","Lloret de Vistalegre","Sineu","Sant Joan","Porreres","Maó","Llucmaçanes","Sant Climent","Es Grau","Cala Mesquida","Ciutadella de Menorca","Cala en Blanes","Cala en Forcat","Cala Morell","Son Xoriguer","Cala en Bosc","Cala Blanca","Cales Piques","Cap d'Artrutx","Alaior","Son Bou","Cala en Porter","Torre Soli Nou","Son Vitamina","Es Mercadal","Fornells","Arenal d'en Castell","Son Parc","Coves Noves","Na Macaret","Port d'Addaia","Es Castell","Cala Sant Esteve","Sol del Este","Son Vilar","Sant Lluís","Binibeca Vell","Binissafúller","Punta Prima","Alcaufar","Cala Torret","Biniancolla","Ferreries","Cala Galdana","Sant Tomàs","Es Migjorn Gran","Binigaus","Eivissa","Dalt Vila","Marina Botafoch","Talamanca","Figueretes","Ses Figueretes","Sant Antoni de Portmany","Sant Rafel de sa Creu","Santa Agnès de Corona","Sant Mateu d'Albarca","Cala de Bou","Port des Torrent","Cala Gració","Cala Conta","Santa Eulària des Riu","Santa Gertrudis de Fruitera","Jesús","Sant Carles de Peralta","Es Puig d'en Valls","Cala Llonga","Siesta","Es Canar","Santa Eulalia","Sant Josep de sa Talaia","Sant Jordi de ses Salines","Es Cubells","Cala Vedella","Cala Tarida","Cala d'Hort","Platges de Comte","Platja d'en Bossa","Can Bossa","Sant Joan de Labritja","Sant Llorenç de Balàfia","Sant Miquel de Balansat","Sant Vicent de sa Cala","Portinatx","Cala de Sant Vicent","Formentera","Sant Francesc Xavier","Sant Ferran de ses Roques","La Savina","Es Pujols","El Pilar de la Mola","Es Caló de Sant Agustí","Cala Saona"];
+// SINKOMI ya no es solo Baleares: cubre toda España. Por eso esta lista de
+// municipios YA NO ES FIJA — antes tenía los 67 municipios de Baleares escritos
+// a mano, lo que (a) no incluía nada fuera de las islas y (b) generaba una
+// página de zona (y una entrada en el sitemap) para sitios sin ni un solo
+// anuncio, algo que a Google no le gusta nada (contenido pobre/vacío a escala).
+//
+// Ahora las zonas se calculan en el momento, leyendo de Supabase qué
+// municipios/núcleos tienen al menos un inmueble activo — así la lista crece
+// sola según entra gente nueva a publicar, en cualquier punto de España, y
+// nunca existe una página de zona vacía.
+//
+// Devuelve, para los inmuebles activos, tres listas de nombres de
+// municipio/núcleo (una por operación: venta, alquiler, traspaso), calculadas
+// de forma independiente —igual que hace generateMunicipioPage más abajo—
+// porque un mismo inmueble puede contar para "alquiler" y, si es un traspaso,
+// también para "traspasar" a la vez.
+async function getActiveLocationsByOperation(){
+  const resp = await fetch(
+    `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?active=eq.true&select=type,category,municipality,nucleo&limit=5000`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+  );
+  const rows = await resp.json();
+  const comprar = new Set();
+  const alquiler = new Set();
+  const traspasar = new Set();
+  if(Array.isArray(rows)){
+    rows.forEach(r => {
+      const locs = [r.municipality, r.nucleo].filter(Boolean);
+      if(r.type === 'Venta') locs.forEach(l => comprar.add(l));
+      if(r.type === 'Alquiler') locs.forEach(l => alquiler.add(l));
+      if(TRASPASO_CATEGORIES.includes(r.category)) locs.forEach(l => traspasar.add(l));
+    });
+  }
+  return {
+    comprar: Array.from(comprar),
+    alquiler: Array.from(alquiler),
+    traspasar: Array.from(traspasar),
+  };
+}
 
-// Los traspasos no se distinguen por "type" (Venta/Alquiler) como el resto, sino por
-// su "category" — igual que hace el propio filtro de la web en renderTraspasosCards().
-const TRASPASO_CATEGORIES = ["Traspaso","Bar / Cafetería","Restaurante","Tienda / Comercio","Peluquería / Estética","Oficina","Nave industrial","Local comercial"];
+// El traspaso es una categoría propia (distinta de Bar/Oficina/Nave industrial...
+// que ahora son solo TIPOS de local en venta/alquiler normales, sin alquiler
+// obligatorio). Solo un "Traspaso" real implica ceder un contrato de
+// arrendamiento en curso — por eso esta página de zona solo lo filtra a él.
+const TRASPASO_CATEGORIES = ["Traspaso"];
 
 const BOT_PATTERN = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
 
+// Nombre alternativo (el que se busca en español/inglés) para los municipios
+// donde el nombre oficial en catalán es notablemente distinto — sobre todo
+// los pueblos turísticos de Ibiza y Menorca. Se añade entre paréntesis en el
+// título y el H1, para no perder a quien busca "San Antonio" en vez de
+// "Sant Antoni de Portmany". Para municipios fuera de Baleares simplemente no
+// hay entrada aquí, así que displayName() los deja tal cual.
+const ALT_NAMES = {
+  "Palma": "Palma de Mallorca",
+  "Eivissa": "Ibiza",
+  "Maó": "Mahón",
+  "Ciutadella de Menorca": "Ciudadela",
+  "Sant Antoni de Portmany": "San Antonio",
+  "Sant Josep de sa Talaia": "San José",
+  "Sant Joan de Labritja": "San Juan",
+  "Sant Miquel de Balansat": "San Miguel",
+  "Sant Francesc Xavier": "San Francisco Javier",
+  "Sant Ferran de ses Roques": "San Fernando",
+  "Sant Rafel de sa Creu": "San Rafael",
+  "Sant Carles de Peralta": "San Carlos",
+  "Sant Lluís": "San Luis",
+  // Variante ortográfica muy usada (con "s" en vez de "ç") — igual que hace
+  // Idealista en el texto de sus propios anuncios, aunque su campo oficial
+  // de municipio use "Santa Ponça".
+  "Santa Ponça": "Santa Ponsa",
+  "Sant Climent": "San Clemente",
+};
+
+// Aclaración de ubicación para nombres que se repiten en distintos puntos de
+// Baleares y podrían confundirse entre sí (a diferencia de ALT_NAMES, esto no
+// es "cómo lo busca la gente", es "a qué lugar exacto nos referimos"):
+// - "Sant Jordi" es un barrio de Palma.
+// - "Colònia de Sant Jordi" es la pedanía costera del municipio de Ses Salines.
+// - "Sant Jordi de ses Salines" es un pueblo de Ibiza, dentro de Sant Josep de
+//   sa Talaia — nada que ver con los dos anteriores, pese al nombre parecido.
+const LOCATION_HINTS = {
+  "Sant Jordi": "Palma",
+  "Colònia de Sant Jordi": "Ses Salines",
+  "Sant Jordi de ses Salines": "Ibiza",
+};
+
 function slugify(text){
   return text.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
-}
-
-function findMunicipioBySlug(slug){
-  return MUNICIPALITY_LIST.find(m => slugify(m) === slug) || null;
 }
 
 function escapeHtml(text){
@@ -43,23 +117,49 @@ function escapeHtml(text){
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Añade "(Nombre alternativo)" cuando existe, para que el título use la
+// palabra exacta que la gente busca, sin crear una página duplicada.
+function displayName(municipio){
+  const alt = ALT_NAMES[municipio] || LOCATION_HINTS[municipio];
+  return alt ? `${municipio} (${alt})` : municipio;
+}
+
+// Título y meta descripción por operación, ya con las palabras clave reales
+// que la gente busca ("particular", "sin agencia", "propietario"), en vez de
+// redacciones genéricas tipo "Negocios y pisos en venta en X". Sin mencionar
+// Baleares a secas: SINKOMI ya cubre toda España, así que el texto no debe
+// dar por hecho una región concreta.
+function buildCopy(operacion, municipio){
+  const m = escapeHtml(displayName(municipio));
+  if(operacion === 'alquiler'){
+    return {
+      pageTitle: `Alquiler de pisos en ${m} de particulares, sin agencia | SINKOMI`,
+      h1: `Alquiler en ${m} sin agencias`,
+      description: `Encuentra pisos y casas en alquiler en ${m}, publicados directamente por sus propietarios. Sin agencias ni comisiones: habla con el propietario en SINKOMI.`,
+    };
+  }
+  if(operacion === 'traspasar'){
+    return {
+      pageTitle: `Traspaso de negocios en ${m} sin comisión, trato directo | SINKOMI`,
+      h1: `Traspasos de negocio en ${m}`,
+      description: `Bares, locales y negocios en traspaso en ${m}, publicados por sus propios dueños. Sin intermediarios ni comisión de agencia, en SINKOMI.`,
+    };
+  }
+  // comprar / venta
+  return {
+    pageTitle: `Pisos y casas en venta en ${m} de particulares, sin comisión | SINKOMI`,
+    h1: `Pisos y casas en venta en ${m}`,
+    description: `Compra directamente al propietario en ${m}, sin pagar comisión de agencia. Anuncios reales de particulares, verificados, en SINKOMI.`,
+  };
+}
+
 async function generateMunicipioPage(req, res, operacion){
   const municipioSlug = req.query.municipio;
-  const municipio = findMunicipioBySlug(municipioSlug);
   const userAgent = req.headers['user-agent'] || '';
   const isBot = BOT_PATTERN.test(userAgent);
-  const spaUrl = municipio
-    ? `${SITE_URL}/?zona=${encodeURIComponent(municipio)}&op=${operacion}`
-    : SITE_URL;
 
-  if(!municipio){
+  if(!municipioSlug){
     res.writeHead(302, { Location: SITE_URL });
-    res.end();
-    return;
-  }
-
-  if(!isBot){
-    res.writeHead(302, { Location: spaUrl });
     res.end();
     return;
   }
@@ -78,15 +178,48 @@ async function generateMunicipioPage(req, res, operacion){
       accion = 'en venta';
     }
 
+    // Traemos todos los inmuebles activos de ESTA operación (sin filtrar aún
+    // por municipio): de ahí resolvemos qué nombre real de municipio/núcleo
+    // corresponde al slug pedido —ya no contra una lista fija— y de paso ya
+    // tenemos el listado entero, sin necesitar una segunda consulta.
     const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?${filterParam}&active=eq.true&or=(municipality.eq.${encodeURIComponent(municipio)},nucleo.eq.${encodeURIComponent(municipio)})&select=id,title,price,images,municipality,nucleo&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/${PUBLIC_TABLE}?${filterParam}&active=eq.true&select=id,title,price,images,municipality,nucleo&order=created_at.desc`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
-    const props = await resp.json();
-    const list = Array.isArray(props) ? props : [];
+    const allProps = await resp.json();
+    const rows = Array.isArray(allProps) ? allProps : [];
 
-    const pageTitle = `Negocios y pisos ${accion} en ${escapeHtml(municipio)} sin comisiones | SINKOMI`;
-    const description = `Descubre oportunidades ${accion} en ${escapeHtml(municipio)}, Illes Balears. Habla directamente con el propietario, sin agencias ni comisiones, en SINKOMI.`;
+    let municipio = null;
+    for(const p of rows){
+      if(p.municipality && slugify(p.municipality) === municipioSlug){ municipio = p.municipality; break; }
+      if(p.nucleo && slugify(p.nucleo) === municipioSlug){ municipio = p.nucleo; break; }
+    }
+
+    const spaUrl = municipio
+      ? `${SITE_URL}/?zona=${encodeURIComponent(municipio)}&op=${operacion}`
+      : SITE_URL;
+    // URL "bonita" y estable — la misma que ve cualquier persona en la barra de
+    // direcciones (/comprar/soller, /alquiler/soller...). Es la que debe ir en
+    // canonical y og:url; spaUrl es solo el destino de redirección para humanos.
+    const canonicalUrl = municipio ? `${SITE_URL}/${operacion}/${municipioSlug}` : SITE_URL;
+
+    // Sin ningún inmueble activo de esta operación en ese municipio: la página
+    // no existe (en vez de servir, e indexar, una página vacía).
+    if(!municipio){
+      res.writeHead(302, { Location: SITE_URL });
+      res.end();
+      return;
+    }
+
+    if(!isBot){
+      res.writeHead(302, { Location: spaUrl });
+      res.end();
+      return;
+    }
+
+    const list = rows.filter(p => p.municipality === municipio || p.nucleo === municipio);
+
+    const { pageTitle, h1, description } = buildCopy(operacion, municipio);
 
     const itemsHtml = list.map(p => {
       const price = p.price ? Number(p.price).toLocaleString('es-ES') + ' €' : '';
@@ -111,15 +244,15 @@ async function generateMunicipioPage(req, res, operacion){
 <meta charset="UTF-8">
 <title>${pageTitle}</title>
 <meta name="description" content="${escapeHtml(description)}">
-<link rel="canonical" href="${spaUrl}">
+<link rel="canonical" href="${canonicalUrl}">
 <meta property="og:title" content="${pageTitle}">
 <meta property="og:description" content="${escapeHtml(description)}">
-<meta property="og:url" content="${spaUrl}">
+<meta property="og:url" content="${canonicalUrl}">
 <meta property="og:site_name" content="SINKOMI">
 <script type="application/ld+json">${JSON.stringify(schema)}</script>
 </head>
 <body>
-  <h1>Oportunidades ${accion} en ${escapeHtml(municipio)}</h1>
+  <h1>${h1}</h1>
   <p>${description}</p>
   <ul>${itemsHtml || '<li>Ahora mismo no hay nada publicado en esta zona, pero pronto habrá — vuelve a mirar en unos días.</li>'}</ul>
   <p><a href="${spaUrl}">Ver todos en SINKOMI</a></p>
@@ -134,9 +267,9 @@ async function generateMunicipioPage(req, res, operacion){
 
   }catch(e){
     console.error('Error generando la página de municipio:', e);
-    res.writeHead(302, { Location: spaUrl });
+    res.writeHead(302, { Location: SITE_URL });
     res.end();
   }
 }
 
-module.exports = { generateMunicipioPage, MUNICIPALITY_LIST, slugify };
+module.exports = { generateMunicipioPage, getActiveLocationsByOperation, slugify };
