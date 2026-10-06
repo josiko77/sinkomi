@@ -3843,6 +3843,10 @@ body > header nav a,body > header nav button{white-space:nowrap;}
 <div class="grid md:grid-cols-4 gap-3 mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-700" id="publish-stepper"><button type="button" class="publish-step-tab active" data-step="1" onclick="goToPublishStep(1)">1 · Datos básicos</button><button type="button" class="publish-step-tab" data-step="2" onclick="goToPublishStep(2)">2 · Características</button><button type="button" class="publish-step-tab" data-step="3" onclick="goToPublishStep(3)">3 · Fotos y vídeo</button><button type="button" class="publish-step-tab" data-step="4" onclick="goToPublishStep(4)">4 · Contacto</button></div>
 <div id="publish-step-1">
 <div class="grid md:grid-cols-2 gap-4"><div><label class="text-sm font-medium mb-2 block">Título del inmueble</label><input id="publish-title" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. Ático con terraza en Palma"></div><div><label class="text-sm font-medium mb-2 block">Municipio</label><div class="relative" id="publish-location-wrap"><input id="publish-location-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe para buscar… (ej. Palma, Sóller, Ses Salines)" oninput="filterPublishLocationSuggestions()" onfocus="filterPublishLocationSuggestions()"><input id="publish-location" type="hidden" value=""><div id="publish-location-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div></div></div>
+<div class="grid md:grid-cols-2 gap-4 mt-4"><div><label class="text-sm font-medium mb-2 block">Provincia</label><select id="publish-provincia" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800">
+<option value="">Selecciona provincia…</option>
+<option value="Álava">Álava</option><option value="Albacete">Albacete</option><option value="Alicante">Alicante</option><option value="Almería">Almería</option><option value="Asturias">Asturias</option><option value="Ávila">Ávila</option><option value="Badajoz">Badajoz</option><option value="Illes Balears">Illes Balears</option><option value="Barcelona">Barcelona</option><option value="Burgos">Burgos</option><option value="Cáceres">Cáceres</option><option value="Cádiz">Cádiz</option><option value="Cantabria">Cantabria</option><option value="Castellón">Castellón</option><option value="Ceuta">Ceuta</option><option value="Ciudad Real">Ciudad Real</option><option value="Córdoba">Córdoba</option><option value="Cuenca">Cuenca</option><option value="Girona">Girona</option><option value="Granada">Granada</option><option value="Guadalajara">Guadalajara</option><option value="Gipuzkoa">Gipuzkoa</option><option value="Huelva">Huelva</option><option value="Huesca">Huesca</option><option value="Jaén">Jaén</option><option value="A Coruña">A Coruña</option><option value="La Rioja">La Rioja</option><option value="Las Palmas">Las Palmas</option><option value="León">León</option><option value="Lleida">Lleida</option><option value="Lugo">Lugo</option><option value="Madrid">Madrid</option><option value="Málaga">Málaga</option><option value="Melilla">Melilla</option><option value="Murcia">Murcia</option><option value="Navarra">Navarra</option><option value="Ourense">Ourense</option><option value="Palencia">Palencia</option><option value="Pontevedra">Pontevedra</option><option value="Salamanca">Salamanca</option><option value="Santa Cruz de Tenerife">Santa Cruz de Tenerife</option><option value="Segovia">Segovia</option><option value="Sevilla">Sevilla</option><option value="Soria">Soria</option><option value="Tarragona">Tarragona</option><option value="Teruel">Teruel</option><option value="Toledo">Toledo</option><option value="Valencia">Valencia</option><option value="Valladolid">Valladolid</option><option value="Bizkaia">Bizkaia</option><option value="Zamora">Zamora</option><option value="Zaragoza">Zaragoza</option>
+</select><p class="text-xs text-zinc-700 mt-1">Hace falta para que la página de tu zona en Google no se mezcle con la de un pueblo que se llame igual en otra provincia.</p></div></div>
 <div class="mt-4"><label class="text-sm font-medium mb-2 block">Dirección exacta (calle y número)</label><div class="relative" id="publish-address-wrap"><input id="publish-address-search" type="text" autocomplete="off" class="w-full border border-black/8 px-4 py-3 bg-white focus:outline-none focus:border-[var(--accent)] text-zinc-800" placeholder="Escribe la calle y número… (opcional, mejora la precisión del mapa)" oninput="filterPublishAddressSuggestions()"><input id="publish-address-lat" type="hidden" value=""><input id="publish-address-lng" type="hidden" value=""><div id="publish-address-suggestions" class="hidden absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-black/10 shadow-xl max-h-64 overflow-y-auto"></div></div>
 <div id="publish-privacy-box" class="mt-3 p-5" style="border-radius:var(--r-md);border:1.5px solid rgba(0,168,120,0.3);background:linear-gradient(135deg,rgba(0,168,120,0.05) 0%,rgba(0,168,120,0.02) 100%);">
   <div class="flex items-start justify-between gap-3 flex-wrap mb-3">
@@ -10216,6 +10220,7 @@ function openPublishModal(){
   publishedVideo = null;
   const locInput = document.getElementById('publish-location-search'); if(locInput) locInput.value = '';
   const locHidden = document.getElementById('publish-location'); if(locHidden) locHidden.value = '';
+  const provSelReset = document.getElementById('publish-provincia'); if(provSelReset) provSelReset.value = '';
   const addrInput = document.getElementById('publish-address-search'); if(addrInput) addrInput.value = '';
   const addrLat = document.getElementById('publish-address-lat'); if(addrLat) addrLat.value = '';
   const addrLng = document.getElementById('publish-address-lng'); if(addrLng) addrLng.value = '';
@@ -10783,11 +10788,14 @@ async function submitPublishForm(){
   const petsAllowed = isRoommateRoom ? document.getElementById('publish-pets-allowed').checked : null;
   const houseRules = isRoommateRoom ? (escapeHtml(document.getElementById('publish-house-rules').value.trim()) || null) : null;
 
+  const provincia = document.getElementById('publish-provincia').value;
+  if(!provincia){ alert('Por favor, selecciona la provincia del inmueble.'); return; }
+
   const payload = {
     owner_id: user.supabase_id,
     owner_name: ownerName,
     title, description, type, category, price,
-    municipality: _mun, nucleo: _nuc, location,
+    municipality: _mun, nucleo: _nuc, provincia, location,
     built_m2: builtM2, useful_m2: usefulM2,
     bedrooms, bathrooms, floor, condition, energy, orientation,
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
@@ -11360,6 +11368,7 @@ async function editPropertyListing(id){
   const wantedLocation = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||'');
   document.getElementById('publish-location').value = wantedLocation;
   document.getElementById('publish-location-search').value = p.nucleo ? `${p.nucleo} (${p.municipality})` : (p.municipality||'');
+  document.getElementById('publish-provincia').value = p.provincia || '';
   document.getElementById('publish-type').value = p.type || 'Venta';
   populatePublishCategory();
   if(p.category) document.getElementById('publish-category').value = p.category;
@@ -12014,6 +12023,11 @@ function filterPublishLocationSuggestions(){
 function selectPublishLocation(value, label){
   document.getElementById('publish-location-search').value = label;
   document.getElementById('publish-location').value = value;
+  // La lista de este buscador es toda de Baleares (es el dataset que ya existía); si
+  // el propietario aún no ha tocado el desplegable de provincia, se la rellenamos sola
+  // para ahorrarle el paso en el caso de uso más común. Fuera de Baleares la elige él.
+  const provSel = document.getElementById('publish-provincia');
+  if(provSel && !provSel.value) provSel.value = 'Illes Balears';
   hidePublishLocationSuggestions();
 }
 function hidePublishLocationSuggestions(){
