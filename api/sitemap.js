@@ -13,8 +13,17 @@
 // cualquiera) lo visita: lee los inmuebles activos reales de Supabase y arma
 // la lista completa de comprar/alquiler/traspasar por municipio, más las
 // páginas de idioma — siempre actualizado, sin que nadie tenga que tocarlo.
+//
+// Las zonas (comprar/alquiler/traspasar por municipio) ya NO salen de una
+// lista fija de Baleares: salen de qué municipios/núcleos tienen de verdad al
+// menos un inmueble activo de esa operación (ver getActiveLocationsByOperation
+// en _municipios-helper). Esto es lo que hace que el sitemap funcione igual
+// de bien si SINKOMI tiene anuncios solo en Baleares que si los tiene
+// repartidos por toda España: crece solo, con las zonas reales, y nunca mete
+// en el sitemap una página vacía (que Google penaliza indexando peor todo el
+// dominio, no solo esa página).
 
-const { MUNICIPALITY_LIST, slugify } = require('./_municipios-helper');
+const { getActiveLocationsByOperation, locationSlug } = require('./_municipios-helper');
 const { SUPPORTED_LOCALES } = require('./_translations');
 
 const SUPABASE_URL = 'https://utrkwpepgviadaygjfyr.supabase.co';
@@ -41,15 +50,16 @@ module.exports = async (req, res) => {
       entries.push(urlEntry(`${SITE_URL}/${loc}/`, { changefreq: 'monthly', priority: 0.5 }));
     });
 
-    // Páginas de municipio: comprar, alquiler y traspasar para cada uno de
-    // los municipios/zonas de la lista compartida (la misma que usa el resto
-    // de la web, para que nunca se desincronicen).
-    MUNICIPALITY_LIST.forEach(municipio => {
-      const slug = slugify(municipio);
-      entries.push(urlEntry(`${SITE_URL}/comprar/${slug}`));
-      entries.push(urlEntry(`${SITE_URL}/alquiler/${slug}`));
-      entries.push(urlEntry(`${SITE_URL}/traspasar/${slug}`, { priority: 0.5 }));
-    });
+    // Páginas de zona: solo las que tienen contenido real detrás. Una por
+    // municipio/núcleo + provincia y operación, únicamente si hay al menos
+    // un inmueble activo de esa operación ahí — sea en Baleares o en
+    // cualquier otro punto de España. El slug lleva la provincia (ver
+    // locationSlug) para que dos pueblos homónimos de provincias distintas
+    // nunca compartan la misma URL.
+    const { comprar, alquiler, traspasar } = await getActiveLocationsByOperation();
+    comprar.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/comprar/${locationSlug(nombre, provincia)}`)));
+    alquiler.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/alquiler/${locationSlug(nombre, provincia)}`)));
+    traspasar.forEach(({ nombre, provincia }) => entries.push(urlEntry(`${SITE_URL}/traspasar/${locationSlug(nombre, provincia)}`, { priority: 0.5 })));
 
     // Inmuebles activos reales, leídos de Supabase en el momento — así un
     // inmueble publicado hace 5 minutos ya sale aquí, sin que nadie edite nada.
