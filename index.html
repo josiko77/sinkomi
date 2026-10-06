@@ -5548,24 +5548,37 @@ async function openPropertyModal(id){
     // un terreno o un local, así que la caja de rentabilidad solo se calcula para ese tipo de inmueble.
     const isResidencial = (publishCategoryToGroup[currentProperty.category] || 'vivienda') === 'vivienda';
     if(isVenta && isResidencial && price > 0 && munData && munData.rent > 0){
-      // Estimamos superficie útil desde precio y precio/m² del municipio (o usamos surface si disponible)
-      const surfaceNum = parseInt((currentProperty.surface||'').replace(/[^\d]/g,'')) || Math.round(price / munData.sale);
+      // Superficie real del inmueble (m² construidos) cuando el dato existe y es
+      // creíble para una vivienda; si no, la estimamos a partir del precio y el
+      // €/m² medio del municipio. Nunca por debajo de 15 m² ni por encima de
+      // 1.000 m² — fuera de ese rango el dato no es de fiar para este cálculo.
+      const realM2 = Number(currentProperty.m2) || 0;
+      const surfaceNum = (realM2 >= 15 && realM2 <= 1000) ? realM2 : Math.round(price / munData.sale);
       const estimatedMonthlyRent = munData.rent * surfaceNum;
       const annualRent = estimatedMonthlyRent * 12;
       const grossYield = (annualRent / price) * 100;
       // Media Baleares bruta histórica ~4.5% (fuente: Fotocasa abr.2026)
       const avgBaleares = 4.5;
-      const isGood = grossYield >= avgBaleares;
-      const isExc = grossYield >= 6.0;
-      const pct = Math.min(grossYield, 10) / 10 * 100; // barra hasta 10%
-      document.getElementById('property-yield-pct').textContent = `${grossYield.toFixed(1)}%`;
-      document.getElementById('property-yield-pct').style.color = isExc ? '#00b377' : isGood ? 'var(--accent-dark)' : 'var(--orange)';
-      document.getElementById('property-yield-fill').style.width = `${pct}%`;
-      document.getElementById('property-yield-fill').style.background = isExc ? '#00d98f' : isGood ? 'var(--accent)' : 'var(--orange)';
-      document.getElementById('property-yield-avg').textContent = `${avgBaleares}%`;
-      document.getElementById('property-yield-detail').textContent =
-        `Alquiler estimado en ${mun}: ${estimatedMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0})} €/mes (${munData.rent} €/m² × ${surfaceNum} m²). ${isExc ? '✦ Excelente rentabilidad para la zona.' : isGood ? 'Por encima de la media de Baleares.' : 'Por debajo de la media de Baleares.'}`;
-      yieldBox.classList.remove('hidden');
+      // Techo de sentido común: en el mercado residencial español, ni el alquiler
+      // de temporada más rentable sostiene de forma realista un 15% bruto anual
+      // sobre el precio de venta. Por encima de eso el dato de origen no es de
+      // fiar, y es mejor no enseñar una cifra que nadie se va a creer.
+      const REALISTIC_YIELD_CAP = 15;
+      if(!isFinite(grossYield) || grossYield <= 0 || grossYield > REALISTIC_YIELD_CAP){
+        yieldBox.classList.add('hidden');
+      } else {
+        const isGood = grossYield >= avgBaleares;
+        const isExc = grossYield >= 6.0;
+        const pct = Math.min(grossYield, 10) / 10 * 100; // barra hasta 10%
+        document.getElementById('property-yield-pct').textContent = `${grossYield.toFixed(1)}%`;
+        document.getElementById('property-yield-pct').style.color = isExc ? '#00b377' : isGood ? 'var(--accent-dark)' : 'var(--orange)';
+        document.getElementById('property-yield-fill').style.width = `${pct}%`;
+        document.getElementById('property-yield-fill').style.background = isExc ? '#00d98f' : isGood ? 'var(--accent)' : 'var(--orange)';
+        document.getElementById('property-yield-avg').textContent = `${avgBaleares}%`;
+        document.getElementById('property-yield-detail').textContent =
+          `Alquiler estimado en ${mun}: ${estimatedMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0})} €/mes (${munData.rent} €/m² × ${surfaceNum} m²). ${isExc ? '✦ Excelente rentabilidad para la zona.' : isGood ? 'Por encima de la media de Baleares.' : 'Por debajo de la media de Baleares.'}`;
+        yieldBox.classList.remove('hidden');
+      }
     } else {
       yieldBox.classList.add('hidden');
     }
@@ -6135,7 +6148,7 @@ function openCompareModal(){
 
   function num(v){ const n = parseFloat(String(v).replace(/[^\d.,]/g,'').replace(',','.')); return isNaN(n) ? null : n; }
   function pricePerM2(p){
-    const m = num(p.surface);
+    const m = Number(p.m2) || 0;
     const pr = Number(p.price) || 0;
     return (m && pr) ? Math.round(pr / m) : null;
   }
@@ -6146,7 +6159,7 @@ function openCompareModal(){
       cmp:p => Number(p.price) || Infinity, best:'min' },
     { label:'Precio por m²', get:p => pricePerM2(p) ? pricePerM2(p).toLocaleString('es-ES') + ' €/m²' : '—',
       cmp:p => pricePerM2(p) || Infinity, best:'min' },
-    { label:'Superficie',    get:p => p.surface || '—',   cmp:p => num(p.surface) || 0,   best:'max' },
+    { label:'Superficie',    get:p => p.surface || '—',   cmp:p => Number(p.m2) || 0,   best:'max' },
     { label:'Dormitorios',   get:p => p.bedrooms || '—',  cmp:p => num(p.bedrooms) || 0,  best:'max' },
     { label:'Baños',         get:p => p.bathrooms || '—', cmp:p => num(p.bathrooms) || 0, best:'max' },
     { label:'Municipio',     get:p => (p.nucleo ? p.nucleo + ', ' : '') + (p.municipality || '—') },
@@ -9414,8 +9427,14 @@ function calcValuationPremium(){
   let yieldPct = null, yieldMonthlyRent = null;
   if(op==='venta' && priceData.rent > 0 && mid > 0){
     const estimatedM2 = m2 || Math.round(mid / priceData.sale);
-    yieldMonthlyRent = priceData.rent * estimatedM2;
-    yieldPct = ((yieldMonthlyRent * 12) / mid * 100);
+    const monthlyRentCalc = priceData.rent * estimatedM2;
+    const grossYieldCalc = ((monthlyRentCalc * 12) / mid * 100);
+    // Mismo techo de sentido común que en la ficha del inmueble: por encima del
+    // 15% bruto anual el dato no es realista para el mercado residencial español.
+    if(isFinite(grossYieldCalc) && grossYieldCalc > 0 && grossYieldCalc <= 15){
+      yieldMonthlyRent = monthlyRentCalc;
+      yieldPct = grossYieldCalc;
+    }
   }
 
   valLastResult = {municipality, m2, op, low, mid, high, priceM2, mktM2, factors,
@@ -9437,19 +9456,19 @@ function calcValuationPremium(){
   // ── Rentabilidad del alquiler en resultado de valoración ──────────────────
   const yieldResEl = document.getElementById('val-res-yield');
   if(yieldResEl){
-    if(op==='venta' && priceData.rent > 0 && mid > 0){
-      const estimatedM2 = m2 || Math.round(mid / priceData.sale);
-      const monthlyRent = priceData.rent * estimatedM2;
-      const grossYield = ((monthlyRent * 12) / mid * 100);
+    // Reutiliza el mismo cálculo (ya con el techo de sentido común aplicado) que
+    // se acaba de guardar arriba en yieldPct/yieldMonthlyRent — así esta caja y
+    // el PDF siempre muestran el mismo dato, o ninguno si no es realista.
+    if(yieldPct != null && yieldMonthlyRent != null){
       const avgBaleares = 4.5;
-      const isGood = grossYield >= avgBaleares;
+      const isGood = yieldPct >= avgBaleares;
       yieldResEl.classList.remove('hidden');
       const yieldColor = isGood ? 'var(--accent)' : 'var(--orange)';
       const yieldMsg = isGood ? '✦ Por encima de la media de Baleares (4,5%)' : 'Por debajo de la media de Baleares (4,5%)';
       yieldResEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px;">Como inversión — rentabilidad bruta estimada</div>'
         + '<div style="display:flex;align-items:center;gap:12px;">'
-        + '<div style="font-size:24px;font-weight:900;color:' + yieldColor + ';letter-spacing:-0.04em;">' + grossYield.toFixed(1) + '%</div>'
-        + '<div style="font-size:11px;color:rgba(255,255,255,0.65);">' + monthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €/mes estimado<br>' + yieldMsg + '</div>'
+        + '<div style="font-size:24px;font-weight:900;color:' + yieldColor + ';letter-spacing:-0.04em;">' + yieldPct.toFixed(1) + '%</div>'
+        + '<div style="font-size:11px;color:rgba(255,255,255,0.65);">' + yieldMonthlyRent.toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €/mes estimado<br>' + yieldMsg + '</div>'
         + '</div>';
     } else {
       yieldResEl.classList.add('hidden');
@@ -9692,7 +9711,7 @@ function matchesAdvancedFilters(prop, tab){
   f.m2Max    = (document.getElementById(tab+'-m2-max')?.value)||'';
 
   const price = Number(prop.price)||0;
-  const m2    = parseInt((prop.surface||'').replace(/[^\d]/g,''))||0;
+  const m2    = Number(prop.m2)||0;
   const beds  = parseInt((prop.bedrooms||'').replace(/[^\d]/g,''))||0;
   const baths = parseInt((prop.bathrooms||'').replace(/[^\d]/g,''))||0;
   const extras= prop.extras||'';
