@@ -3629,6 +3629,11 @@ body > header nav a,body > header nav button{white-space:nowrap;}
             </div>
             <div class="text-xs text-zinc-500 mb-4 flex items-center gap-1.5 flex-wrap"><i class="fa-regular fa-calendar"></i> Publicado el <strong id="property-published" class="font-semibold text-zinc-700"></strong><span class="text-zinc-300">·</span><i class="fa-solid fa-hashtag"></i> Ref. <strong id="property-reference" class="font-semibold text-zinc-700"></strong></div>
 
+            <!-- Solo lo ve el propietario del anuncio: botón para volver a editarlo -->
+            <div id="property-owner-edit" class="hidden mb-4">
+              <button onclick="editPropertyFromModal()" class="w-full flex items-center justify-center gap-2 border-2 border-black/80 hover:bg-black hover:text-white px-4 py-2.5 text-sm font-bold transition"><i class="fa-solid fa-pen text-xs"></i> Editar mi anuncio</button>
+            </div>
+
             <!-- Estadísticas públicas (como Idealista): visitas, guardados, contactos -->
             <div id="property-stats-box" class="mb-4 pb-4 border-b border-black/5 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-zinc-500">
               <span><i class="fa-regular fa-eye mr-1"></i><strong id="property-stat-views" class="text-zinc-700">0</strong> visitas</span>
@@ -5525,6 +5530,12 @@ async function openPropertyModal(id){
   if(_pubEl){ const _d=new Date(Date.now()-(Number(currentProperty.daysAgo)||0)*86400000); _pubEl.textContent=_d.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}); }
   const _refEl=document.getElementById('property-reference');
   if(_refEl) _refEl.textContent = formatPropertyRef(currentProperty.id);
+  // Botón "Editar mi anuncio": solo si quien mira es el propietario de este inmueble.
+  const _ownerEditBox = document.getElementById('property-owner-edit');
+  if(_ownerEditBox){
+    const _viewer = (typeof SinKomiAuth !== 'undefined' && SinKomiAuth.isLoggedIn()) ? SinKomiAuth.getUser() : null;
+    _ownerEditBox.classList.toggle('hidden', !(_viewer && _viewer.supabase_id && currentProperty.owner_id === _viewer.supabase_id));
+  }
   document.getElementById('property-surface').textContent = currentProperty.surface || tr('No especificado');
   document.getElementById('property-bedrooms').textContent = currentProperty.bedrooms || tr('No especificado');
   document.getElementById('property-bathrooms').textContent = currentProperty.bathrooms || tr('No especificado');
@@ -9738,6 +9749,7 @@ function matchesAdvancedFilters(prop, tab){
 // y se sustituye por la URL pública real de Supabase Storage en cuanto termina de subir.
 var publishedPhotos = [];
 var editingPropertyId = null; // null = publicando nuevo · uuid = editando anuncio existente
+var editingPropertyOriginalVideo = null; // vídeo ya guardado del anuncio que se edita: se conserva salvo que suban uno nuevo
 var editingPropertyOriginalImages = []; // imágenes ya guardadas del anuncio que se está editando
 var editingPropertyOriginalVerified = false; // si el anuncio que se edita ya tenía el sello Verificado aprobado
 var publishedVideo  = null;
@@ -10020,6 +10032,9 @@ function getMaxPhotos(){return isPremiumPlan()?15:10;}
 
 // ── Sanitización de entradas de usuario (obligatorio antes de Supabase) ──
 function escapeHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// Inversa de escapeHtml: al guardar, título/descripción/normas se guardan escapados; para volver a
+// editarlos hay que devolverlos a texto normal, o cada edición los escaparía otra vez (& → &amp;amp;).
+function unescapeHtml(s){return String(s??'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');}
 
 function syncUI(){
   const loggedIn    = SinKomiAuth.isLoggedIn();
@@ -10240,7 +10255,7 @@ function openPublishModal(){
   }
   // Propietario publicando nuevo → modo creación, no edición
   editingPropertyId = null;
-  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false;
+  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false; editingPropertyOriginalVideo = null;
   publishedPhotos = [];
   publishedVideo = null;
   const locInput = document.getElementById('publish-location-search'); if(locInput) locInput.value = '';
@@ -10266,7 +10281,7 @@ function openPublishModal(){
 function closePublishModal(){
   document.getElementById('publish-modal').classList.add('hidden');
   editingPropertyId = null;
-  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false;
+  editingPropertyOriginalImages = []; editingPropertyOriginalVerified = false; editingPropertyOriginalVideo = null;
 }
 function openPlanSelector(){
   if(!SinKomiAuth.isLoggedIn()){ openRegisterModal('propietario'); return; }
@@ -10824,7 +10839,7 @@ async function submitPublishForm(){
     built_m2: builtM2, useful_m2: usefulM2,
     bedrooms, bathrooms, floor, condition, energy, orientation,
     negotiable, community: Number(community)||null, ibi: Number(ibi)||null,
-    extras, images, video_url: publishedVideo || null,
+    extras, images, video_url: publishedVideo || (editingPropertyId ? editingPropertyOriginalVideo : null) || null,
     verified, featured: isPremiumPlan(), phone: phone || null,
     seasonality, etv_number: etvNumber, rent_price: rentPrice, floor_plan_url: floorPlanUrl, virtual_tour_url: virtualTourUrl,
     roommates_count: roommatesCount, looking_for: lookingFor, move_in_date: moveInDate,
@@ -10839,6 +10854,7 @@ async function submitPublishForm(){
   const btn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   const originalBtnText = btn ? btn.textContent : '';
   if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  const wasEditing = !!editingPropertyId;
 
   try{
     let error, insertedRow;
@@ -10890,8 +10906,8 @@ async function submitPublishForm(){
     <div style="background:#fff;max-width:420px;width:100%;border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;">
       <div style="background:linear-gradient(135deg,#0d1a14,#1a2e1a);padding:2rem 2rem 1.5rem;text-align:center;">
         <div style="width:64px;height:64px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;">✓</div>
-        <h3 style="color:#fff;font-size:1.4rem;font-weight:900;margin:0 0 .4rem;letter-spacing:-0.03em;">¡Anuncio publicado!</h3>
-        <p style="color:rgba(255,255,255,0.65);font-size:13px;margin:0;">Tu inmueble ya está activo en SINKOMI y visible para los compradores de Baleares.</p>
+        <h3 style="color:#fff;font-size:1.4rem;font-weight:900;margin:0 0 .4rem;letter-spacing:-0.03em;">${wasEditing ? '¡Cambios guardados!' : '¡Anuncio publicado!'}</h3>
+        <p style="color:rgba(255,255,255,0.65);font-size:13px;margin:0;">${wasEditing ? 'Los cambios de tu anuncio ya se ven en SINKOMI.' : 'Tu inmueble ya está activo en SINKOMI y visible para los compradores.'}</p>
       </div>
       <div style="padding:1.5rem 2rem 2rem;">
         <div style="background:var(--accent-soft);border:1px solid rgba(0,217,143,0.2);border-radius:var(--r-md);padding:1rem 1.1rem;margin-bottom:1.25rem;">
@@ -11300,7 +11316,7 @@ function renderMyListingsList(rows, verificationMap){
         <div class="mt-2">${verifBlock}${boostBlock}</div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
-        <button onclick="editPropertyListing('${p.id}')" title="Editar" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid fa-pen text-xs"></i></button>
+        <button onclick="editPropertyListing('${p.id}')" title="Editar anuncio" class="h-8 px-3 flex items-center justify-center gap-1.5 border border-black/20 hover:bg-zinc-50 text-zinc-800 text-xs font-bold"><i class="fa-solid fa-pen text-xs"></i> Editar</button>
         <button onclick="togglePropertyActive('${p.id}', ${isActive})" title="${isActive?'Pausar':'Reactivar'}" class="w-8 h-8 flex items-center justify-center border border-black/10 hover:bg-zinc-50 text-zinc-600"><i class="fa-solid ${isActive?'fa-pause':'fa-play'} text-xs"></i></button>
         <button onclick="deleteProperty('${p.id}')" title="Eliminar" class="w-8 h-8 flex items-center justify-center border border-red-200 hover:bg-red-50 text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
       </div>
@@ -11368,6 +11384,13 @@ async function deleteProperty(id){
   loadRealProperties();
 }
 
+// Desde la ficha pública: cierra la ficha y abre el editor del propio anuncio.
+function editPropertyFromModal(){
+  if(!currentProperty) return;
+  const id = currentProperty.id;
+  closePropertyModal();
+  editPropertyListing(id);
+}
 async function editPropertyListing(id){
   const user = SinKomiAuth.getUser();
   if(!user || !user.supabase_id) return;
@@ -11376,6 +11399,7 @@ async function editPropertyListing(id){
   if(error || !p){ console.error('Error cargando el anuncio a editar:', error); alert('No se ha podido cargar este anuncio.'); return; }
 
   editingPropertyId = p.id;
+  editingPropertyOriginalVideo = p.video_url || null;
   editingPropertyOriginalImages = Array.isArray(p.images) ? [...p.images] : [];
   // Las imágenes ya guardadas entran directamente en publishedPhotos: así el propietario
   // puede reordenarlas o quitarlas igual que las nuevas, en la misma cuadrícula.
@@ -11389,7 +11413,7 @@ async function editPropertyListing(id){
   const submitBtn = document.querySelector('#publish-modal button[onclick="submitPublishForm()"]');
   if(submitBtn) submitBtn.textContent = 'Guardar cambios';
 
-  document.getElementById('publish-title').value = p.title || '';
+  document.getElementById('publish-title').value = unescapeHtml(p.title || '');
   const wantedLocation = p.nucleo ? `${p.municipality}|${p.nucleo}` : (p.municipality||'');
   document.getElementById('publish-location').value = wantedLocation;
   document.getElementById('publish-location-search').value = p.nucleo ? `${p.nucleo} (${p.municipality})` : (p.municipality||'');
@@ -11410,7 +11434,8 @@ async function editPropertyListing(id){
   document.getElementById('publish-ibi').value = p.ibi || '';
   if(p.negotiable) document.getElementById('publish-negotiable').value = p.negotiable;
   document.getElementById('publish-phone').value = p.phone || '';
-  document.getElementById('publish-description').value = p.description || '';
+  document.getElementById('publish-description').value = unescapeHtml(p.description || '');
+  const ownerNameEl = document.getElementById('publish-owner-name'); if(ownerNameEl && p.owner_name) ownerNameEl.value = unescapeHtml(p.owner_name);
   document.getElementById('publish-address-search').value = p.address_full || '';
   document.getElementById('publish-address-lat').value = (p.lat != null) ? p.lat : '';
   document.getElementById('publish-address-lng').value = (p.lng != null) ? p.lng : '';
@@ -11421,9 +11446,28 @@ async function editPropertyListing(id){
   togglePublishSeasonality();
   setPublishSeasonality(p.seasonality || 'Todo el año');
   if(p.etv_number) { const eEl=document.getElementById('publish-etv'); if(eEl) eEl.value = p.etv_number; }
-  if(p.rentPrice) { const rEl=document.getElementById('publish-rent-price'); if(rEl) rEl.value = Number(p.rentPrice).toLocaleString('es-ES'); }
-  if(p.floorPlanUrl) { document.getElementById('extra-plano').checked = true; document.getElementById('publish-plano-url').value = p.floorPlanUrl; document.getElementById('publish-plano-url-wrap').classList.remove('hidden'); }
-  if(p.virtualTourUrl) { document.getElementById('extra-tour').checked = true; document.getElementById('publish-tour-url').value = p.virtualTourUrl; document.getElementById('publish-tour-url-wrap').classList.remove('hidden'); }
+  // OJO: "p" es la fila cruda de Supabase, con columnas en snake_case (rent_price, floor_plan_url...).
+  // Antes se leían en camelCase (p.rentPrice...), que aquí no existe: salía vacío y al guardar se borraba.
+  // Limpia restos de un anuncio editado antes, para que no se cuelen datos de otro inmueble
+  ['plano','tour'].forEach(k => { const cb=document.getElementById('extra-'+k); if(cb) cb.checked=false; const u=document.getElementById('publish-'+k+'-url'); if(u) u.value=''; const w=document.getElementById('publish-'+k+'-url-wrap'); if(w) w.classList.add('hidden'); });
+  const rentEl0 = document.getElementById('publish-rent-price'); if(rentEl0) rentEl0.value = '';
+  if(p.rent_price) { const rEl=document.getElementById('publish-rent-price'); if(rEl) rEl.value = Number(p.rent_price).toLocaleString('es-ES'); }
+  if(p.floor_plan_url) { document.getElementById('extra-plano').checked = true; document.getElementById('publish-plano-url').value = p.floor_plan_url; document.getElementById('publish-plano-url-wrap').classList.remove('hidden'); }
+  if(p.virtual_tour_url) { document.getElementById('extra-tour').checked = true; document.getElementById('publish-tour-url').value = p.virtual_tour_url; document.getElementById('publish-tour-url-wrap').classList.remove('hidden'); }
+  // Extras marcados (Ascensor, Terraza, Piscina...): se guardan como texto "Ascensor · Terraza"; los volvemos a marcar.
+  const savedExtras = String(p.extras || '').split('·').map(s => s.trim());
+  [['extra-ascensor','Ascensor'],['extra-terraza','Terraza'],['extra-balcon','Balcón'],['extra-garaje','Garaje'],['extra-trastero','Trastero'],['extra-piscina','Piscina'],['extra-jardin','Jardín'],['extra-aire','Aire acondicionado'],['extra-accesible','Vivienda accesible']].forEach(([id,label])=>{
+    const cb = document.getElementById(id); if(cb) cb.checked = savedExtras.includes(label);
+  });
+  // Habitación en vivienda compartida: datos propios de ese tipo de anuncio
+  if(p.category === 'Habitación en vivienda compartida'){
+    const rc=document.getElementById('publish-roommates-count'); if(rc) rc.value = p.roommates_count ?? '';
+    const lf=document.getElementById('publish-looking-for'); if(lf) lf.value = p.looking_for || 'Indiferente';
+    const md=document.getElementById('publish-move-in-date'); if(md) md.value = p.move_in_date || '';
+    const bi=document.getElementById('publish-bills-included'); if(bi) bi.checked = !!p.bills_included;
+    const pa=document.getElementById('publish-pets-allowed'); if(pa) pa.checked = !!p.pets_allowed;
+    const hr=document.getElementById('publish-house-rules'); if(hr) hr.value = unescapeHtml(p.house_rules || '');
+  }
   toggleEtvField();
 
   renderPublishPhotoPreviews();
