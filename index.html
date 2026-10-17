@@ -2557,7 +2557,7 @@ body > header nav a,body > header nav button{white-space:nowrap;}
     <!-- OTRAS HERRAMIENTAS -->
     <div class="grid md:grid-cols-3 gap-6 mt-8">
       <div class="panel p-6 hover-lift"><div class="section-label mb-3">03</div><div class="text-2xl font-bold mb-3">Simular hipoteca</div><p class="i18n-auto text-sm text-zinc-700 mb-5">Calcula una cuota estimada antes de negociar.</p><button onclick="openToolModal('hipoteca')" class="i18n-auto text-[11px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">Abrir simulador →</button></div>
-      <div class="panel p-6 hover-lift"><div class="section-label mb-3">04</div><div class="text-2xl font-bold mb-3">Gastos de compra</div><p class="i18n-auto text-sm text-zinc-700 mb-5">Calcula ITP y otros costes asociados.</p><button onclick="openToolModal('gastos')" class="i18n-auto text-[11px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">Calcular →</button></div>
+      <div class="panel p-6 hover-lift"><div class="section-label mb-3">04</div><div class="text-2xl font-bold mb-3">Gastos de compra</div><p class="i18n-auto text-sm text-zinc-700 mb-5">Calcula el ITP de tu comunidad y otros costes asociados.</p><button onclick="openToolModal('gastos')" class="i18n-auto text-[11px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">Calcular →</button></div>
       <div class="panel p-6 hover-lift"><div class="section-label mb-3">05</div><div class="text-2xl font-bold mb-3">Crear alerta</div><p class="i18n-auto text-sm text-zinc-700 mb-5">Recibe nuevos inmuebles antes que nadie.</p><button onclick="openAlertModal()" class="i18n-auto text-[11px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">Crear alerta →</button></div>
     </div>
 
@@ -3882,9 +3882,9 @@ body > header nav a,body > header nav button{white-space:nowrap;}
   </div>
   <select id="publish-seasonality" class="hidden"><option>Todo el año</option><option>Temporada</option></select>
   <div id="publish-etv-wrap" class="hidden mt-4 p-4" style="background:var(--orange-soft);border:1px solid rgba(255,159,10,0.3);border-radius:var(--r-md);">
-    <label class="text-sm font-bold mb-2 block" style="color:#b9791a;"><i class="fa-solid fa-triangle-exclamation"></i> Número de registro turístico (ETV) *</label>
-    <input id="publish-etv" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. ETV/1234 o ETV-1234-E">
-    <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En Baleares, todo alquiler turístico de menos de 30 días requiere por ley un número de registro (ETV) visible en el anuncio. Publicar sin él puede conllevar multas de hasta 50.000€. Si tu inmueble no tiene licencia ETV, elige "Larga duración" en lugar de "Vacacional".</p>
+    <label class="text-sm font-bold mb-2 block" style="color:#b9791a;"><i class="fa-solid fa-triangle-exclamation"></i> Número de registro turístico *</label>
+    <input id="publish-etv" type="text" class="w-full border border-black/8 px-4 py-3 bg-white" placeholder="Ej. ETV/1234 en Baleares, o el código de registro de tu comunidad">
+    <p class="i18n-auto text-xs mt-2" style="color:#8a5f10;">En toda España, el alquiler turístico necesita por ley un número de registro de tu comunidad autónoma visible en el anuncio (en Baleares, el ETV). Publicar sin él puede conllevar multas importantes. Si tu inmueble no tiene ese registro, elige "Larga duración" en lugar de "Vacacional".</p>
   </div>
 </div>
 <div id="publish-traspaso-wrap" class="hidden panel p-5" style="background:#f5f8ff;border:2px solid #4f6bed;">
@@ -10558,6 +10558,69 @@ function openVerificationModal(plan){
   document.getElementById('verification-modal').classList.remove('hidden');
 }
 function closeVerificationModal(){document.getElementById('verification-modal').classList.add('hidden');}
+// ══════════════════════════════════════════════════════════════════════════
+// IMPUESTOS DE COMPRA POR COMUNIDAD AUTÓNOMA (2026)
+// itp: tipo único, o tramos marginales [[hasta, tipo], ...]. ajd: obra nueva.
+// Tipos generales; los reducidos (jóvenes, familia numerosa, etc.) solo se
+// detallan para Baleares. Revisar cada año con la ley de medidas fiscales.
+// ══════════════════════════════════════════════════════════════════════════
+var SK_CCAA_TAX = {
+  'Islas Baleares':            { itp:[[400000,0.08],[600000,0.09],[1000000,0.10],[2000000,0.12],[Infinity,0.13]], ajd:null, src:'ATIB' },
+  'Andalucía':                 { itp:0.07,  ajd:0.012 },
+  'Aragón':                    { itp:[[400000,0.08],[450000,0.085],[500000,0.09],[750000,0.095],[Infinity,0.10]], ajd:0.015 },
+  'Principado de Asturias':    { itp:[[300000,0.08],[500000,0.09],[Infinity,0.10]], ajd:0.012 },
+  'Canarias':                  { itp:0.065, ajd:0.01, iva:0.07, ivaLabel:'IGIC 7%' },
+  'Cantabria':                 { itp:0.09,  ajd:0.015, nota:'La vivienda habitual de hasta 300.000 € tributa al 7% (Ley 5/2026).' },
+  'Castilla-La Mancha':        { itp:0.09,  ajd:0.015 },
+  'Castilla y León':           { itp:[[250000,0.08],[Infinity,0.10]], ajd:0.015 },
+  'Cataluña':                  { itp:[[600000,0.10],[900000,0.11],[1500000,0.12],[Infinity,0.13]], ajd:0.015 },
+  'Comunitat Valenciana':      { itp:'valencia', ajd:0.014 },
+  'Extremadura':               { itp:[[360000,0.08],[600000,0.10],[Infinity,0.11]], ajd:0.015 },
+  'Galicia':                   { itp:0.08,  ajd:0.015 },
+  'Comunidad de Madrid':       { itp:0.06,  ajd:0.0075 },
+  'Región de Murcia':          { itp:0.0775,ajd:0.015 },
+  'Comunidad Foral de Navarra':{ itp:0.06,  ajd:0.005, nota:'Régimen foral propio.' },
+  'País Vasco':                { itp:0.04,  ajd:0.005, nota:'Régimen foral: cada diputación (Álava, Bizkaia, Gipuzkoa) tiene sus propias reducciones.' },
+  'La Rioja':                  { itp:0.07,  ajd:0.01 }
+};
+function skCcaaFromProvince(prov){
+  var m = { 'Illes Balears':'Islas Baleares','Asturias':'Principado de Asturias','Madrid':'Comunidad de Madrid','Murcia':'Región de Murcia','Navarra':'Comunidad Foral de Navarra',
+            'Araba/Álava':'País Vasco','Álava':'País Vasco','Bizkaia':'País Vasco','Gipuzkoa':'País Vasco','Las Palmas':'Canarias','Santa Cruz de Tenerife':'Canarias' };
+  if(m[prov]) return m[prov];
+  var c = (window.SK_ESP && window.SK_ESP.ccaa) ? window.SK_ESP.ccaa[prov] : '';
+  var alias = { 'Illes Balears':'Islas Baleares','Asturias':'Principado de Asturias','Principado de Asturias':'Principado de Asturias','Madrid':'Comunidad de Madrid','Comunidad de Madrid':'Comunidad de Madrid',
+                'Murcia':'Región de Murcia','Región de Murcia':'Región de Murcia','Navarra':'Comunidad Foral de Navarra','Comunidad Foral de Navarra':'Comunidad Foral de Navarra' };
+  if(alias[c]) return alias[c];
+  return SK_CCAA_TAX[c] ? c : null;
+}
+function skCalcItp(ccaa, price){
+  var t = SK_CCAA_TAX[ccaa]; if(!t) return { imp:0, label:'' };
+  var pct = function(x){ return (Math.round(x*10000)/100).toString().replace('.',','); };
+  if(t.itp === 'valencia'){
+    var r = price >= 1000000 ? 0.11 : 0.09;
+    return { imp: price*r, label: 'ITP ' + pct(r) + '% (' + ccaa + ' 2026)' };
+  }
+  if(typeof t.itp === 'number') return { imp: price*t.itp, label: 'ITP ' + pct(t.itp) + '% (' + ccaa + ' 2026)' };
+  var imp = 0, base = price, prev = 0;
+  for(var i=0;i<t.itp.length;i++){ var lim=t.itp[i][0], tipo=t.itp[i][1]; if(base<=0) break; var tr_=Math.min(base, lim-prev); imp+=tr_*tipo; base-=tr_; prev=lim; }
+  var lo = t.itp[0][1], hi = t.itp[t.itp.length-1][1];
+  return { imp: imp, label: 'ITP progresivo ' + pct(lo) + '–' + pct(hi) + '% (' + ccaa + ' 2026)', detail: 'Tipo medio efectivo: ' + ((imp/price)*100).toFixed(2) + '%' };
+}
+function skOnGastosCcaaChange(){
+  var sel = document.getElementById('tool-ccaa'); if(!sel) return;
+  var ccaa = sel.value, isBal = ccaa === 'Islas Baleares';
+  var bw = document.getElementById('tool-bonus-wrap'); if(bw) bw.style.display = isBal ? '' : 'none';
+  var nt = document.getElementById('tool-ccaa-note');
+  if(nt){
+    var t = SK_CCAA_TAX[ccaa] || {};
+    nt.style.display = isBal ? 'none' : '';
+    nt.textContent = (t.nota ? t.nota + ' ' : '') + 'Se calcula con el tipo general de ' + ccaa + '. Si eres joven, familia numerosa, tienes discapacidad o es tu vivienda habitual, puede que te corresponda un tipo reducido: consúltalo en la agencia tributaria de tu comunidad.';
+  }
+  var sub = document.getElementById('tool-subtitle');
+  if(sub) sub.textContent = isBal ? 'Impuestos reales ATIB 2026' : 'Tipos generales 2026 · ' + ccaa;
+  var res = document.getElementById('tool-result'); if(res) res.classList.add('hidden');
+}
+
 function openToolModal(tool){
   currentTool=tool;
   const modal=document.getElementById('tool-modal');
@@ -10566,15 +10629,28 @@ function openToolModal(tool){
   const content=document.getElementById('tool-content');
   modal.classList.remove('hidden');
   if(tool==='gastos'){
-    title.textContent='Gastos de compra en Baleares';
+    title.textContent='Gastos de compra';
     subtitle.textContent='Impuestos reales ATIB 2026';
+    let defCcaa = 'Islas Baleares';
+    try{
+      if(typeof currentProperty !== 'undefined' && currentProperty && currentProperty.municipality && window.SK_ESP){
+        const rec = window.SK_ESP.byName[currentProperty.municipality];
+        const c = rec ? skCcaaFromProvince(rec.prov) : null;
+        if(c) defCcaa = c;
+      }
+    }catch(e){}
+    const ccaaOpts = Object.keys(SK_CCAA_TAX).sort(function(a,b){ return a.localeCompare(b,'es'); })
+      .map(function(c){ return '<option' + (c===defCcaa?' selected':'') + '>' + c + '</option>'; }).join('');
     content.innerHTML=`<div class="md:col-span-2 space-y-4">
+      <div><label class="text-sm font-bold block mb-1">Comunidad autónoma</label><select id="tool-ccaa" onchange="skOnGastosCcaaChange()" class="w-full border border-black/8 px-4 py-3 bg-white text-sm">${ccaaOpts}</select></div>
       <div><label class="text-sm font-bold block mb-1">Precio de compra (€)</label><input id="tool-price" type="number" min="0" placeholder="Ej: 350000 (sin puntos)" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"></div>
       <div><label class="text-sm font-bold block mb-1">Tipo de vivienda</label><select id="tool-type" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"><option value="usada">Segunda mano (ITP)</option><option value="nueva">Obra nueva (IVA + AJD)</option></select></div>
-      <div><label class="text-sm font-bold block mb-1">¿Bonificación posible?</label><select id="tool-bonus" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"><option value="general">No (tipo general 8–13%)</option><option value="cero">Cuota cero (menor 30a / discapacidad ≥33% / 1ª vivienda ≤270.151€)</option><option value="2pct">Tipo 2% (menor 36a / familia numerosa ≤270.151€)</option><option value="4pct">Tipo 4% (residente / vivienda habitual ≤270.151€)</option></select></div>
+      <div id="tool-bonus-wrap"><label class="text-sm font-bold block mb-1">¿Bonificación posible?</label><select id="tool-bonus" class="w-full border border-black/8 px-4 py-3 bg-white text-sm"><option value="general">No (tipo general 8–13%)</option><option value="cero">Cuota cero (menor 30a / discapacidad ≥33% / 1ª vivienda ≤270.151€)</option><option value="2pct">Tipo 2% (menor 36a / familia numerosa ≤270.151€)</option><option value="4pct">Tipo 4% (residente / vivienda habitual ≤270.151€)</option></select></div>
+      <p id="tool-ccaa-note" class="text-xs" style="display:none;color:#8a5f10;background:var(--orange-soft);border-radius:10px;padding:10px 12px;"></p>
       <div id="tool-result" class="hidden border border-black/8 px-5 py-4 bg-zinc-50 text-sm"></div>
       <p class="text-xs text-zinc-400">⚠️ Orientativo. El ITP se calcula sobre el mayor valor entre precio escriturado y valor de referencia del Catastro. Consulta con un asesor fiscal antes de firmar.</p>
     </div>`;
+    skOnGastosCcaaChange();
   } else if(tool==='hipoteca'){
     title.textContent='Simulador de hipoteca';
     subtitle.textContent='Cálculo orientativo — fórmula de amortización francesa';
@@ -10601,9 +10677,22 @@ function simulateTool(){
     const price=Number(rawPrice)||0;
     const type=document.getElementById('tool-type').value;
     const bonus=document.getElementById('tool-bonus').value;
+    const ccaaSel=document.getElementById('tool-ccaa');
+    const ccaa=ccaaSel?ccaaSel.value:'Islas Baleares';
+    const isBal=ccaa==='Islas Baleares';
+    const tx=SK_CCAA_TAX[ccaa]||{};
     if(!price||price<1000){result.innerHTML='Introduce un precio válido (ej: 350000).';return;}
     let imp=0,impLabel='',impDetail='';
-    if(type==='usada'){
+    if(!isBal && type==='usada'){
+      const r=skCalcItp(ccaa,price); imp=r.imp; impLabel=r.label; impDetail=r.detail||'';
+    } else if(!isBal){
+      const ivaRate=tx.iva||0.10;
+      const iva=price*ivaRate;
+      const ajd=price*(tx.ajd||0);
+      imp=iva+ajd;
+      impLabel=(tx.ivaLabel||'IVA 10%')+' + AJD '+String(Math.round((tx.ajd||0)*10000)/100).replace('.',',')+'% (Obra nueva '+ccaa+' 2026)';
+      impDetail=(tx.ivaLabel?'IGIC':'IVA')+': '+iva.toLocaleString('es-ES',{maximumFractionDigits:0})+' € + AJD: '+ajd.toLocaleString('es-ES',{maximumFractionDigits:0})+' €';
+    } else if(type==='usada'){
       if(bonus==='cero'&&price<=270151.20){imp=0;impLabel='ITP 0% — Cuota cero ATIB 2026';}
       else if(bonus==='2pct'&&price<=270151.20){imp=price*0.02;impLabel='ITP 2% reducido ATIB 2026';}
       else if(bonus==='4pct'&&price<=270151.20){imp=price*0.04;impLabel='ITP 4% reducido ATIB 2026';}
@@ -10625,7 +10714,7 @@ function simulateTool(){
     const registro=price<200000?450:price<500000?550:650;
     const gestoria=400;
     const total=imp+notaria+registro+gestoria;
-    result.innerHTML='<div class="font-black text-base mb-3" style="color:var(--orange)">Estimación gastos de compra en Baleares 2026</div>'
+    result.innerHTML='<div class="font-black text-base mb-3" style="color:var(--orange)">Estimación gastos de compra en '+(isBal?'Baleares':ccaa)+' 2026</div>'
       +'<table class="w-full text-sm"><tr class="border-b border-black/6"><td class="py-1.5 text-zinc-600">'+impLabel+'</td><td class="text-right font-bold">'+imp.toLocaleString('es-ES',{maximumFractionDigits:0})+' €</td></tr>'
       +(impDetail?'<tr><td colspan="2" class="text-xs text-zinc-400 pb-1">'+impDetail+'</td></tr>':'')
       +'<tr class="border-b border-black/6"><td class="py-1.5 text-zinc-600">Notaría (aprox.)</td><td class="text-right font-bold">'+notaria.toLocaleString('es-ES')+' €</td></tr>'
@@ -10841,7 +10930,7 @@ async function submitPublishForm(){
   if(requiresEtv){
     etvNumber = (document.getElementById('publish-etv').value||'').trim();
     if(!etvNumber){
-      alert('Para publicar un alquiler de Temporada (vacacional) en Baleares es obligatorio indicar el número de registro turístico (ETV). Si tu inmueble no tiene licencia ETV, cambia la duración a "Todo el año" y el tipo de inmueble a una categoría que no sea "Alquiler vacacional".');
+      alert('Para publicar un alquiler de Temporada (vacacional) es obligatorio indicar el número de registro turístico de tu comunidad autónoma (en Baleares, el ETV). Si tu inmueble no tiene ese registro, cambia la duración a "Todo el año" y el tipo de inmueble a una categoría que no sea "Alquiler vacacional".');
       return;
     }
   }
@@ -12386,7 +12475,7 @@ var SINKOMI_AI_SYSTEM = [
 
 // ── QUÉ ES SINKOMI ──────────────────────────────────────────────────────────
 'SINKOMI fue fundada por José Ramírez Felipe, residente en Mallorca, para ofrecer una alternativa igual de válida pero infinitamente más económica al modelo tradicional de agencias. Comprador y propietario contactan directamente, sin intermediación obligatoria.',
-'Cobertura: las Islas Baleares tienen 67 municipios oficiales, pero SINKOMI cubre más de 220 localidades contando pedanías y núcleos costeros (Mallorca, Menorca, Ibiza y Formentera).',
+'Cobertura: SINKOMI cubre toda España (los 8.132 municipios oficiales del INE). En las Islas Baleares, donde nació, cubre además más de 220 localidades contando pedanías y núcleos costeros (Mallorca, Menorca, Ibiza y Formentera). Las herramientas de precio del m² y valoración usan datos de Baleares: si el inmueble está en otra comunidad, avisa de que esas cifras no le aplican. La calculadora de gastos de compra sí permite elegir la comunidad autónoma.',
 
 // ── PLANES Y PRECIOS ────────────────────────────────────────────────────────
 `PLANES: Básico (publicar gratis, anuncio activo 90 días renovable gratis). Verificado (8,99€/mes en suscripción, 1er mes gratis, cancelable cuando quieras, máximo 5 inmuebles por propietario). Destacado (siempre sobre un inmueble ya verificado): suscripción cancelable en tres cadencias — 12,99€/semana, 19,99€/quincena o 29,99€/mes. Impulso 24h (5,99€ pago único, no es suscripción): sube el anuncio como si fuera nuevo durante 24 horas, disponible para cualquier inmueble activo.`,
@@ -12411,12 +12500,12 @@ var SINKOMI_AI_SYSTEM = [
 'Además, cada usuario registrado puede guardar inmuebles en favoritos, organizarlos en listas personalizadas, descartar los que no le interesan, escribir notas privadas en una ficha y crear alertas de búsqueda que avisan cuando entra algo que encaja con sus filtros.',
 
 // ── OTRAS SECCIONES Y HERRAMIENTAS ──────────────────────────────────────────
-'HERRAMIENTAS, además de comprar, vender y alquilar: SINKOMI Amuebla o Reforma, un simulador con inteligencia artificial que muestra cómo quedaría un inmueble amueblado o reformado a partir de su primera foto (los propietarios verificados tienen 5 usos gratis). SINKOMI Valora, una tasación orientativa gratuita que genera un informe en PDF. Calculadora de gastos de compra (ITP o IVA+AJD) con los impuestos reales de Baleares (ATIB 2026), incluyendo bonificaciones por edad, familia numerosa, discapacidad o vivienda habitual. Simulador de hipoteca orientativo.',
+'HERRAMIENTAS, además de comprar, vender y alquilar: SINKOMI Amuebla o Reforma, un simulador con inteligencia artificial que muestra cómo quedaría un inmueble amueblado o reformado a partir de su primera foto (los propietarios verificados tienen 5 usos gratis). SINKOMI Valora, una tasación orientativa gratuita que genera un informe en PDF. Calculadora de gastos de compra (ITP o IVA+AJD) para cualquier comunidad autónoma con los tipos generales de 2026; en Baleares (ATIB 2026) incluye además las bonificaciones por edad, familia numerosa, discapacidad o vivienda habitual. Simulador de hipoteca orientativo.',
 'SECCIONES: Traspasar, para publicar o buscar traspasos de negocios (bares, cafeterías, restaurantes, tiendas y comercios). Piso compartido, con las dos caras: quien ofrece una habitación y quien busca piso compartido y publica su perfil. Ambas son gratuitas.',
 'El chat entre usuarios es directo, de persona a persona, con traducción automática en tiempo real y posibilidad de adjuntar fotos y documentos.',
 
 // ── AVISO LEGAL OBLIGATORIO SOBRE ALQUILER VACACIONAL ───────────────────────
-'IMPORTANTE SOBRE ALQUILER VACACIONAL: en las Islas Baleares, cualquier alquiler turístico de menos de 30 días (Estancia Turística en Vivienda, ETV) requiere por ley un número de registro turístico oficial visible en el anuncio; publicar sin él es ilegal y conlleva multas de 5.000€ a más de 50.000€. Desde 2022 hay una moratoria que impide tramitar nuevas licencias ETV en la mayoría de zonas, así que muchos propietarios no pueden obtenerla aunque quieran. Si alguien pregunta por publicar o buscar un alquiler vacacional o de temporada corta, infórmale amablemente de este requisito legal y recomiéndale consultar con un gestor o con el Registro de Turismo de las Islas Baleares antes de publicar sin ese número. No animes nunca a publicar un alquiler turístico sin registro.',
+'IMPORTANTE SOBRE ALQUILER VACACIONAL: en toda España el alquiler turístico necesita un número de registro de la comunidad autónoma correspondiente, visible en el anuncio. En concreto, en las Islas Baleares, cualquier alquiler turístico de menos de 30 días (Estancia Turística en Vivienda, ETV) requiere por ley un número de registro turístico oficial visible en el anuncio; publicar sin él es ilegal y conlleva multas de 5.000€ a más de 50.000€. Desde 2022 hay una moratoria que impide tramitar nuevas licencias ETV en la mayoría de zonas, así que muchos propietarios no pueden obtenerla aunque quieran. Si alguien pregunta por publicar o buscar un alquiler vacacional o de temporada corta, infórmale amablemente de este requisito legal y recomiéndale consultar con un gestor o con el Registro de Turismo de las Islas Baleares antes de publicar sin ese número. No animes nunca a publicar un alquiler turístico sin registro.',
 
 // ── LÍMITES ─────────────────────────────────────────────────────────────────
 'No eres abogado ni asesor financiero ni fiscal. Las valoraciones, el simulador de hipoteca y la calculadora de impuestos son orientativos: dilo cuando los menciones. Para nada legal o fiscal concreto, recomienda consultar con un profesional.'
