@@ -33,7 +33,11 @@ const CAMPOS = 'id,title,description,price,images,municipality,nucleo,location,t
 
 // Lista de "robots" conocidos a los que SÍ les enseñamos esta página especial.
 // A todos los demás (personas normales) los mandamos directos a la web real.
-const BOT_PATTERN = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
+const BOT_PATTERN = /facebookexternalhit|facebookcatalog|WhatsApp|Instagram|Twitterbot|Slackbot|LinkedInBot|TelegramBot|Discordbot|Googlebot|bingbot|Pinterest|redditbot|SkypeUriPreview|Applebot|DuckDuckBot|vercel-screenshot/i;
+
+// Imagen que se enseña cuando el anuncio no tiene fotos (archivo og-default.jpg en
+// la raíz del repo, 1200×630, el tamaño que usan WhatsApp/Facebook para la vista previa).
+const DEFAULT_IMAGE = `${SITE_URL}/og-default.jpg`;
 
 function escapeHtml(text){
   if(!text) return '';
@@ -75,16 +79,19 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const title = escapeHtml(prop.title || 'Inmueble en Baleares');
-    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'Baleares');
-    // "en venta"/"en alquiler" según el tipo, para que el título use la
-    // misma palabra clave por la que la gente busca este tipo de anuncio.
-    const opWord = prop.type === 'Alquiler' ? 'en alquiler' : (prop.category ? 'en traspaso' : 'en venta');
-    const description = escapeHtml((prop.description || '').slice(0, 260))
-      || `Inmueble ${opWord} en ${location}, Illes Balears, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
-    const image = (Array.isArray(prop.images) && prop.images[0]) ? prop.images[0] : `${SITE_URL}/og-default.jpg`;
+    const title = escapeHtml(prop.title || 'Inmueble en España');
+    const location = escapeHtml(prop.nucleo || prop.municipality || prop.location || 'España');
+    // "en venta" / "en alquiler" / "en traspaso" según la operación real. El traspaso
+    // es la categoría 'Traspaso' (antes cualquier anuncio con categoría salía como
+    // traspaso, o sea, casi todas las ventas).
+    const opWord = prop.type === 'Alquiler' ? 'en alquiler' : (prop.category === 'Traspaso' ? 'en traspaso' : 'en venta');
+    const description = escapeHtml((prop.description || '').replace(/\s+/g, ' ').trim().slice(0, 260))
+      || `Inmueble ${opWord} en ${location}, España, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
+    const hasPhoto = Array.isArray(prop.images) && prop.images[0];
+    const image = hasPhoto ? prop.images[0] : DEFAULT_IMAGE;
     const price = prop.price ? Number(prop.price).toLocaleString('es-ES') + ' €' : '';
-    const pageTitle = `${title} · ${opWord} en ${location} · ${price} | SINKOMI`;
+    const ogTitle = `${title}${price ? ' · ' + price : ''}`;
+    const pageTitle = `${title} · ${opWord} en ${location}${price ? ' · ' + price : ''} | SINKOMI`;
 
     const schema = {
       "@context": "https://schema.org",
@@ -92,7 +99,7 @@ module.exports = async (req, res) => {
       "name": prop.title,
       "description": prop.description || title,
       "url": canonicalUrl,
-      "image": Array.isArray(prop.images) ? prop.images : [image],
+      "image": Array.isArray(prop.images) && prop.images.length ? prop.images : [image],
       "offers": {
         "@type": "Offer",
         "price": prop.price,
@@ -101,10 +108,13 @@ module.exports = async (req, res) => {
       "address": {
         "@type": "PostalAddress",
         "addressLocality": prop.nucleo || prop.municipality,
-        "addressRegion": "Illes Balears",
         "addressCountry": "ES",
       },
     };
+
+    const imgSize = hasPhoto ? '' : `
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">`;
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -114,16 +124,19 @@ module.exports = async (req, res) => {
 <meta name="description" content="${description}">
 <link rel="canonical" href="${canonicalUrl}">
 <meta property="og:type" content="product">
-<meta property="og:title" content="${title} · ${price}">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="${ogTitle}">
 <meta property="og:description" content="${description}">
 <meta property="og:image" content="${escapeHtml(image)}">
+<meta property="og:image:secure_url" content="${escapeHtml(image)}">
+<meta property="og:image:alt" content="${title}">${imgSize}
 <meta property="og:url" content="${canonicalUrl}">
 <meta property="og:site_name" content="SINKOMI">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${title} · ${price}">
+<meta name="twitter:title" content="${ogTitle}">
 <meta name="twitter:description" content="${description}">
 <meta name="twitter:image" content="${escapeHtml(image)}">
-<script type="application/ld+json">${JSON.stringify(schema)}</script>
+<script type="application/ld+json">${JSON.stringify(schema).replace(/</g, '\\u003c')}</script>
 </head>
 <body>
   <h1>${title}</h1>
