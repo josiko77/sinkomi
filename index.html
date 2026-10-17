@@ -4583,13 +4583,28 @@ const propertyTypes=["Todos",...propertyTypeGroups.flatMap(g=>g.items).filter((v
 const rentPropertyTypes=["Todos",...propertyTypeGroups.flatMap(g=>g.items).filter((v,i,a)=>a.indexOf(v)===i&&v!=="Todos"),"Alquiler"];
 // Convierte una fila real de la tabla `properties` de Supabase al mismo formato
 // que usa toda la web para pintar tarjetas, mapa y fichas (mismo shape que antes usaba el generador falso).
+// "bajo" → "Planta baja", "2" → "Planta 2ª", "ático" → "Ático"
+function fmtFloorLabel(f){
+  if(f == null) return null;
+  const t = String(f).trim();
+  if(!t) return null;
+  const n = t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/^(planta\s*)?(bajo|baja|pb)$/.test(n)) return 'Planta baja';
+  if(/^atico$/.test(n)) return 'Ático';
+  if(/^(entresuelo|sotano|semisotano)$/.test(n)) return t.charAt(0).toUpperCase() + t.slice(1);
+  const m = n.match(/^(planta\s*)?(\d{1,2})\s*(ª|a|º|o)?$/);
+  if(m) return 'Planta ' + m[2] + 'ª';
+  if(/^planta\b/.test(n)) return t.charAt(0).toUpperCase() + t.slice(1);
+  return 'Planta ' + t;
+}
+
 function mapDbRowToProperty(row){
   const builtM2 = row.built_m2 || 0;
   const usefulM2 = row.useful_m2 || 0;
   const surface = usefulM2 ? `${builtM2} m² construidos · ${usefulM2} m² útiles` : (builtM2 ? `${builtM2} m² construidos` : 'No especificado');
   const bedrooms = (row.bedrooms===null||row.bedrooms===undefined||row.bedrooms==='') ? 'No especificado' : `${row.bedrooms} dormitorios`;
   const bathrooms = (row.bathrooms===null||row.bathrooms===undefined||row.bathrooms==='') ? 'No especificado' : `${row.bathrooms} baños`;
-  const extrasParts = [row.extras, row.floor, row.condition, row.energy?`Energía ${row.energy}`:null, row.orientation, row.community?`Comunidad ${row.community}€/mes`:null, row.ibi?`IBI ${row.ibi}€`:null, row.negotiable?`Negociable: ${row.negotiable}`:null].filter(Boolean);
+  const extrasParts = [row.extras, fmtFloorLabel(row.floor), row.condition, row.energy?`Energía ${row.energy}`:null, row.orientation, row.community?`Comunidad ${row.community}€/mes`:null, row.ibi?`IBI ${row.ibi}€`:null, (row.negotiable==='Sí'||row.negotiable==='No')?(row.negotiable==='Sí'?'Precio negociable':'Precio no negociable'):null].filter(Boolean);
   const images = (Array.isArray(row.images) && row.images.length) ? row.images : [];
   const img = images[0] || fallbackImg;
   const createdAt = row.created_at ? new Date(row.created_at) : new Date();
@@ -5769,7 +5784,7 @@ function renderPropertyLocationMap(){
   const noteEl  = document.getElementById('property-location-note');
   const badgeEl = document.getElementById('property-location-badge');
   const svBtn   = document.getElementById('property-location-streetview');
-  const zona    = (p.nucleo ? p.nucleo + ', ' : '') + (p.municipality || '') + ', Baleares';
+  const zona    = skPlaceLabel(p);
 
   if(exact){
     addrEl.textContent  = p.addressFull || zona;
@@ -6035,6 +6050,9 @@ function renderPropertyNearby(lat, lng){
   const block = document.getElementById('property-section-cerca');
   if(!wrap || !block) return;
   if(lat == null || lng == null){ block.style.display = 'none'; return; }
+  // Los puntos de interés son del IDEIB (solo Baleares). Fuera de las islas no hay
+  // datos fiables, así que no se enseña la sección antes que enseñar distancias falsas.
+  if(!islandOf(lat, lng)){ block.style.display = 'none'; wrap.innerHTML = ''; return; }
   block.style.display = '';
 
   const rows = [
@@ -6050,6 +6068,9 @@ function renderPropertyNearby(lat, lng){
     rows.forEach(function(r){
       const found = nearestPOI(lat, lng, SK_POI[r.key]);
       if(!found) return;
+      // Nunca cruzar el mar: si lo más cercano está demasiado lejos, esa fila no se pinta
+      const MAX_KM = { playa:25, puerto:30, salud:20, hospital:50, aeropuerto:80 };
+      if(found.km > (MAX_KM[r.key] || 50)) return;
       const min = driveMinutes(found.km);
       const walk = found.km < 1.6 ? walkMinutes(found.km) : null;
       const el = document.createElement('div');
@@ -6553,13 +6574,24 @@ async function toggleDiscardProperty(){
   }
 }
 
+// "Núcleo, Municipio, Provincia" con la provincia real del municipio (capa España).
+// Los municipios y pedanías de Baleares siguen saliendo como ", Baleares".
+function skPlaceLabel(p){
+  const muni = (p && p.municipality) || '';
+  const pre  = (p && p.nucleo) ? p.nucleo + ', ' : '';
+  const rec  = (window.SK_ESP && window.SK_ESP.byName) ? window.SK_ESP.byName[muni] : null;
+  if(rec && rec.prov !== 'Illes Balears') return pre + rec.base + ', ' + rec.prov;
+  if(rec || (typeof municipalityList !== 'undefined' && municipalityList.indexOf(muni) >= 0)) return pre + muni + ', Baleares';
+  return pre + muni + (muni ? ', España' : 'España');
+}
+
 function openPropertyDirections(){
   if(!currentProperty) return;
   if(currentProperty.lat != null && currentProperty.lng != null){
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${currentProperty.lat},${currentProperty.lng}`, '_blank');
     return;
   }
-  const query = encodeURIComponent(`${currentProperty.nucleo ? currentProperty.nucleo + ', ' : ''}${currentProperty.municipality || ''} Baleares`);
+  const query = encodeURIComponent(skPlaceLabel(currentProperty));
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
 }
 
@@ -7806,7 +7838,7 @@ function initMapHeroGM(){
     const mapEl = document.getElementById('sinkomi-map-hero');
     if(!mapEl) return;
     sinkomMapHero = new google.maps.Map(mapEl, {
-      center: { lat: 39.55, lng: 2.9 },  // centrado Baleares (4 islas)
+      center: { lat: 39.55, lng: 2.9 },  // Baleares; si hay anuncios en la península se amplía a España
       zoom: 8,
       styles: SINKOMI_MAP_STYLE,
       gestureHandling: 'cooperative',     // móvil: 2 dedos; escritorio: scroll normal
@@ -7817,8 +7849,9 @@ function initMapHeroGM(){
       fullscreenControl: false,
       streetViewControl: false
     });
-    // Limitar zoom mínimo para no salir de las islas
-    sinkomMapHero.setOptions({ minZoom: 7, maxZoom: 18 });
+    // SINKOMI cubre toda España: se puede alejar hasta ver la península entera
+    sinkomMapHero.setOptions({ minZoom: 5, maxZoom: 18 });
+
     google.maps.event.addListener(sinkomMapHero, 'zoom_changed', syncMapMarkerZoomVisibility);
     google.maps.event.addListener(sinkomMapHero, 'idle',          syncMapMarkerZoomVisibility);
     // Cargar límites oficiales municipales (IDEIB)
@@ -7898,6 +7931,32 @@ function renderMapMarkersHero(){
     const isl = islandOf(c[0], c[1]); if(!isl) return;
     countByIsland[isl] = (countByIsland[isl] || 0) + countByMuni[name];
   });
+  // Fuera de Baleares: una burbuja por provincia, en el centro de sus anuncios
+  const provAgg = {};
+  Object.keys(countByMuni).forEach(function(name){
+    const c = municipalityCoords[name];
+    if(!c || islandOf(c[0], c[1])) return;
+    const rec = (window.SK_ESP && window.SK_ESP.byName) ? window.SK_ESP.byName[name] : null;
+    const prov = rec ? rec.prov : name;
+    const a = provAgg[prov] || (provAgg[prov] = { n:0, lat:0, lng:0, w:0 });
+    a.n += countByMuni[name]; a.lat += c[0]; a.lng += c[1]; a.w++;
+  });
+  // La primera vez que hay anuncios en la península, el mapa se abre mostrando España
+  if(Object.keys(provAgg).length && !window._skMapFitSpain){
+    window._skMapFitSpain = true;
+    try{ sinkomMapHero.fitBounds({ south: 36.0, west: -9.4, north: 43.8, east: 4.4 }, 10); }catch(e){}
+  }
+  Object.keys(provAgg).forEach(function(prov){
+    const a = provAgg[prov];
+    const pos = new google.maps.LatLng(a.lat / a.w, a.lng / a.w);
+    islandBubbles['prov:' + prov] = new CustomMarker({
+      position: pos,
+      element:  createIslandBubbleEl(prov, a.n),
+      map:      sinkomMapHero,
+      onClick:  function(){ sinkomMapHero.panTo(pos); sinkomMapHero.setZoom(10); }
+    });
+  });
+
   Object.keys(countByIsland).forEach(function(isl){
     const cc = ISLAND_CENTERS[isl];
     if(!cc) return;
