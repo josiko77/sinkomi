@@ -39,6 +39,26 @@ const BOT_PATTERN = /facebookexternalhit|facebookcatalog|WhatsApp|Instagram|Twit
 // la raíz del repo, 1200×630, el tamaño que usan WhatsApp/Facebook para la vista previa).
 const DEFAULT_IMAGE = `${SITE_URL}/og-default.jpg`;
 
+// WhatsApp descarta la imagen de la vista previa si pesa demasiado (unos pocos cientos
+// de KB), y las fotos que suben los propietarios suelen pesar 2–5 MB. Para la vista
+// previa pedimos a Supabase (plan Pro: transformación de imágenes) una copia reducida
+// a 1200×630 en JPEG. Si por lo que sea esa copia no está disponible, usamos la original.
+async function previewImage(url){
+  const marker = '/storage/v1/object/public/';
+  if(!url || url.indexOf(marker) < 0) return { url, resized: false };
+  const small = url.replace(marker, '/storage/v1/render/image/public/')
+    + (url.indexOf('?') < 0 ? '?' : '&') + 'width=1200&height=630&resize=cover&quality=70&format=origin';
+  try{
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3500);
+    const r = await fetch(small, { method: 'HEAD', signal: ctrl.signal });
+    clearTimeout(t);
+    const type = r.headers.get('content-type') || '';
+    if(r.ok && type.indexOf('image/') === 0) return { url: small, resized: true };
+  }catch(e){}
+  return { url, resized: false };
+}
+
 function escapeHtml(text){
   if(!text) return '';
   return String(text)
@@ -88,7 +108,8 @@ module.exports = async (req, res) => {
     const description = escapeHtml((prop.description || '').replace(/\s+/g, ' ').trim().slice(0, 260))
       || `Inmueble ${opWord} en ${location}, España, publicado directamente por su propietario. Sin comisión de agencia, en SINKOMI.`;
     const hasPhoto = Array.isArray(prop.images) && prop.images[0];
-    const image = hasPhoto ? prop.images[0] : DEFAULT_IMAGE;
+    const prev = hasPhoto ? await previewImage(prop.images[0]) : { url: DEFAULT_IMAGE, resized: true };
+    const image = prev.url;
     const price = prop.price ? Number(prop.price).toLocaleString('es-ES') + ' €' : '';
     const ogTitle = `${title}${price ? ' · ' + price : ''}`;
     const pageTitle = `${title} · ${opWord} en ${location}${price ? ' · ' + price : ''} | SINKOMI`;
@@ -112,7 +133,7 @@ module.exports = async (req, res) => {
       },
     };
 
-    const imgSize = hasPhoto ? '' : `
+    const imgSize = !prev.resized ? '' : `
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">`;
 
